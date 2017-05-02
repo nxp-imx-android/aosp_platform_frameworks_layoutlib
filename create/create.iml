@@ -14,11 +14,11 @@
     <orderEntry type="module-library">
       <library name="asm-5.2">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../../../prebuilts/misc/common/asm/asm-5.2.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/misc/common/asm/asm-5.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../../../prebuilts/misc/common/asm/src.zip!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/misc/common/asm/src.zip!/" />
         </SOURCES>
       </library>
     </orderEntry>

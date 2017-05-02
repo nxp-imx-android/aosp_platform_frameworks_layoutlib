@@ -29,7 +29,7 @@
     <orderEntry type="module-library">
       <library name="ninepatch-prebuilt">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../../../prebuilts/misc/common/ninepatch/ninepatch-prebuilt.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/misc/common/ninepatch/ninepatch-prebuilt.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
@@ -43,11 +43,11 @@
           <root url="file://$MODULE_DIR$/.." />
         </ANNOTATIONS>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../../../prebuilts/misc/common/tools-common/tools-common-prebuilt.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/misc/common/tools-common/tools-common-prebuilt.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../../../prebuilts/misc/common/tools-common/tools-common-prebuilt-sources.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/misc/common/tools-common/tools-common-prebuilt-sources.jar!/" />
         </SOURCES>
       </library>
     </orderEntry>
@@ -55,33 +55,33 @@
     <orderEntry type="module-library" scope="TEST">
       <library name="kxml2-2.3.0">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../../../prebuilts/misc/common/kxml2/kxml2-2.3.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/misc/common/kxml2/kxml2-2.3.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="file://$MODULE_DIR$/../../../../../libcore/xml/src/main/java" />
+          <root url="file://$MODULE_DIR$/../../../libcore/xml/src/main/java" />
         </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library" scope="TEST">
       <library name="guava">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../../../prebuilts/tools/common/m2/repository/com/google/guava/guava/15.0/guava-15.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/com/google/guava/guava/15.0/guava-15.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../../../prebuilts/tools/common/m2/repository/com/google/guava/guava/15.0/guava-15.0-sources.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/com/google/guava/guava/15.0/guava-15.0-sources.jar!/" />
         </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library" scope="TEST">
       <library name="sdk-common">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../../../prebuilts/misc/common/sdk-common/sdk-common.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/misc/common/sdk-common/sdk-common.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../../../prebuilts/misc/common/sdk-common/sdk-common-sources.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/misc/common/sdk-common/sdk-common-sources.jar!/" />
         </SOURCES>
       </library>
     </orderEntry>
