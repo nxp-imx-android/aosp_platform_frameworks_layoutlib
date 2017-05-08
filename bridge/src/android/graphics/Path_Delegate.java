@@ -508,14 +508,17 @@ public final class Path_Delegate {
         int nPoints = points.size();
         float[] result = new float[nPoints * 3];
         previousPoint = null;
+        // Distance that we've covered so far. Used to calculate the fraction of the path that
+        // we've covered up to this point.
+        float walkedDistance = .0f;
         for (int i = 0; i < nPoints; i++) {
             Point2D.Float point = points.get(i);
             float distance = previousPoint != null ? (float) previousPoint.distance(point) : .0f;
-            result[i * 3] = distance / totalLength;
+            walkedDistance += distance;
+            result[i * 3] = walkedDistance / totalLength;
             result[i * 3 + 1] = point.x;
             result[i * 3 + 2] = point.y;
 
-            totalLength += distance;
             previousPoint = point;
         }
 
