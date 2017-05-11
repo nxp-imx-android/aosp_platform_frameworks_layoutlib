@@ -16,6 +16,9 @@
 
 package com.android.layoutlib.bridge;
 
+import com.android.SdkConstants;
+import com.android.layoutlib.bridge.android.BridgeLayoutParamsMapAttributes;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -23,6 +26,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Base class for mocked views.
@@ -47,7 +53,12 @@ public class MockView extends FrameLayout {
 
     public MockView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-        mView = new TextView(context, attrs);
+        // This inner TextView is only used to show some message on render result and should not
+        // inherit any attributes from parent (MockView). So it only needs layout width and height.
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put(SdkConstants.ATTR_LAYOUT_WIDTH, SdkConstants.VALUE_MATCH_PARENT);
+        attributes.put(SdkConstants.ATTR_LAYOUT_HEIGHT, SdkConstants.VALUE_MATCH_PARENT);
+        mView = new TextView(context, new BridgeLayoutParamsMapAttributes(attributes));
         mView.setTextColor(0xFF000000);
         setGravity(Gravity.CENTER);
         setText(getClass().getSimpleName());
