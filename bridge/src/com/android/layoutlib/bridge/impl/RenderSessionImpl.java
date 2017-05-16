@@ -69,16 +69,12 @@ import android.preference.Preference_Delegate;
 import android.view.AttachInfo_Accessor;
 import android.view.BridgeInflater;
 import android.view.Choreographer_Delegate;
-import android.view.IWindowManager;
-import android.view.IWindowManagerImpl;
-import android.view.Surface;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewParent;
-import android.view.WindowManagerGlobal_Delegate;
 import android.widget.AbsListView;
 import android.widget.AbsSpinner;
 import android.widget.ActionMenuView;
@@ -188,13 +184,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                 "windowIsFloating", true, true);
 
         mLayoutBuilder = new Layout.Builder(params, context);
-
-        // FIXME: find those out, and possibly add them to the render params
-        boolean hasNavigationBar = true;
-        //noinspection ConstantConditions
-        IWindowManager iwm = new IWindowManagerImpl(getContext().getConfiguration(),
-                context.getMetrics(), Surface.ROTATION_0, hasNavigationBar);
-        WindowManagerGlobal_Delegate.setWindowManagerService(iwm);
 
         // build the inflater and parser.
         mInflater = new BridgeInflater(context, params.getLayoutlibCallback());
