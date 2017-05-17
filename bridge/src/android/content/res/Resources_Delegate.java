@@ -824,7 +824,7 @@ public class Resources_Delegate {
 
         if (value != null) {
             ResourceValue resVal = value.getSecond();
-            String v = resVal.getValue();
+            String v = resVal != null ? resVal.getValue() : null;
 
             if (v != null) {
                 if (ResourceHelper.parseFloatAttribute(value.getFirst(), v, outValue,
