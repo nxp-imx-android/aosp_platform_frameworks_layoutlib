@@ -33,7 +33,11 @@ import com.android.resources.ScreenSize;
 import android.content.res.Configuration;
 import android.os.HandlerThread_Delegate;
 import android.util.DisplayMetrics;
+import android.view.IWindowManager;
+import android.view.IWindowManagerImpl;
+import android.view.Surface;
 import android.view.ViewConfiguration_Accessor;
+import android.view.WindowManagerGlobal_Delegate;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodManager_Accessor;
 
@@ -238,6 +242,14 @@ public abstract class RenderAction<T extends RenderParams> extends FrameworkReso
 
         // create an InputMethodManager
         InputMethodManager.getInstance();
+
+        // Set-up WindowManager
+        // FIXME: find those out, and possibly add them to the render params
+        boolean hasNavigationBar = true;
+        //noinspection ConstantConditions
+        IWindowManager iwm = new IWindowManagerImpl(getContext().getConfiguration(),
+                getContext().getMetrics(), Surface.ROTATION_0, hasNavigationBar);
+        WindowManagerGlobal_Delegate.setWindowManagerService(iwm);
 
         LayoutLog currentLog = mParams.getLog();
         Bridge.setLog(currentLog);
