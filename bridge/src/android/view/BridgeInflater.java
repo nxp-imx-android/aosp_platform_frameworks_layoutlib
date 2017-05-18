@@ -370,10 +370,12 @@ public final class BridgeInflater extends LayoutInflater {
             }
             if (ReflectionUtils.isInstanceOf(view, RecyclerViewUtil.CN_RECYCLER_VIEW)) {
                 Integer resourceId = null;
-                String attrVal = attrs.getAttributeValue(BridgeConstants.NS_TOOLS_URI,
+                String attrListItemValue = attrs.getAttributeValue(BridgeConstants.NS_TOOLS_URI,
                         BridgeConstants.ATTR_LIST_ITEM);
-                if (attrVal != null && !attrVal.isEmpty()) {
-                    ResourceValue resValue = bc.getRenderResources().findResValue(attrVal, false);
+                int attrItemCountValue = attrs.getAttributeIntValue(BridgeConstants.NS_TOOLS_URI,
+                        BridgeConstants.ATTR_ITEM_COUNT, -1);
+                if (attrListItemValue != null && !attrListItemValue.isEmpty()) {
+                    ResourceValue resValue = bc.getRenderResources().findResValue(attrListItemValue, false);
                     if (resValue.isFramework()) {
                         resourceId = Bridge.getResourceId(resValue.getResourceType(),
                                 resValue.getName());
@@ -385,7 +387,7 @@ public final class BridgeInflater extends LayoutInflater {
                 if (resourceId == null) {
                     resourceId = 0;
                 }
-                RecyclerViewUtil.setAdapter(view, bc, mLayoutlibCallback, resourceId);
+                RecyclerViewUtil.setAdapter(view, bc, mLayoutlibCallback, resourceId, attrItemCountValue);
             } else if (ReflectionUtils.isInstanceOf(view, DrawerLayoutUtil.CN_DRAWER_LAYOUT)) {
                 String attrVal = attrs.getAttributeValue(BridgeConstants.NS_TOOLS_URI,
                         BridgeConstants.ATTR_OPEN_DRAWER);
