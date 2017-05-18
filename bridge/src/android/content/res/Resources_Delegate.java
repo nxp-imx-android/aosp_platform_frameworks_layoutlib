@@ -33,6 +33,7 @@ import com.android.layoutlib.bridge.impl.ResourceHelper;
 import com.android.layoutlib.bridge.util.NinePatchInputStream;
 import com.android.ninepatch.NinePatch;
 import com.android.resources.ResourceType;
+import com.android.resources.ResourceUrl;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 import com.android.tools.layoutlib.annotations.VisibleForTesting;
 import com.android.util.Pair;
@@ -61,6 +62,9 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.WeakHashMap;
+
+import static com.android.SdkConstants.ANDROID_PKG;
+import static com.android.SdkConstants.PREFIX_RESOURCE_REF;
 
 @SuppressWarnings("deprecation")
 public class Resources_Delegate {
@@ -437,7 +441,7 @@ public class Resources_Delegate {
     @NonNull
     private static String resolveReference(Resources resources, @NonNull String ref,
             boolean forceFrameworkOnly) {
-        if (ref.startsWith(SdkConstants.PREFIX_RESOURCE_REF) || ref.startsWith
+        if (ref.startsWith(PREFIX_RESOURCE_REF) || ref.startsWith
                 (SdkConstants.PREFIX_THEME_REF)) {
             ResourceValue rv =
                     getContext(resources).getRenderResources().findResValue(ref, forceFrameworkOnly);
@@ -1012,6 +1016,69 @@ public class Resources_Delegate {
     static AssetFileDescriptor openRawResourceFd(Resources resources, int id) throws
             NotFoundException {
         throw new UnsupportedOperationException();
+    }
+
+    @VisibleForTesting
+    @Nullable
+    static ResourceUrl resourceUrlFromName(@NonNull String name, @Nullable String defType,
+            @Nullable
+            String defPackage) {
+        int colonIdx = name.indexOf(':');
+        int slashIdx = name.indexOf('/');
+
+        if (colonIdx != -1 && slashIdx != -1) {
+            // Easy case
+            return ResourceUrl.parse(PREFIX_RESOURCE_REF + name);
+        }
+
+        if (colonIdx == -1 && slashIdx == -1) {
+            if (defType == null) {
+                throw new IllegalArgumentException("name does not define a type an no defType was" +
+                        " passed");
+            }
+
+            // It does not define package or type
+            return ResourceUrl.parse(
+                    PREFIX_RESOURCE_REF + (defPackage != null ? defPackage + ":" : "") + defType +
+                            "/" + name);
+        }
+
+        if (colonIdx != -1) {
+            if (defType == null) {
+                throw new IllegalArgumentException("name does not define a type an no defType was" +
+                        " passed");
+            }
+            // We have package but no type
+            String pkg = name.substring(0, colonIdx);
+            ResourceType type = ResourceType.getEnum(defType);
+            return type != null ? ResourceUrl.create(pkg, type, name.substring(colonIdx + 1)) :
+                    null;
+        }
+
+        ResourceType type = ResourceType.getEnum(name.substring(0, slashIdx));
+        if (type == null) {
+            return null;
+        }
+        // We have type but no package
+        return ResourceUrl.create(defPackage,
+                type,
+                name.substring(slashIdx + 1));
+    }
+
+    @LayoutlibDelegate
+    static int getIdentifier(Resources resources, String name, String defType, String defPackage) {
+        if (name == null) {
+            return 0;
+        }
+
+        ResourceUrl url = resourceUrlFromName(name, defType, defPackage);
+        Integer id = null;
+        if (url != null) {
+            id = ANDROID_PKG.equals(url.namespace) ? Bridge.getResourceId(url.type, url.name) :
+                    getLayoutlibCallback(resources).getResourceId(url.type, url.name);
+        }
+
+        return id != null ? id : 0;
     }
 
     /**

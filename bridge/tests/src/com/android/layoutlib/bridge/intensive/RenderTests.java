@@ -20,6 +20,7 @@ import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
 import com.android.ide.common.rendering.api.ViewInfo;
+import com.android.internal.R;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.layoutlib.bridge.impl.RenderAction;
@@ -48,6 +49,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -532,5 +534,43 @@ public class RenderTests extends RenderTestBase {
     @Test
     public void testRectangleShadow() throws Exception {
         renderAndVerify("shadows_test.xml", "shadows_test.png");
+    }
+
+    @Test
+    public void testResourcesGetIdentifier() throws Exception {
+        // Setup
+        // Create the layout pull parser for our resources (empty.xml can not be part of the test
+        // app as it won't compile).
+        LayoutPullParser parser = LayoutPullParser.createFromPath("/empty.xml");
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_4,
+                layoutLibCallback, "AppTheme", true, RenderingMode.NORMAL, 22);
+        AssetManager assetManager = AssetManager.getSystem();
+        DisplayMetrics metrics = new DisplayMetrics();
+        Configuration configuration = RenderAction.getConfiguration(params);
+        BridgeContext context = new BridgeContext(params.getProjectKey(), metrics, params.getResources(),
+                params.getAssets(), params.getLayoutlibCallback(), configuration,
+                params.getTargetSdkVersion(), params.isRtlSupported());
+        Resources resources = Resources_Delegate.initSystem(context, assetManager, metrics,
+                configuration, params.getLayoutlibCallback());
+        int id = Resources_Delegate.getLayoutlibCallback(resources).getResourceId(
+                ResourceType.STRING,
+                "app_name");
+        assertEquals(id, resources.getIdentifier("string/app_name", null, null));
+        assertEquals(id, resources.getIdentifier("app_name", "string", null));
+        assertEquals(0, resources.getIdentifier("string/does_not_exist", null, null));
+        assertEquals(R.string.accept, resources.getIdentifier("android:string/accept", null,
+                null));
+        assertEquals(R.string.accept, resources.getIdentifier("string/accept", null,
+                "android"));
+        assertEquals(R.id.message, resources.getIdentifier("id/message", null,
+                "android"));
+        assertEquals(R.string.accept, resources.getIdentifier("accept", "string",
+                "android"));
+
+        context.disposeResources();
     }
 }
