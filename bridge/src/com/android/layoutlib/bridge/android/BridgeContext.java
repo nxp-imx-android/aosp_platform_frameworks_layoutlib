@@ -212,11 +212,11 @@ public class BridgeContext extends Context {
      * @param config the Configuration object for this render.
      * @param targetSdkVersion the targetSdkVersion of the application.
      */
-    public BridgeContext(Object projectKey, DisplayMetrics metrics,
-            RenderResources renderResources,
-            AssetRepository assets,
-            LayoutlibCallback layoutlibCallback,
-            Configuration config,
+    public BridgeContext(Object projectKey, @NonNull DisplayMetrics metrics,
+            @NonNull RenderResources renderResources,
+            @NonNull AssetRepository assets,
+            @NonNull LayoutlibCallback layoutlibCallback,
+            @NonNull Configuration config,
             int targetSdkVersion,
             boolean hasRtlSupport) {
         mProjectKey = projectKey;
