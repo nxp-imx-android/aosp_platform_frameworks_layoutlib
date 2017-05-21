@@ -70,6 +70,7 @@ public final class BridgeTypedArray extends TypedArray {
     private final BridgeContext mContext;
     private final boolean mPlatformFile;
 
+    private final int[] mResourceId;
     private final ResourceValue[] mResourceData;
     private final String[] mNames;
     private final boolean[] mIsFramework;
@@ -85,6 +86,7 @@ public final class BridgeTypedArray extends TypedArray {
         mBridgeResources = resources;
         mContext = context;
         mPlatformFile = platformFile;
+        mResourceId = new int[len];
         mResourceData = new ResourceValue[len];
         mNames = new String[len];
         mIsFramework = new boolean[len];
@@ -95,9 +97,12 @@ public final class BridgeTypedArray extends TypedArray {
      * @param index the index of the value in the TypedArray
      * @param name the name of the attribute
      * @param isFramework whether the attribute is in the android namespace.
+     * @param resourceId the reference id of this resource
      * @param value the value of the attribute
      */
-    public void bridgeSetValue(int index, String name, boolean isFramework, ResourceValue value) {
+    public void bridgeSetValue(int index, String name, boolean isFramework, int resourceId,
+            ResourceValue value) {
+        mResourceId[index] = resourceId;
         mResourceData[index] = value;
         mNames[index] = name;
         mIsFramework[index] = isFramework;
@@ -105,7 +110,7 @@ public final class BridgeTypedArray extends TypedArray {
 
     /**
      * Seals the array after all calls to
-     * {@link #bridgeSetValue(int, String, boolean, ResourceValue)} have been done.
+     * {@link #bridgeSetValue(int, String, boolean, int, ResourceValue)} have been done.
      * <p/>This allows to compute the list of non default values, permitting
      * {@link #getIndexCount()} to return the proper value.
      */
@@ -787,6 +792,9 @@ public final class BridgeTypedArray extends TypedArray {
                 return false;
             case TYPE_STRING:
                 outValue.string = getString(index);
+                return true;
+            case TYPE_REFERENCE:
+                outValue.resourceId = mResourceId[index];
                 return true;
             default:
                 // For back-compatibility, parse as float.

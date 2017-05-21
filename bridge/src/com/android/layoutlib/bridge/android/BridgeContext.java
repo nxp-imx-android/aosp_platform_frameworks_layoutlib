@@ -212,11 +212,11 @@ public class BridgeContext extends Context {
      * @param config the Configuration object for this render.
      * @param targetSdkVersion the targetSdkVersion of the application.
      */
-    public BridgeContext(Object projectKey, DisplayMetrics metrics,
-            RenderResources renderResources,
-            AssetRepository assets,
-            LayoutlibCallback layoutlibCallback,
-            Configuration config,
+    public BridgeContext(Object projectKey, @NonNull DisplayMetrics metrics,
+            @NonNull RenderResources renderResources,
+            @NonNull AssetRepository assets,
+            @NonNull LayoutlibCallback layoutlibCallback,
+            @NonNull Configuration config,
             int targetSdkVersion,
             boolean hasRtlSupport) {
         mProjectKey = projectKey;
@@ -750,7 +750,7 @@ public class BridgeContext extends Context {
             return null;
         }
 
-        List<Pair<String, Boolean>> attributeList = searchAttrs(attrs);
+        List<AttributeHolder> attributeList = searchAttrs(attrs);
 
         BridgeTypedArray ta =
                 Resources_Delegate.newTypeArray(mSystemResources, attrs.length, isPlatformFile);
@@ -866,14 +866,14 @@ public class BridgeContext extends Context {
 
         if (attributeList != null) {
             for (int index = 0 ; index < attributeList.size() ; index++) {
-                Pair<String, Boolean> attribute = attributeList.get(index);
+                AttributeHolder attributeHolder = attributeList.get(index);
 
-                if (attribute == null) {
+                if (attributeHolder == null) {
                     continue;
                 }
 
-                String attrName = attribute.getFirst();
-                boolean frameworkAttr = attribute.getSecond();
+                String attrName = attributeHolder.name;
+                boolean frameworkAttr = attributeHolder.isFramework;
                 String value = null;
                 if (set != null) {
                     value = set.getAttributeValue(
@@ -965,11 +965,12 @@ public class BridgeContext extends Context {
                         }
                     }
 
-                    ta.bridgeSetValue(index, attrName, frameworkAttr, defaultValue);
+                    ta.bridgeSetValue(index, attrName, frameworkAttr, attributeHolder.resourceId,
+                            defaultValue);
                 } else {
                     // there is a value in the XML, but we need to resolve it in case it's
                     // referencing another resource or a theme value.
-                    ta.bridgeSetValue(index, attrName, frameworkAttr,
+                    ta.bridgeSetValue(index, attrName, frameworkAttr, attributeHolder.resourceId,
                             mRenderResources.resolveValue(null, attrName, value, isPlatformFile));
                 }
             }
@@ -1013,7 +1014,7 @@ public class BridgeContext extends Context {
      */
     private Pair<BridgeTypedArray, PropertiesMap> createStyleBasedTypedArray(
             @Nullable StyleResourceValue style, int[] attrs) throws Resources.NotFoundException {
-        List<Pair<String, Boolean>> attributes = searchAttrs(attrs);
+        List<AttributeHolder> attributes = searchAttrs(attrs);
 
         BridgeTypedArray ta =
                 Resources_Delegate.newTypeArray(mSystemResources, attrs.length, false);
@@ -1021,13 +1022,13 @@ public class BridgeContext extends Context {
         PropertiesMap defaultPropMap = new PropertiesMap();
         // for each attribute, get its name so that we can search it in the style
         for (int i = 0; i < attrs.length; i++) {
-            Pair<String, Boolean> attribute = attributes.get(i);
+            AttributeHolder attrHolder = attributes.get(i);
 
-            if (attribute != null) {
+            if (attrHolder != null) {
                 // look for the value in the given style
                 ResourceValue resValue;
-                String attrName = attribute.getFirst();
-                boolean frameworkAttr = attribute.getSecond();
+                String attrName = attrHolder.name;
+                boolean frameworkAttr = attrHolder.isFramework;
                 if (style != null) {
                     resValue = mRenderResources.findItemInStyle(style, attrName, frameworkAttr);
                 } else {
@@ -1039,7 +1040,8 @@ public class BridgeContext extends Context {
                     String preResolve = resValue.getValue();
                     // resolve it to make sure there are no references left.
                     resValue = mRenderResources.resolveResValue(resValue);
-                    ta.bridgeSetValue(i, attrName, frameworkAttr, resValue);
+                    ta.bridgeSetValue(i, attrName, frameworkAttr, attrHolder.resourceId,
+                            resValue);
                     defaultPropMap.put(
                             frameworkAttr ? SdkConstants.ANDROID_PREFIX + attrName : attrName,
                             new Property(preResolve, resValue.getValue()));
@@ -1053,28 +1055,28 @@ public class BridgeContext extends Context {
     }
 
     /**
-     * The input int[] attrs is a list of attributes. The returns a list of information about
+     * The input int[] attributeIds is a list of attributes. The returns a list of information about
      * each attributes. The information is (name, isFramework)
      * <p/>
      *
-     * @param attrs An attribute array reference given to obtainStyledAttributes.
+     * @param attributeIds An attribute array reference given to obtainStyledAttributes.
      * @return List of attribute information.
      */
-    private List<Pair<String, Boolean>> searchAttrs(int[] attrs) {
-        List<Pair<String, Boolean>> results = new ArrayList<>(attrs.length);
+    private List<AttributeHolder> searchAttrs(int[] attributeIds) {
+        List<AttributeHolder> results = new ArrayList<>(attributeIds.length);
 
         // for each attribute, get its name so that we can search it in the style
-        for (int attr : attrs) {
-            Pair<ResourceType, String> resolvedResource = Bridge.resolveResourceId(attr);
+        for (int id : attributeIds) {
+            Pair<ResourceType, String> resolvedResource = Bridge.resolveResourceId(id);
             boolean isFramework = false;
             if (resolvedResource != null) {
                 isFramework = true;
             } else {
-                resolvedResource = mLayoutlibCallback.resolveResourceId(attr);
+                resolvedResource = mLayoutlibCallback.resolveResourceId(id);
             }
 
             if (resolvedResource != null) {
-                results.add(Pair.of(resolvedResource.getSecond(), isFramework));
+                results.add(new AttributeHolder(id, resolvedResource.getSecond(), isFramework));
             } else {
                 results.add(null);
             }
@@ -2006,6 +2008,18 @@ public class BridgeContext extends Context {
     @Override
     public boolean isCredentialProtectedStorage() {
         return false;
+    }
+
+    private class AttributeHolder {
+        private int resourceId;
+        private String name;
+        private boolean isFramework;
+
+        private AttributeHolder(int resourceId, String name, boolean isFramework) {
+            this.resourceId = resourceId;
+            this.name = name;
+            this.isFramework = isFramework;
+        }
     }
 
     /**

@@ -33,7 +33,9 @@ import com.android.layoutlib.bridge.impl.ResourceHelper;
 import com.android.layoutlib.bridge.util.NinePatchInputStream;
 import com.android.ninepatch.NinePatch;
 import com.android.resources.ResourceType;
+import com.android.resources.ResourceUrl;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
+import com.android.tools.layoutlib.annotations.VisibleForTesting;
 import com.android.util.Pair;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -58,25 +60,54 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.Objects;
+import java.util.WeakHashMap;
+
+import static com.android.SdkConstants.ANDROID_PKG;
+import static com.android.SdkConstants.PREFIX_RESOURCE_REF;
 
 @SuppressWarnings("deprecation")
 public class Resources_Delegate {
+    private static WeakHashMap<Resources, LayoutlibCallback> sLayoutlibCallbacks = new
+            WeakHashMap<>();
+    private static WeakHashMap<Resources, BridgeContext> sContexts = new
+            WeakHashMap<>();
 
     private static boolean[] mPlatformResourceFlag = new boolean[1];
     // TODO: This cache is cleared every time a render session is disposed. Look into making this
     // more long lived.
     private static LruCache<String, Drawable.ConstantState> sDrawableCache = new LruCache<>(50);
 
-    public static Resources initSystem(BridgeContext context,
-            AssetManager assets,
-            DisplayMetrics metrics,
-            Configuration config,
-            LayoutlibCallback layoutlibCallback) {
+    public static Resources initSystem(@NonNull BridgeContext context,
+            @NonNull AssetManager assets,
+            @NonNull DisplayMetrics metrics,
+            @NonNull Configuration config,
+            @NonNull LayoutlibCallback layoutlibCallback) {
+        assert Resources.mSystem == null  :
+                "Resources_Delegate.initSystem called twice before disposeSystem was called";
         Resources resources = new Resources(Resources_Delegate.class.getClassLoader());
         resources.setImpl(new ResourcesImpl(assets, metrics, config, new DisplayAdjustments()));
-        resources.mContext = context;
-        resources.mLayoutlibCallback = layoutlibCallback;
+        sContexts.put(resources, Objects.requireNonNull(context));
+        sLayoutlibCallbacks.put(resources, Objects.requireNonNull(layoutlibCallback));
         return Resources.mSystem = resources;
+    }
+
+    /** Returns the {@link BridgeContext} associated to the given {@link Resources} */
+    @VisibleForTesting
+    @NonNull
+    public static BridgeContext getContext(@NonNull Resources resources) {
+        assert sContexts.containsKey(resources) :
+                "Resources_Delegate.getContext called before initSystem";
+        return sContexts.get(resources);
+    }
+
+    /** Returns the {@link LayoutlibCallback} associated to the given {@link Resources} */
+    @VisibleForTesting
+    @NonNull
+    public static LayoutlibCallback getLayoutlibCallback(@NonNull Resources resources) {
+        assert sLayoutlibCallbacks.containsKey(resources) :
+                "Resources_Delegate.getLayoutlibCallback called before initSystem";
+        return sLayoutlibCallbacks.get(resources);
     }
 
     /**
@@ -85,14 +116,14 @@ public class Resources_Delegate {
      */
     public static void disposeSystem() {
         sDrawableCache.evictAll();
-        Resources.mSystem.mContext = null;
-        Resources.mSystem.mLayoutlibCallback = null;
+        sContexts.clear();
+        sLayoutlibCallbacks.clear();
         Resources.mSystem = null;
     }
 
     public static BridgeTypedArray newTypeArray(Resources resources, int numEntries,
             boolean platformFile) {
-        return new BridgeTypedArray(resources, resources.mContext, numEntries, platformFile);
+        return new BridgeTypedArray(resources, getContext(resources), numEntries, platformFile);
     }
 
     private static Pair<ResourceType, String> getResourceInfo(Resources resources, int id,
@@ -100,10 +131,12 @@ public class Resources_Delegate {
         // first get the String related to this id in the framework
         Pair<ResourceType, String> resourceInfo = Bridge.resolveResourceId(id);
 
+        assert Resources.mSystem != null : "Resources_Delegate.initSystem wasn't called";
         // Set the layoutlib callback and context for resources
-        if (resources != Resources.mSystem && resources.mLayoutlibCallback == null) {
-            resources.mLayoutlibCallback = Resources.mSystem.mLayoutlibCallback;
-            resources.mContext = Resources.mSystem.mContext;
+        if (resources != Resources.mSystem &&
+                (!sContexts.containsKey(resources) || !sLayoutlibCallbacks.containsKey(resources))) {
+            sLayoutlibCallbacks.put(resources, getLayoutlibCallback(Resources.mSystem));
+            sContexts.put(resources, getContext(Resources.mSystem));
         }
 
         if (resourceInfo != null) {
@@ -112,13 +145,11 @@ public class Resources_Delegate {
         }
 
         // didn't find a match in the framework? look in the project.
-        if (resources.mLayoutlibCallback != null) {
-            resourceInfo = resources.mLayoutlibCallback.resolveResourceId(id);
+        resourceInfo = getLayoutlibCallback(resources).resolveResourceId(id);
 
-            if (resourceInfo != null) {
-                platformResFlag_out[0] = false;
-                return resourceInfo;
-            }
+        if (resourceInfo != null) {
+            platformResFlag_out[0] = false;
+            return resourceInfo;
         }
         return null;
     }
@@ -130,7 +161,7 @@ public class Resources_Delegate {
 
         if (resourceInfo != null) {
             String attributeName = resourceInfo.getSecond();
-            RenderResources renderResources = resources.mContext.getRenderResources();
+            RenderResources renderResources = getContext(resources).getRenderResources();
             ResourceValue value = platformResFlag_out[0] ?
                     renderResources.getFrameworkResource(resourceInfo.getFirst(), attributeName) :
                     renderResources.getProjectResource(resourceInfo.getFirst(), attributeName);
@@ -163,7 +194,7 @@ public class Resources_Delegate {
                 drawable = constantState.newDrawable(resources, theme);
             } else {
                 drawable =
-                        ResourceHelper.getDrawable(value.getSecond(), resources.mContext, theme);
+                        ResourceHelper.getDrawable(value.getSecond(), getContext(resources), theme);
 
                 if (key != null) {
                     sDrawableCache.put(key, drawable.getConstantState());
@@ -228,7 +259,7 @@ public class Resources_Delegate {
 
         if (resValue != null) {
             ColorStateList stateList = ResourceHelper.getColorStateList(resValue.getSecond(),
-                    resources.mContext);
+                    getContext(resources));
             if (stateList != null) {
                 return stateList.obtainForTheme(theme);
             }
@@ -410,11 +441,11 @@ public class Resources_Delegate {
     @NonNull
     private static String resolveReference(Resources resources, @NonNull String ref,
             boolean forceFrameworkOnly) {
-        if (ref.startsWith(SdkConstants.PREFIX_RESOURCE_REF) || ref.startsWith
+        if (ref.startsWith(PREFIX_RESOURCE_REF) || ref.startsWith
                 (SdkConstants.PREFIX_THEME_REF)) {
             ResourceValue rv =
-                    resources.mContext.getRenderResources().findResValue(ref, forceFrameworkOnly);
-            rv = resources.mContext.getRenderResources().resolveResValue(rv);
+                    getContext(resources).getRenderResources().findResValue(ref, forceFrameworkOnly);
+            rv = getContext(resources).getRenderResources().resolveResValue(rv);
             if (rv != null) {
                 return rv.getValue();
             }
@@ -434,7 +465,7 @@ public class Resources_Delegate {
             try {
                 // check if the current parser can provide us with a custom parser.
                 if (!mPlatformResourceFlag[0]) {
-                    parser = resources.mLayoutlibCallback.getParser(value);
+                    parser = getLayoutlibCallback(resources).getParser(value);
                 }
 
                 // create a new one manually if needed.
@@ -448,7 +479,7 @@ public class Resources_Delegate {
                 }
 
                 if (parser != null) {
-                    return new BridgeXmlBlockParser(parser, resources.mContext,
+                    return new BridgeXmlBlockParser(parser, getContext(resources),
                             mPlatformResourceFlag[0]);
                 }
             } catch (XmlPullParserException e) {
@@ -483,7 +514,7 @@ public class Resources_Delegate {
                     // give that to our XmlBlockParser
                     parser = ParserFactory.create(xml);
 
-                    return new BridgeXmlBlockParser(parser, resources.mContext,
+                    return new BridgeXmlBlockParser(parser, getContext(resources),
                             mPlatformResourceFlag[0]);
                 }
             } catch (XmlPullParserException e) {
@@ -505,7 +536,7 @@ public class Resources_Delegate {
 
     @LayoutlibDelegate
     static TypedArray obtainAttributes(Resources resources, AttributeSet set, int[] attrs) {
-        return resources.mContext.obtainStyledAttributes(set, attrs);
+        return getContext(resources).obtainStyledAttributes(set, attrs);
     }
 
     @LayoutlibDelegate
@@ -680,7 +711,7 @@ public class Resources_Delegate {
             if (platformOut[0]) {
                 packageName = SdkConstants.ANDROID_NS_NAME;
             } else {
-                packageName = resources.mContext.getPackageName();
+                packageName = getContext(resources).getPackageName();
                 packageName = packageName == null ? SdkConstants.APP_PREFIX : packageName;
             }
             return packageName + ':' + resourceInfo.getFirst().getName() + '/' +
@@ -698,7 +729,7 @@ public class Resources_Delegate {
             if (platformOut[0]) {
                 return SdkConstants.ANDROID_NS_NAME;
             }
-            String packageName = resources.mContext.getPackageName();
+            String packageName = getContext(resources).getPackageName();
             return packageName == null ? SdkConstants.APP_PREFIX : packageName;
         }
         throwException(resid, null);
@@ -793,7 +824,7 @@ public class Resources_Delegate {
             NotFoundException {
         Pair<String, ResourceValue> value = getResourceValue(resources, id, mPlatformResourceFlag);
         if (value != null) {
-            return ResourceHelper.getFont(value.getSecond(), resources.mContext, null);
+            return ResourceHelper.getFont(value.getSecond(), getContext(resources), null);
         }
 
         throwException(resources, id);
@@ -807,7 +838,7 @@ public class Resources_Delegate {
             NotFoundException {
         Resources_Delegate.getValue(resources, id, outValue, true);
         if (outValue.string != null) {
-            return ResourceHelper.getFont(outValue.string.toString(), resources.mContext, null,
+            return ResourceHelper.getFont(outValue.string.toString(), getContext(resources), null,
                     mPlatformResourceFlag[0]);
         }
 
@@ -867,7 +898,7 @@ public class Resources_Delegate {
                     try {
                         XmlPullParser parser = ParserFactory.create(f);
 
-                        return new BridgeXmlBlockParser(parser, resources.mContext,
+                        return new BridgeXmlBlockParser(parser, getContext(resources),
                                 mPlatformResourceFlag[0]);
                     } catch (XmlPullParserException e) {
                         NotFoundException newE = new NotFoundException();
@@ -907,7 +938,7 @@ public class Resources_Delegate {
         try {
             XmlPullParser parser = ParserFactory.create(f);
 
-            return new BridgeXmlBlockParser(parser, resources.mContext, mPlatformResourceFlag[0]);
+            return new BridgeXmlBlockParser(parser, getContext(resources), mPlatformResourceFlag[0]);
         } catch (XmlPullParserException e) {
             NotFoundException newE = new NotFoundException();
             newE.initCause(e);
@@ -985,6 +1016,69 @@ public class Resources_Delegate {
     static AssetFileDescriptor openRawResourceFd(Resources resources, int id) throws
             NotFoundException {
         throw new UnsupportedOperationException();
+    }
+
+    @VisibleForTesting
+    @Nullable
+    static ResourceUrl resourceUrlFromName(@NonNull String name, @Nullable String defType,
+            @Nullable
+            String defPackage) {
+        int colonIdx = name.indexOf(':');
+        int slashIdx = name.indexOf('/');
+
+        if (colonIdx != -1 && slashIdx != -1) {
+            // Easy case
+            return ResourceUrl.parse(PREFIX_RESOURCE_REF + name);
+        }
+
+        if (colonIdx == -1 && slashIdx == -1) {
+            if (defType == null) {
+                throw new IllegalArgumentException("name does not define a type an no defType was" +
+                        " passed");
+            }
+
+            // It does not define package or type
+            return ResourceUrl.parse(
+                    PREFIX_RESOURCE_REF + (defPackage != null ? defPackage + ":" : "") + defType +
+                            "/" + name);
+        }
+
+        if (colonIdx != -1) {
+            if (defType == null) {
+                throw new IllegalArgumentException("name does not define a type an no defType was" +
+                        " passed");
+            }
+            // We have package but no type
+            String pkg = name.substring(0, colonIdx);
+            ResourceType type = ResourceType.getEnum(defType);
+            return type != null ? ResourceUrl.create(pkg, type, name.substring(colonIdx + 1)) :
+                    null;
+        }
+
+        ResourceType type = ResourceType.getEnum(name.substring(0, slashIdx));
+        if (type == null) {
+            return null;
+        }
+        // We have type but no package
+        return ResourceUrl.create(defPackage,
+                type,
+                name.substring(slashIdx + 1));
+    }
+
+    @LayoutlibDelegate
+    static int getIdentifier(Resources resources, String name, String defType, String defPackage) {
+        if (name == null) {
+            return 0;
+        }
+
+        ResourceUrl url = resourceUrlFromName(name, defType, defPackage);
+        Integer id = null;
+        if (url != null) {
+            id = ANDROID_PKG.equals(url.namespace) ? Bridge.getResourceId(url.type, url.name) :
+                    getLayoutlibCallback(resources).getResourceId(url.type, url.name);
+        }
+
+        return id != null ? id : 0;
     }
 
     /**

@@ -25,7 +25,8 @@ LOCAL_JAVA_LIBRARIES := \
 
 LOCAL_STATIC_JAVA_LIBRARIES := \
 	temp_layoutlib \
-	ninepatch-prebuilt
+	ninepatch-prebuilt \
+	layoutlib-common
 
 LOCAL_MODULE := layoutlib
 
