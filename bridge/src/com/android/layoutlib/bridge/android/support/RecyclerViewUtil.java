@@ -55,13 +55,17 @@ public class RecyclerViewUtil {
      * Any exceptions thrown during the process are logged in {@link Bridge#getLog()}
      */
     public static void setAdapter(@NonNull View recyclerView, @NonNull BridgeContext context,
-            @NonNull LayoutlibCallback layoutlibCallback, int adapterLayout) {
+            @NonNull LayoutlibCallback layoutlibCallback, int adapterLayout, int itemCount) {
         try {
             setLayoutManager(recyclerView, context, layoutlibCallback);
             Object adapter = createAdapter(layoutlibCallback);
             if (adapter != null) {
                 setProperty(recyclerView, CN_ADAPTER, adapter, "setAdapter");
                 setProperty(adapter, int.class, adapterLayout, "setLayoutId");
+
+                if (itemCount != -1) {
+                    setProperty(adapter, int.class, itemCount, "setItemCount");
+                }
             }
         } catch (ReflectionException e) {
             Throwable cause = getCause(e);

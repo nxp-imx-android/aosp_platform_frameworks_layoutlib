@@ -18,12 +18,7 @@ include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := $(call all-java-files-under,src)
 
-LOCAL_JAR_MANIFEST := manifest.txt
-LOCAL_STATIC_JAVA_LIBRARIES := \
-	asm-5.2 \
-	layoutlib-common
-
-LOCAL_MODULE := layoutlib_create
+LOCAL_MODULE := layoutlib-common
 
 include $(BUILD_HOST_JAVA_LIBRARY)
 
