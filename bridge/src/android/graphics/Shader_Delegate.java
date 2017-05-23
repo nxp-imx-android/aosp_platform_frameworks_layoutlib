@@ -21,6 +21,8 @@ import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import android.graphics.Shader.TileMode;
 
+import libcore.util.NativeAllocationRegistry_Delegate;
+
 /**
  * Delegate implementing the native methods of android.graphics.Shader
  *
@@ -41,6 +43,7 @@ public abstract class Shader_Delegate {
     // ---- delegate manager ----
     protected static final DelegateManager<Shader_Delegate> sManager =
             new DelegateManager<Shader_Delegate>(Shader_Delegate.class);
+    private static long sFinalizer = -1;
 
     // ---- delegate helper data ----
 
@@ -76,8 +79,14 @@ public abstract class Shader_Delegate {
     // ---- native methods ----
 
     @LayoutlibDelegate
-    /*package*/ static void nativeSafeUnref(long nativeInstance) {
-        sManager.removeJavaReferenceFor(nativeInstance);
+    /*package*/ static long nativeGetFinalizer() {
+        synchronized (Shader_Delegate.class) {
+            if (sFinalizer == -1) {
+                sFinalizer = NativeAllocationRegistry_Delegate.createFinalizer(
+                        sManager::removeJavaReferenceFor);
+            }
+        }
+        return sFinalizer;
     }
 
     // ---- Private delegate/helper methods ----
