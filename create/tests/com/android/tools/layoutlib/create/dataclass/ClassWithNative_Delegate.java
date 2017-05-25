@@ -30,5 +30,9 @@ public class ClassWithNative_Delegate {
         }
         return (int)(a + d);
     }
+
+    public static void constructor_after(ClassWithNative instance) {
+        instance.mId = 123;
+    }
 }
 

@@ -98,11 +98,11 @@ public class DelegateClassAdapter extends ClassVisitor {
             return super.visitMethod(access, name, desc, signature, exceptions);
         }
 
-        if (CONSTRUCTOR.equals(name) || CLASS_INIT.equals(name)) {
+        if (CLASS_INIT.equals(name)) {
             // We don't currently support generating delegates for constructors.
             throw new UnsupportedOperationException(
                 String.format(
-                    "Delegate doesn't support overriding constructor %1$s:%2$s(%3$s)",  //$NON-NLS-1$
+                    "Delegate doesn't support overriding static constructor %1$s:%2$s(%3$s)",
                     mClassName, name, desc));
         }
 
@@ -121,23 +121,30 @@ public class DelegateClassAdapter extends ClassVisitor {
             return mwDelegate;
         }
 
-        // Given a non-native SomeClass.MethodName(), we want to generate 2 methods:
-        // - A copy of the original method named SomeClass.MethodName_Original().
-        //   The content is the original method as-is from the reader.
-        // - A brand new implementation of SomeClass.MethodName() which calls to a
-        //   non-existing method named SomeClass_Delegate.MethodName().
-        //   The implementation of this 'delegate' method is done in layoutlib_bridge.
+        if (CONSTRUCTOR.equals(name)) {
+            MethodVisitor mwOriginal = super.visitMethod(access, name,
+                    desc, signature, exceptions);
+            return new AfterConstructorMethodAdapter(mLog, mwOriginal, mClassName);
+        }
+        else {
+            // Given a non-native SomeClass.MethodName(), we want to generate 2 methods:
+            // - A copy of the original method named SomeClass.MethodName_Original().
+            //   The content is the original method as-is from the reader.
+            // - A brand new implementation of SomeClass.MethodName() which calls to a
+            //   non-existing method named SomeClass_Delegate.MethodName().
+            //   The implementation of this 'delegate' method is done in layoutlib_bridge.
 
-        int accessDelegate = access;
-        access = access & ~Opcodes.ACC_PRIVATE;  // If private, make it package protected.
+            int accessDelegate = access;
+            access = access & ~Opcodes.ACC_PRIVATE;  // If private, make it package protected.
 
-        MethodVisitor mwOriginal = super.visitMethod(access, name + ORIGINAL_SUFFIX,
-                                                     desc, signature, exceptions);
-        MethodVisitor mwDelegate = super.visitMethod(accessDelegate, name,
-                                                     desc, signature, exceptions);
+            MethodVisitor mwOriginal = super.visitMethod(access, name + ORIGINAL_SUFFIX,
+                    desc, signature, exceptions);
+            MethodVisitor mwDelegate = super.visitMethod(accessDelegate, name,
+                    desc, signature, exceptions);
 
-        return new DelegateMethodAdapter(
-                mLog, mwOriginal, mwDelegate, mClassName, name, desc, isStaticMethod,
-                mIsStaticInnerClass);
+            return new DelegateMethodAdapter(
+                    mLog, mwOriginal, mwDelegate, mClassName, name, desc, isStaticMethod,
+                    mIsStaticInnerClass);
+        }
     }
 }
