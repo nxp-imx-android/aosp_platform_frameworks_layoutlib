@@ -1545,6 +1545,11 @@ public class BridgeContext extends Context {
     }
 
     @Override
+    public void reloadSharedPreferences() {
+        // intentional noop
+    }
+
+    @Override
     public boolean moveSharedPreferencesFrom(Context sourceContext, String name) {
         // pass
         return false;
