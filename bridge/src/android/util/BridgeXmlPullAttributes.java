@@ -295,7 +295,7 @@ public class BridgeXmlPullAttributes extends XmlPullAttributes {
     private int resolveResourceValue(String value, int defaultValue) {
         ResourceValue resource = getResourceValue(value);
         if (resource != null) {
-            Integer id = null;
+            Integer id;
             if (mPlatformFile || resource.isFramework()) {
                 id = Bridge.getResourceId(resource.getResourceType(), resource.getName());
             } else {
