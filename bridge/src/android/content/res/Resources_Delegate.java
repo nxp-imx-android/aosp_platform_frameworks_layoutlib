@@ -460,28 +460,9 @@ public class Resources_Delegate {
 
         if (v != null) {
             ResourceValue value = v.getSecond();
-            XmlPullParser parser = null;
 
             try {
-                // check if the current parser can provide us with a custom parser.
-                if (!mPlatformResourceFlag[0]) {
-                    parser = getLayoutlibCallback(resources).getParser(value);
-                }
-
-                // create a new one manually if needed.
-                if (parser == null) {
-                    File xml = new File(value.getValue());
-                    if (xml.isFile()) {
-                        // we need to create a pull parser around the layout XML file, and then
-                        // give that to our XmlBlockParser
-                        parser = ParserFactory.create(xml, true);
-                    }
-                }
-
-                if (parser != null) {
-                    return new BridgeXmlBlockParser(parser, getContext(resources),
-                            mPlatformResourceFlag[0]);
-                }
+                return ResourceHelper.getXmlBlockParser(getContext(resources), value);
             } catch (XmlPullParserException e) {
                 Bridge.getLog().error(LayoutLog.TAG_BROKEN,
                         "Failed to configure parser for " + value.getValue(), e, null /*data*/);
@@ -505,18 +486,9 @@ public class Resources_Delegate {
 
         if (v != null) {
             ResourceValue value = v.getSecond();
-            XmlPullParser parser;
 
             try {
-                File xml = new File(value.getValue());
-                if (xml.isFile()) {
-                    // we need to create a pull parser around the layout XML file, and then
-                    // give that to our XmlBlockParser
-                    parser = ParserFactory.create(xml);
-
-                    return new BridgeXmlBlockParser(parser, getContext(resources),
-                            mPlatformResourceFlag[0]);
-                }
+                return ResourceHelper.getXmlBlockParser(getContext(resources), value);
             } catch (XmlPullParserException e) {
                 Bridge.getLog().error(LayoutLog.TAG_BROKEN,
                         "Failed to configure parser for " + value.getValue(), e, null /*data*/);
