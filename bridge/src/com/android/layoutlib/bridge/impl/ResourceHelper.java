@@ -269,6 +269,37 @@ public final class ResourceHelper {
     }
 
     /**
+     * Returns a {@link BridgeXmlBlockParser} to parse the given {@link ResourceValue}. The passed
+     * value must point to an XML resource.
+     */
+    @Nullable
+    public static BridgeXmlBlockParser getXmlBlockParser(@NonNull BridgeContext context,
+            @NonNull ResourceValue value)
+            throws FileNotFoundException, XmlPullParserException {
+        String stringValue = value.getValue();
+        if (RenderResources.REFERENCE_NULL.equals(stringValue)) {
+            return null;
+        }
+
+        XmlPullParser parser = null;
+
+        // Framework values never need a PSI parser. They do not change and the do not contain
+        // aapt:attr attributes.
+        if (!value.isFramework()) {
+            parser = context.getLayoutlibCallback().getParser(value);
+        }
+
+        if (parser == null) {
+            File xmlFile = new File(stringValue);
+            if (xmlFile.isFile()) {
+                parser = ParserFactory.create(xmlFile);
+            }
+        }
+
+        return new BridgeXmlBlockParser(parser, context, value.isFramework());
+    }
+
+    /**
      * Returns a drawable from the given value.
      * @param value The value that contains a path to a 9 patch, a bitmap or a xml based drawable,
      * or an hexadecimal color
@@ -308,20 +339,13 @@ public final class ResourceHelper {
         } else if (lowerCaseValue.endsWith(".xml") || stringValue.startsWith("@aapt:_aapt/")) {
             // create a block parser for the file
             try {
-                XmlPullParser parser = context.getLayoutlibCallback().getParser(value);
-                if (parser == null) {
-                    File drawableFile = new File(stringValue);
-                    if (drawableFile.isFile()) {
-                        parser = ParserFactory.create(drawableFile);
+                BridgeXmlBlockParser blockParser = getXmlBlockParser(context, value);
+                if (blockParser != null) {
+                    try {
+                        return Drawable.createFromXml(context.getResources(), blockParser, theme);
+                    } finally {
+                        blockParser.ensurePopped();
                     }
-                }
-
-                BridgeXmlBlockParser blockParser =
-                        new BridgeXmlBlockParser(parser, context, value.isFramework());
-                try {
-                    return Drawable.createFromXml(context.getResources(), blockParser, theme);
-                } finally {
-                    blockParser.ensurePopped();
                 }
             } catch (Exception e) {
                 // this is an error and not warning since the file existence is checked before
