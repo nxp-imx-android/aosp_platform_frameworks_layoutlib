@@ -23,6 +23,8 @@ import com.android.layoutlib.bridge.impl.ParserFactory;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.res.XmlResourceParser;
 import android.util.AttributeSet;
 import android.util.BridgeXmlPullAttributes;
@@ -39,7 +41,7 @@ import java.io.Reader;
 public class BridgeXmlBlockParser implements XmlResourceParser {
 
     private final XmlPullParser mParser;
-    private final BridgeXmlPullAttributes mAttrib;
+    private final AttributeSet mAttrib;
     private final BridgeContext mContext;
     private final boolean mPlatformFile;
 
@@ -54,7 +56,8 @@ public class BridgeXmlBlockParser implements XmlResourceParser {
      * @param context the Context.
      * @param platformFile Indicates whether the the file is a platform file or not.
      */
-    public BridgeXmlBlockParser(XmlPullParser parser, BridgeContext context, boolean platformFile) {
+    public BridgeXmlBlockParser(@NonNull XmlPullParser parser, @Nullable BridgeContext context,
+            boolean platformFile) {
         if (ParserFactory.LOG_PARSER) {
             System.out.println("CRTE " + parser.toString());
         }
@@ -62,11 +65,14 @@ public class BridgeXmlBlockParser implements XmlResourceParser {
         mParser = parser;
         mContext = context;
         mPlatformFile = platformFile;
-        mAttrib = new BridgeXmlPullAttributes(parser, context, mPlatformFile);
 
         if (mContext != null) {
+            mAttrib = new BridgeXmlPullAttributes(parser, context, mPlatformFile);
             mContext.pushParser(this);
             mPopped = false;
+        }
+        else {
+            mAttrib = new NopAttributeSet();
         }
     }
 
@@ -87,7 +93,7 @@ public class BridgeXmlBlockParser implements XmlResourceParser {
     }
 
     public void ensurePopped() {
-        if (mContext != null && mPopped == false) {
+        if (mContext != null && !mPopped) {
             mContext.popParser();
             mPopped = true;
         }
@@ -109,13 +115,8 @@ public class BridgeXmlBlockParser implements XmlResourceParser {
 
     @Override
     public boolean getFeature(String name) {
-        if (FEATURE_PROCESS_NAMESPACES.equals(name)) {
-            return true;
-        }
-        if (FEATURE_REPORT_NAMESPACE_ATTRIBUTES.equals(name)) {
-            return true;
-        }
-        return false;
+        return FEATURE_PROCESS_NAMESPACES.equals(name) ||
+                FEATURE_REPORT_NAMESPACE_ATTRIBUTES.equals(name);
     }
 
     @Override
@@ -318,7 +319,7 @@ public class BridgeXmlBlockParser implements XmlResourceParser {
         return ev;
     }
 
-    public static String eventTypeToString(int eventType) {
+    private static String eventTypeToString(int eventType) {
         switch (eventType) {
             case START_DOCUMENT:
                 return "START_DOC";
@@ -491,4 +492,5 @@ public class BridgeXmlBlockParser implements XmlResourceParser {
     public int getStyleAttribute() {
         return mAttrib.getStyleAttribute();
     }
+
 }
