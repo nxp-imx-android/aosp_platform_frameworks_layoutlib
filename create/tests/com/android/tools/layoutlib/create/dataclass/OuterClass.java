@@ -36,7 +36,10 @@ public class OuterClass {
     }
 
     public class InnerClass {
+        public int mInnerId;
+
         public InnerClass() {
+            mInnerId = 12;
         }
 
         // Inner.get returns 2 + 1 + a + b
@@ -46,7 +49,10 @@ public class OuterClass {
     }
 
     public static class StaticInnerClass {
+        public int mStaticInnerId;
+
         public StaticInnerClass() {
+            mStaticInnerId = 4;
         }
 
         // StaticInnerClass.get returns 100 + a + b
