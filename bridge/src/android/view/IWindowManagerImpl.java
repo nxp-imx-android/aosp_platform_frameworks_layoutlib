@@ -21,6 +21,7 @@ import android.graphics.Bitmap;
 import android.graphics.GraphicBuffer;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Region;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.IRemoteCallback;
@@ -525,5 +526,10 @@ public class IWindowManagerImpl implements IWindowManager {
 
     @Override
     public void disableSurfaceTrace() throws RemoteException {
+    }
+
+    @Override
+    public Region getCurrentImeTouchRegion() throws RemoteException {
+        return null;
     }
 }
