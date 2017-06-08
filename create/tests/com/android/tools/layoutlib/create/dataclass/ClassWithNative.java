@@ -26,7 +26,10 @@ import com.android.tools.layoutlib.create.DelegateClassAdapterTest;
  * Used by {@link DelegateClassAdapterTest}.
  */
 public class ClassWithNative {
+    public int mId;
+
     public ClassWithNative() {
+        mId = 0;
     }
 
     public int add(int a, int b) {

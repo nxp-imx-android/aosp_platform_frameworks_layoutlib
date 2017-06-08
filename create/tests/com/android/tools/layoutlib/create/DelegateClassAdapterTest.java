@@ -137,15 +137,8 @@ public class DelegateClassAdapterTest {
         }
     }
 
-    /**
-     * {@link DelegateMethodAdapter} does not support overriding constructors yet,
-     * so this should fail with an {@link UnsupportedOperationException}.
-     *
-     * Although not tested here, the message of the exception should contain the
-     * constructor signature.
-     */
-    @Test(expected=UnsupportedOperationException.class)
-    public void testConstructorsNotSupported() throws IOException {
+    @Test
+    public void testConstructorAfterDelegate() throws Throwable {
         ClassWriter cw = new ClassWriter(0 /*flags*/);
 
         String internalClassName = NATIVE_CLASS_NAME.replace('.', '/');
@@ -157,6 +150,90 @@ public class DelegateClassAdapterTest {
 
         ClassReader cr = new ClassReader(NATIVE_CLASS_NAME);
         cr.accept(cv, 0 /* flags */);
+
+        ClassLoader2 cl2 = null;
+        try {
+            cl2 = new ClassLoader2() {
+                @Override
+                public void testModifiedInstance() throws Exception {
+                    Class<?> clazz2 = loadClass(NATIVE_CLASS_NAME);
+                    Object i2 = clazz2.newInstance();
+                    assertNotNull(i2);
+                    assertEquals(123, clazz2.getField("mId").getInt(i2));
+                }
+            };
+            cl2.add(NATIVE_CLASS_NAME, cw);
+            cl2.testModifiedInstance();
+        } catch (Throwable t) {
+            throw dumpGeneratedClass(t, cl2);
+        }
+    }
+
+    @Test
+    public void testInnerConstructorAfterDelegate() throws Throwable {
+        ClassWriter cw = new ClassWriter(0 /*flags*/);
+
+        String internalClassName = INNER_CLASS_NAME.replace('.', '/');
+
+        HashSet<String> delegateMethods = new HashSet<>();
+        delegateMethods.add("<init>");
+        DelegateClassAdapter cv = new DelegateClassAdapter(
+                mLog, cw, internalClassName, delegateMethods);
+
+        ClassReader cr = new ClassReader(INNER_CLASS_NAME);
+        cr.accept(cv, 0 /* flags */);
+
+        ClassLoader2 cl2 = null;
+        try {
+            cl2 = new ClassLoader2() {
+                @Override
+                public void testModifiedInstance() throws Exception {
+                    Class<?> outerClazz2 = loadClass(OUTER_CLASS_NAME);
+                    Object o2 = outerClazz2.newInstance();
+
+                    Class<?> clazz2 = loadClass(INNER_CLASS_NAME);
+                    Object i2 = clazz2.getConstructor(outerClazz2).newInstance(o2);
+                    assertNotNull(i2);
+                    assertEquals(98, clazz2.getField("mInnerId").getInt(i2));
+                }
+            };
+            cl2.add(INNER_CLASS_NAME, cw);
+            cl2.testModifiedInstance();
+        } catch (Throwable t) {
+            throw dumpGeneratedClass(t, cl2);
+        }
+    }
+
+    @Test
+    public void testStaticInnerConstructorAfterDelegate() throws Throwable {
+        ClassWriter cw = new ClassWriter(0 /*flags*/);
+
+        String internalClassName = STATIC_INNER_CLASS_NAME.replace('.', '/');
+
+        HashSet<String> delegateMethods = new HashSet<>();
+        delegateMethods.add("<init>");
+        DelegateClassAdapter cv = new DelegateClassAdapter(
+                mLog, cw, internalClassName, delegateMethods);
+
+        ClassReader cr = new ClassReader(STATIC_INNER_CLASS_NAME);
+        cr.accept(cv, 0 /* flags */);
+
+        ClassLoader2 cl2 = null;
+        try {
+            cl2 = new ClassLoader2() {
+                @Override
+                public void testModifiedInstance() throws Exception {
+                    Class<?> clazz2 = loadClass(STATIC_INNER_CLASS_NAME);
+                    Object i2 = clazz2.newInstance();
+                    assertNotNull(i2);
+                    assertEquals(42, clazz2.getField("mStaticInnerId").getInt(i2));
+                }
+            };
+            cl2.add(STATIC_INNER_CLASS_NAME, cw);
+            cl2.testModifiedInstance();
+        } catch (Throwable t) {
+            throw dumpGeneratedClass(t, cl2);
+        }
     }
 
     @Test

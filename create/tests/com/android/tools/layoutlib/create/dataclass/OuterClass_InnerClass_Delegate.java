@@ -23,6 +23,10 @@ import com.android.tools.layoutlib.create.dataclass.OuterClass.InnerClass;
  * Used by {@link DelegateClassAdapterTest}.
  */
 public class OuterClass_InnerClass_Delegate {
+    public static void constructor_after(InnerClass inner) {
+        inner.mInnerId = 98;
+    }
+
     // The delegate override of Inner.get return 6 + a + b
     public static int get(OuterClass outer, InnerClass inner, int a, long b) {
         return 6 + a + (int) b;
