@@ -532,4 +532,15 @@ public class IWindowManagerImpl implements IWindowManager {
     public Region getCurrentImeTouchRegion() throws RemoteException {
         return null;
     }
+
+    @Override
+    public boolean registerWallpaperVisibilityListener(IWallpaperVisibilityListener listener,
+            int displayId) throws RemoteException {
+        return false;
+    }
+
+    @Override
+    public void unregisterWallpaperVisibilityListener(IWallpaperVisibilityListener listener,
+            int displayId) throws RemoteException {
+    }
 }
