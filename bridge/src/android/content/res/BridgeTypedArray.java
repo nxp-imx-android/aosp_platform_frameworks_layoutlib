@@ -32,6 +32,7 @@ import android.annotation.Nullable;
 import android.content.res.Resources.NotFoundException;
 import android.content.res.Resources.Theme;
 import android.graphics.Typeface;
+import android.graphics.Typeface_Accessor;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -604,6 +605,11 @@ public final class BridgeTypedArray extends TypedArray {
 
         if (value.startsWith("#")) {
             // this looks like a color, do not try to parse it
+            return defValue;
+        }
+
+        if (Typeface_Accessor.isSystemFont(value)) {
+            // A system font family value, do not try to parse
             return defValue;
         }
 
