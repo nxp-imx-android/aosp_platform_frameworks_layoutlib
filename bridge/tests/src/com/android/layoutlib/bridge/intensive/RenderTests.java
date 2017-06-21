@@ -49,7 +49,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -481,7 +480,7 @@ public class RenderTests extends RenderTestBase {
     @Test
     public void testAdaptiveIcon() throws ClassNotFoundException, FileNotFoundException {
         // Create the layout pull parser.
-        LayoutPullParser parser = LayoutPullParser.createFromString(
+        String layout =
                 "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
                         "              android:padding=\"16dp\"\n" +
                         "              android:orientation=\"horizontal\"\n" +
@@ -491,7 +490,8 @@ public class RenderTests extends RenderTestBase {
                         "             android:layout_height=\"wrap_content\"\n" +
                         "             android:layout_width=\"wrap_content\"\n" +
                         "             android:src=\"@drawable/adaptive\" />\n" +
-                        "</LinearLayout>\n");
+                        "</LinearLayout>\n";
+        LayoutPullParser parser = LayoutPullParser.createFromString(layout);
         // Create LayoutLibCallback.
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
@@ -502,6 +502,32 @@ public class RenderTests extends RenderTestBase {
                 RenderingMode.V_SCROLL, 22);
 
         renderAndVerify(params, "adaptive_icon.png");
+
+        layoutLibCallback.setAdaptiveIconMaskPath(
+                "M50 0C77.6 0 100 22.4 100 50C100 77.6 77.6 100 50 100C22.4 100 0 77.6 0 50C0 " +
+                        "22.4 22.4 0 50 0Z");
+        params =
+                getSessionParams(LayoutPullParser.createFromString(layout), ConfigGenerator.NEXUS_5,
+                        layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
+                        RenderingMode.V_SCROLL, 22);
+        renderAndVerify(params, "adaptive_icon_circle.png");
+
+        layoutLibCallback.setAdaptiveIconMaskPath(
+                "M50,0L92,0C96.42,0 100,4.58 100 8L100,92C100, 96.42 96.42 100 92 100L8 100C4.58," +
+                        " 100 0 96.42 0 92L0 8 C 0 4.42 4.42 0 8 0L50 0Z");
+        params =
+                getSessionParams(LayoutPullParser.createFromString(layout), ConfigGenerator.NEXUS_5,
+                        layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
+                        RenderingMode.V_SCROLL, 22);
+        renderAndVerify(params, "adaptive_icon_rounded_corners.png");
+
+        layoutLibCallback.setAdaptiveIconMaskPath(
+                "M50,0 C10,0 0,10 0,50 0,90 10,100 50,100 90,100 100,90 100,50 100,10 90,0 50,0 Z");
+        params =
+                getSessionParams(LayoutPullParser.createFromString(layout), ConfigGenerator.NEXUS_5,
+                        layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
+                        RenderingMode.V_SCROLL, 22);
+        renderAndVerify(params, "adaptive_icon_squircle.png");
     }
 
     @Test

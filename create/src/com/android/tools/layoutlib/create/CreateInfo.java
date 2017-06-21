@@ -167,6 +167,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorRT#useLastSeenTarget",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorRT#onDraw",
         "android.graphics.drawable.GradientDrawable#buildRing",
+        "android.graphics.drawable.AdaptiveIconDrawable#<init>",
         "android.graphics.FontFamily#addFont",
         "android.graphics.Typeface#getSystemFontConfigLocation",
         "android.graphics.Typeface#makeFamilyFromParsed",
@@ -336,7 +337,8 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.drawable.VectorDrawable#mVectorState",
         "android.view.Choreographer#mLastFrameTimeNanos",
         "android.graphics.FontFamily#mBuilderPtr",
-        "android.graphics.Typeface#sDynamicTypefaceCache"
+        "android.graphics.Typeface#sDynamicTypefaceCache",
+        "android.graphics.drawable.AdaptiveIconDrawable#sMask",
     };
 
     /**
