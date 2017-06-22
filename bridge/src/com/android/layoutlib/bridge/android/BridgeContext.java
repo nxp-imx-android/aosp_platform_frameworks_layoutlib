@@ -2015,6 +2015,11 @@ public class BridgeContext extends Context {
         return false;
     }
 
+    @Override
+    public boolean canLoadUnsafeResources() {
+        return false;
+    }
+
     private class AttributeHolder {
         private int resourceId;
         private String name;
