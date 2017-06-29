@@ -479,7 +479,7 @@ public class BaseCanvas_Delegate {
     @LayoutlibDelegate
     /*package*/ static void nDrawText(long nativeCanvas, char[] text, int index, int count,
             float startX, float startY, int flags, long paint, long typeface) {
-        drawText(nativeCanvas, text, index, count, startX, startY, (flags & 1) != 0,
+        drawText(nativeCanvas, text, index, count, startX, startY, flags,
                 paint, typeface);
     }
 
@@ -502,14 +502,16 @@ public class BaseCanvas_Delegate {
         char[] buffer = TemporaryBuffer.obtain(count);
         TextUtils.getChars(text, start, end, buffer, 0);
 
-        drawText(nativeCanvas, buffer, 0, count, x, y, isRtl, paint, typeface);
+        drawText(nativeCanvas, buffer, 0, count, x, y, isRtl ? Paint.BIDI_RTL : Paint.BIDI_LTR,
+                paint,
+                typeface);
     }
 
     @LayoutlibDelegate
     /*package*/ static void nDrawTextRun(long nativeCanvas, char[] text,
             int start, int count, int contextStart, int contextCount,
             float x, float y, boolean isRtl, long paint, long typeface) {
-        drawText(nativeCanvas, text, start, count, x, y, isRtl, paint, typeface);
+        drawText(nativeCanvas, text, start, count, x, y, isRtl ? Paint.BIDI_RTL : Paint.BIDI_LTR, paint, typeface);
     }
 
     @LayoutlibDelegate
@@ -574,7 +576,7 @@ public class BaseCanvas_Delegate {
     }
 
     private static void drawText(long nativeCanvas, final char[] text, final int index,
-            final int count, final float startX, final float startY, final boolean isRtl,
+            final int count, final float startX, final float startY, final int bidiFlags,
             long paint, final long typeface) {
 
         draw(nativeCanvas, paint, false /*compositeOnly*/, false /*forceSrcMode*/,
@@ -591,7 +593,7 @@ public class BaseCanvas_Delegate {
                     int limit = index + count;
                     if (paintDelegate.getTextAlign() != Paint.Align.LEFT.nativeInt) {
                         RectF bounds =
-                                paintDelegate.measureText(text, index, count, null, 0, isRtl);
+                                paintDelegate.measureText(text, index, count, null, 0, bidiFlags);
                         float m = bounds.right - bounds.left;
                         if (paintDelegate.getTextAlign() == Paint.Align.CENTER.nativeInt) {
                             x -= m / 2;
@@ -601,7 +603,7 @@ public class BaseCanvas_Delegate {
                     }
 
                     new BidiRenderer(graphics, paintDelegate, text).setRenderLocation(x,
-                            startY).renderText(index, limit, isRtl, null, 0, true);
+                            startY).renderText(index, limit, bidiFlags, null, 0, true);
                 });
     }
 
