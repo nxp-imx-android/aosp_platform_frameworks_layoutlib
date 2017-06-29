@@ -16,9 +16,6 @@
 
 package com.android.layoutlib.bridge;
 
-import com.android.ide.common.rendering.api.IAnimationListener;
-import com.android.ide.common.rendering.api.ILayoutPullParser;
-import com.android.ide.common.rendering.api.RenderParams;
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.ViewInfo;
@@ -28,8 +25,6 @@ import com.android.util.PropertiesMap;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.view.View;
-import android.view.ViewGroup;
 
 import java.awt.image.BufferedImage;
 import java.util.Collections;
@@ -111,100 +106,6 @@ public class BridgeRenderSession extends RenderSession {
                         mSession.invalidateRenderingSize();
                     }
                     mLastResult = mSession.render(false /*freshRender*/);
-                }
-            } finally {
-                mSession.release();
-                Bridge.cleanupThread();
-            }
-        }
-
-        return mLastResult;
-    }
-
-    @Override
-    public Result animate(Object targetObject, String animationName,
-            boolean isFrameworkAnimation, IAnimationListener listener) {
-        if (mSession != null) {
-            try {
-                Bridge.prepareThread();
-                mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
-                if (mLastResult.isSuccess()) {
-                    mLastResult = mSession.animate(targetObject, animationName, isFrameworkAnimation,
-                            listener);
-                }
-            } finally {
-                mSession.release();
-                Bridge.cleanupThread();
-            }
-        }
-
-        return mLastResult;
-    }
-
-    @Override
-    public Result insertChild(Object parentView, ILayoutPullParser childXml, int index,
-            IAnimationListener listener) {
-        if (!(parentView instanceof ViewGroup)) {
-            throw new IllegalArgumentException("parentView is not a ViewGroup");
-        }
-
-        if (mSession != null) {
-            try {
-                Bridge.prepareThread();
-                mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
-                if (mLastResult.isSuccess()) {
-                    mLastResult =
-                            mSession.insertChild((ViewGroup) parentView, childXml, index, listener);
-                }
-            } finally {
-                mSession.release();
-                Bridge.cleanupThread();
-            }
-        }
-
-        return mLastResult;
-    }
-
-
-    @Override
-    public Result moveChild(Object parentView, Object childView, int index,
-            Map<String, String> layoutParams, IAnimationListener listener) {
-        if (!(parentView instanceof ViewGroup)) {
-            throw new IllegalArgumentException("parentView is not a ViewGroup");
-        }
-        if (!(childView instanceof View)) {
-            throw new IllegalArgumentException("childView is not a View");
-        }
-
-        if (mSession != null) {
-            try {
-                Bridge.prepareThread();
-                mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
-                if (mLastResult.isSuccess()) {
-                    mLastResult = mSession.moveChild((ViewGroup) parentView, (View) childView, index,
-                            layoutParams, listener);
-                }
-            } finally {
-                mSession.release();
-                Bridge.cleanupThread();
-            }
-        }
-
-        return mLastResult;
-    }
-
-    @Override
-    public Result removeChild(Object childView, IAnimationListener listener) {
-        if (!(childView instanceof View)) {
-            throw new IllegalArgumentException("childView is not a View");
-        }
-
-        if (mSession != null) {
-            try {
-                Bridge.prepareThread();
-                mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
-                if (mLastResult.isSuccess()) {
-                    mLastResult = mSession.removeChild((View) childView, listener);
                 }
             } finally {
                 mSession.release();
