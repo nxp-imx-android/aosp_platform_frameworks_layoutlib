@@ -112,6 +112,7 @@ public class BidiRenderer {
     public RectF renderText(int start, int limit, int bidiFlags, float[] advances,
             int advancesIndex, boolean draw) {
         Bidi bidi = new Bidi(mText, start, null, 0, limit - start, getIcuFlags(bidiFlags));
+        mText = bidi.getText();
         for (int i = 0; i < bidi.countRuns(); i++) {
             BidiRun visualRun = bidi.getVisualRun(i);
             boolean isRtl = visualRun.getDirection() == Bidi.RTL;

@@ -15,6 +15,7 @@
  */
 package com.android.layoutlib.bridge.android.view;
 
+import android.graphics.Region;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Display.Mode;
@@ -71,5 +72,10 @@ public class WindowManagerImpl implements WindowManager {
     @Override
     public void requestAppKeyboardShortcuts(
             KeyboardShortcutsReceiver receiver, int deviceId) {
+    }
+
+    @Override
+    public Region getCurrentImeTouchRegion() {
+        return null;
     }
 }
