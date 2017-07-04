@@ -393,7 +393,6 @@ public class BaseCanvas_Delegate {
         }
 
         final NinePatchChunk chunkObject = NinePatch_Delegate.getChunk(c);
-        assert chunkObject != null;
         if (chunkObject == null) {
             return;
         }
