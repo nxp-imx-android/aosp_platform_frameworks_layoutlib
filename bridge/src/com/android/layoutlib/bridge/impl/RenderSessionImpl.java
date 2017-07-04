@@ -41,9 +41,11 @@ import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.layoutlib.bridge.android.graphics.NopCanvas;
 import com.android.layoutlib.bridge.android.support.DesignLibUtil;
+import com.android.layoutlib.bridge.android.support.FragmentTabHostUtil;
 import com.android.layoutlib.bridge.android.support.SupportPreferencesUtil;
 import com.android.layoutlib.bridge.impl.binding.FakeAdapter;
 import com.android.layoutlib.bridge.impl.binding.FakeExpandableAdapter;
+import com.android.layoutlib.bridge.util.ReflectionUtils;
 import com.android.resources.ResourceType;
 import com.android.tools.layoutlib.java.System_Delegate;
 import com.android.util.Pair;
@@ -828,7 +830,11 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
         // this must be called before addTab() so that the TabHost searches its TabWidget
         // and FrameLayout.
-        tabHost.setup();
+        if (ReflectionUtils.isInstanceOf(tabHost, FragmentTabHostUtil.CN_FRAGMENT_TAB_HOST)) {
+            FragmentTabHostUtil.setup(tabHost, getContext());
+        } else {
+            tabHost.setup();
+        }
 
         if (count == 0) {
             // Create a dummy child to get a single tab
