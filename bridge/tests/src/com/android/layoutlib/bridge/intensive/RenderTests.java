@@ -50,6 +50,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Set of render tests
@@ -598,5 +599,43 @@ public class RenderTests extends RenderTestBase {
                 "android"));
 
         context.disposeResources();
+    }
+
+    /**
+     * If a 9patch image was in the nodpi or anydpi folder, the density of the image was 0 resulting
+     * in a float division by 0 and thus an infinite padding
+     * when layoutlib tries to scale the padding of the 9patch.
+     *
+     * http://b/37136109
+     */
+    @Test
+    public void test9PatchNoDPIBackground() throws Exception {
+        String layout =
+                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "    android:layout_width=\"match_parent\"\n" +
+                        "    android:layout_height=\"match_parent\"\n" +
+                        "    android:background=\"@drawable/ninepatch\"\n" +
+                        "    android:layout_margin=\"20dp\"\n" +
+                        "    android:orientation=\"vertical\">\n\n" +
+                        "    <Button\n" +
+                        "        android:layout_width=\"wrap_content\"\n" +
+                        "        android:layout_height=\"wrap_content\"\n" +
+                        "        android:text=\"Button\" />\n\n" +
+                        "    <Button\n" +
+                        "        android:layout_width=\"wrap_content\"\n" +
+                        "        android:layout_height=\"wrap_content\"\n" +
+                        "        android:text=\"Button\" />\n"
+                        + "</LinearLayout>";
+
+        LayoutPullParser parser = LayoutPullParser.createFromString(layout);
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5, layoutLibCallback,
+                "Theme.Material.NoActionBar.Fullscreen", false, RenderingMode.V_SCROLL, 22);
+
+        renderAndVerify(params, "ninepatch_background.png");
     }
 }
