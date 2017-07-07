@@ -552,6 +552,8 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                     visitAllChildren(mViewRoot, 0, 0, params.getExtendedViewInfoMode(),
                     false);
 
+            Choreographer_Delegate.clearFrames();
+
             // success!
             return renderResult;
         } catch (Throwable e) {

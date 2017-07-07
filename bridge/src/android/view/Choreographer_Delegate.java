@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  */
 public class Choreographer_Delegate {
-    static final AtomicReference<Choreographer> mInstance = new AtomicReference<Choreographer>();
+    private static final AtomicReference<Choreographer> mInstance = new AtomicReference<Choreographer>();
 
     @LayoutlibDelegate
     public static Choreographer getInstance() {
@@ -67,6 +67,15 @@ public class Choreographer_Delegate {
         thisChoreographer.doCallbacks(Choreographer.CALLBACK_TRAVERSAL, frameTimeNanos);
 
         thisChoreographer.doCallbacks(Choreographer.CALLBACK_COMMIT, frameTimeNanos);
+    }
+
+    public static void clearFrames() {
+        Choreographer thisChoreographer = Choreographer.getInstance();
+
+        thisChoreographer.removeCallbacks(Choreographer.CALLBACK_INPUT, null, null);
+        thisChoreographer.removeCallbacks(Choreographer.CALLBACK_ANIMATION, null, null);
+        thisChoreographer.removeCallbacks(Choreographer.CALLBACK_TRAVERSAL, null, null);
+        thisChoreographer.removeCallbacks(Choreographer.CALLBACK_COMMIT, null, null);
     }
 
     public static void dispose() {
