@@ -348,6 +348,8 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                     visitAllChildren(mViewRoot, 0, 0, params.getExtendedViewInfoMode(),
                     false);
 
+            Choreographer_Delegate.clearFrames();
+
             return SUCCESS.createResult();
         } catch (PostInflateException e) {
             return ERROR_INFLATION.createResult(e.getMessage(), e);
@@ -551,8 +553,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             mSystemViewInfoList =
                     visitAllChildren(mViewRoot, 0, 0, params.getExtendedViewInfoMode(),
                     false);
-
-            Choreographer_Delegate.clearFrames();
 
             // success!
             return renderResult;
@@ -1135,8 +1135,8 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         mContentRoot = null;
 
         if (createdLooper) {
-            Bridge.cleanupThread();
             Choreographer_Delegate.dispose();
+            Bridge.cleanupThread();
         }
     }
 }
