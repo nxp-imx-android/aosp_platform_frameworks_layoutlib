@@ -25,9 +25,9 @@ import android.annotation.NonNull;
 import android.graphics.FontFamily_Delegate.FontVariant;
 import android.graphics.fonts.FontVariationAxis;
 import android.text.FontConfig;
+import android.util.ArrayMap;
 
 import java.awt.Font;
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -262,16 +262,19 @@ public final class Typeface_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static File getSystemFontConfigLocation() {
-        return new File(getFontLocation());
+    /*package*/ static void buildSystemFallback(String xmlPath, String fontDir,
+            ArrayMap<String, Typeface> fontMap, ArrayMap<String, FontFamily[]> fallbackMap) {
+        Typeface.buildSystemFallback_Original(getFontLocation() + "/fonts.xml", fontDir, fontMap,
+                fallbackMap);
     }
 
     @LayoutlibDelegate
-    /*package*/ static FontFamily makeFamilyFromParsed(FontConfig.Family family,
-            Map<String, ByteBuffer> bufferForPath) {
-        FontFamily fontFamily = new FontFamily(family.getLanguage(), family.getVariant());
-        for (FontConfig.Font font : family.getFonts()) {
-            String fullPathName = "/system/fonts/" + font.getFontName();
+    /*package*/ static FontFamily createFontFamily(
+            String familyName, List<FontConfig.Font> fonts, String languageTag, int variant,
+            Map<String, ByteBuffer> cache, String fontDir) {
+        FontFamily fontFamily = new FontFamily(languageTag, variant);
+        for (FontConfig.Font font : fonts) {
+            String fullPathName = fontDir + font.getFontName();
             FontFamily_Delegate.addFont(fontFamily.mBuilderPtr, fullPathName,
                     font.getWeight(), font.isItalic());
         }

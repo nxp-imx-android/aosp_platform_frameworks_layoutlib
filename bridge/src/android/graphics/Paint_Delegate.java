@@ -1168,6 +1168,16 @@ public class Paint_Delegate {
         return (1.0f / 18.0f) * nGetTextSize(paintPtr);
     }
 
+    @LayoutlibDelegate
+    /*package*/ static float nGetStrikeThruPosition(long paintPtr, long typefacePtr) {
+        return (-79.0f / 252.0f) * nGetTextSize(paintPtr);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static float nGetStrikeThruThickness(long paintPtr, long typefacePtr) {
+        return (1.0f / 18.0f) * nGetTextSize(paintPtr);
+    }
+
     // ---- Private delegate/helper methods ----
 
     /*package*/ Paint_Delegate() {
