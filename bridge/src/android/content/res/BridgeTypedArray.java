@@ -298,7 +298,7 @@ public final class BridgeTypedArray extends TypedArray {
         }
 
         ColorStateList colorStateList = ResourceHelper.getColorStateList(
-                mResourceData[index], mContext);
+                mResourceData[index], mContext, mTheme);
         if (colorStateList != null) {
             return colorStateList.getDefaultColor();
         }
@@ -312,7 +312,7 @@ public final class BridgeTypedArray extends TypedArray {
             return null;
         }
 
-        return ResourceHelper.getColorStateList(mResourceData[index], mContext);
+        return ResourceHelper.getColorStateList(mResourceData[index], mContext, mTheme);
     }
 
     @Override
@@ -321,7 +321,7 @@ public final class BridgeTypedArray extends TypedArray {
             return null;
         }
 
-        return ResourceHelper.getComplexColor(mResourceData[index], mContext);
+        return ResourceHelper.getComplexColor(mResourceData[index], mContext, mTheme);
     }
 
     /**

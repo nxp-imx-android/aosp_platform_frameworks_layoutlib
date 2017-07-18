@@ -40,6 +40,7 @@ import android.content.res.ComplexColor;
 import android.content.res.ComplexColor_Accessor;
 import android.content.res.FontResourcesParser;
 import android.content.res.GradientColor;
+import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap_Delegate;
@@ -239,8 +240,9 @@ public final class ResourceHelper {
      */
     @Nullable
     public static ColorStateList getColorStateList(@NonNull ResourceValue resValue,
-            @NonNull BridgeContext context) {
-        return (ColorStateList) getInternalComplexColor(resValue, context, context.getTheme(),
+            @NonNull BridgeContext context, @Nullable Resources.Theme theme) {
+        return (ColorStateList) getInternalComplexColor(resValue, context,
+                theme != null ? theme : context.getTheme(),
                 false);
     }
 
@@ -253,8 +255,10 @@ public final class ResourceHelper {
      */
     @Nullable
     public static ComplexColor getComplexColor(@NonNull ResourceValue resValue,
-            @NonNull BridgeContext context) {
-        return getInternalComplexColor(resValue, context, context.getTheme(), true);
+            @NonNull BridgeContext context, @Nullable Resources.Theme theme) {
+        return getInternalComplexColor(resValue, context,
+                theme != null ? theme : context.getTheme(),
+                true);
     }
 
     /**
