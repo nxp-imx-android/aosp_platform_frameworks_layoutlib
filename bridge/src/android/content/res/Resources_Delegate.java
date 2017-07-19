@@ -260,9 +260,9 @@ public class Resources_Delegate {
 
         if (resValue != null) {
             ColorStateList stateList = ResourceHelper.getColorStateList(resValue.getSecond(),
-                    getContext(resources));
+                    getContext(resources), theme);
             if (stateList != null) {
-                return stateList.obtainForTheme(theme);
+                return stateList;
             }
         }
 
