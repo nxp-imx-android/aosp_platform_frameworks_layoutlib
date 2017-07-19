@@ -157,6 +157,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.content.res.Resources$Theme#obtainStyledAttributes",
         "android.content.res.Resources$Theme#resolveAttribute",
         "android.content.res.Resources$Theme#resolveAttributes",
+        "android.content.res.AssetManager#open",
         "android.content.res.AssetManager#newTheme",
         "android.content.res.AssetManager#deleteTheme",
         "android.content.res.AssetManager#getAssignedPackageIdentifiers",

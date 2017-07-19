@@ -97,6 +97,8 @@ public class RenderTestBase {
     private static final String APP_TEST_DIR = "testApp/MyApplication";
     /** Location of the app's res dir inside {@link #TEST_RES_DIR} */
     private static final String APP_TEST_RES = APP_TEST_DIR + "/src/main/res";
+    /** Location of the app's asset dir inside {@link #TEST_RES_DIR} */
+    private static final String APP_TEST_ASSET = APP_TEST_DIR + "/src/main/assets/";
     private static final String APP_CLASSES_LOCATION =
             APP_TEST_DIR + "/build/intermediates/classes/debug/";
     protected static Bridge sBridge;
@@ -541,7 +543,7 @@ public class RenderTestBase {
                         configGenerator.getHardwareConfig(), resourceResolver, layoutLibCallback, 0,
                         targetSdk, getLayoutLog());
         sessionParams.setFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true);
-        sessionParams.setAssetRepository(new TestAssetRepository());
+        sessionParams.setAssetRepository(new TestAssetRepository(TEST_RES_DIR + "/" + APP_TEST_ASSET));
         return sessionParams;
     }
 }
