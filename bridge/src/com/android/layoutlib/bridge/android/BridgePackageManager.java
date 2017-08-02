@@ -288,6 +288,11 @@ public class BridgePackageManager extends PackageManager {
     }
 
     @Override
+    public String[] getNamesForUids(int[] uids) {
+        return null;
+    }
+
+    @Override
     public int getUidForSharedUser(String sharedUserName) throws NameNotFoundException {
         return 0;
     }
