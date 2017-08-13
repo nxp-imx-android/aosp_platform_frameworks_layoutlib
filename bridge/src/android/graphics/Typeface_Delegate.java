@@ -270,9 +270,9 @@ public final class Typeface_Delegate {
 
     @LayoutlibDelegate
     /*package*/ static FontFamily createFontFamily(
-            String familyName, List<FontConfig.Font> fonts, String languageTag, int variant,
+            String familyName, List<FontConfig.Font> fonts, String[] languageTags, int variant,
             Map<String, ByteBuffer> cache, String fontDir) {
-        FontFamily fontFamily = new FontFamily(languageTag, variant);
+        FontFamily fontFamily = new FontFamily(languageTags, variant);
         for (FontConfig.Font font : fonts) {
             String fullPathName = fontDir + font.getFontName();
             FontFamily_Delegate.addFont(fontFamily.mBuilderPtr, fullPathName,
