@@ -171,6 +171,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.drawable.AdaptiveIconDrawable#<init>",
         "android.graphics.FontFamily#addFont",
         "android.graphics.Typeface#buildSystemFallback",
+        "android.graphics.Typeface#create",
         "android.graphics.Typeface#createFontFamily",
         "android.os.Handler#sendMessageAtTime",
         "android.os.HandlerThread#run",
