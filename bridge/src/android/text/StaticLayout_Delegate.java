@@ -91,8 +91,8 @@ public class StaticLayout_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static float nAddStyleRun(long nativeBuilder, long nativePaint, long nativeTypeface,
-            int start, int end, boolean isRtl) {
+    /*package*/ static float nAddStyleRun(long nativeBuilder, long nativePaint, int start,
+            int end, boolean isRtl) {
         Builder builder = sBuilderManager.getDelegate(nativeBuilder);
 
         int bidiFlags = isRtl ? Paint.BIDI_FORCE_RTL : Paint.BIDI_FORCE_LTR;

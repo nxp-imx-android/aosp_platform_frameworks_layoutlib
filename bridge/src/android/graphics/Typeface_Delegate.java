@@ -20,6 +20,7 @@ import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.impl.DelegateManager;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
+import com.android.utils.FileUtils;
 
 import android.annotation.NonNull;
 import android.graphics.FontFamily_Delegate.FontVariant;
@@ -29,6 +30,8 @@ import android.util.ArrayMap;
 
 import java.awt.Font;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -280,6 +283,26 @@ public final class Typeface_Delegate {
         }
         fontFamily.freeze();
         return fontFamily;
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static Typeface create(String familyName, int style) {
+        if (familyName != null && Files.exists(Paths.get(familyName))) {
+            // Workaround for b/64137851
+            // Support lib will call this method after failing to create the TypefaceCompat.
+            return Typeface.createFromFile(familyName);
+        }
+        return Typeface.create_Original(familyName, style);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static Typeface create(Typeface family, int style) {
+        return Typeface.create_Original(family, style);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static Typeface create(Typeface family, int style, boolean isItalic) {
+        return Typeface.create_Original(family, style, isItalic);
     }
 
     // ---- Private delegate/helper methods ----
