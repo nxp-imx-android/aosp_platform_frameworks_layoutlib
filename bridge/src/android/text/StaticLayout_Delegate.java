@@ -128,9 +128,9 @@ public class StaticLayout_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static int nComputeLineBreaks(long nativeBuilder,
-            LineBreaks recycle, int[] recycleBreaks, float[] recycleWidths,
-            int[] recycleFlags, int recycleLength) {
+    /*package*/ static int nComputeLineBreaks(long nativeBuilder, LineBreaks recycle,
+            int[] recycleBreaks, float[] recycleWidths, float[] recycleAscents,
+            float[] recycleDescents, int[] recycleFlags, int recycleLength) {
 
         Builder builder = sBuilderManager.getDelegate(nativeBuilder);
         if (builder == null) {
