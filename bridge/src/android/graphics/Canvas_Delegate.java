@@ -141,9 +141,6 @@ public final class Canvas_Delegate extends BaseCanvas_Delegate {
     }
 
     @LayoutlibDelegate
-    public static void nSetHighContrastText(long nativeCanvas, boolean highContrastText){}
-
-    @LayoutlibDelegate
     public static int nGetWidth(long nativeCanvas) {
         // get the delegate from the native int.
         Canvas_Delegate canvasDelegate = Canvas_Delegate.getDelegate(nativeCanvas);
