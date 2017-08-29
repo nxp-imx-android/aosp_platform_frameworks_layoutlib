@@ -19,6 +19,7 @@ package com.android.layoutlib.bridge.impl;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.layoutlib.bridge.Bridge;
 
+import android.annotation.NonNull;
 import android.graphics.Bitmap_Delegate;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter_Delegate;
@@ -39,11 +40,13 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Transparency;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 
 /**
@@ -66,7 +69,7 @@ public class GcSnapshot {
     private final int mFlags;
 
     /** list of layers. The first item in the list is always the  */
-    private final ArrayList<Layer> mLayers = new ArrayList<Layer>();
+    private final ArrayList<Layer> mLayers = new ArrayList<>();
 
     /** temp transform in case transformation are set before a Graphics2D exists */
     private AffineTransform mTransform = null;
@@ -82,6 +85,13 @@ public class GcSnapshot {
     private final Layer mLocalLayer;
     private final Paint_Delegate mLocalLayerPaint;
     private final Rect mLayerBounds;
+    /**
+     * Cached buffer to be used for tinting operations. This buffer is usually used many times
+     * and there is no need to creating it every time.
+     */
+    private SoftReference<BufferedImage> mCachedLayerBuffer = new SoftReference<>(null);
+    private Rectangle2D.Float mCachedClipRect = new Rectangle2D.Float();
+
 
     public interface Drawable {
         void draw(Graphics2D graphics, Paint_Delegate paint);
@@ -300,12 +310,11 @@ public class GcSnapshot {
             Layer baseLayer = mLayers.get(0);
 
             // create the image for the layer
-            BufferedImage layerImage = new BufferedImage(
-                    baseLayer.getImage().getWidth(),
-                    baseLayer.getImage().getHeight(),
-                    (mFlags & Canvas.HAS_ALPHA_LAYER_SAVE_FLAG) != 0 ?
-                            BufferedImage.TYPE_INT_ARGB :
-                                BufferedImage.TYPE_INT_RGB);
+            BufferedImage layerImage =
+                    baseLayer.getGraphics().getDeviceConfiguration().createCompatibleImage(
+                            baseLayer.getImage().getWidth(), baseLayer.getImage().getHeight(),
+                            (mFlags & Canvas.HAS_ALPHA_LAYER_SAVE_FLAG) != 0 ?
+                                    Transparency.TRANSLUCENT : Transparency.OPAQUE);
 
             // create a graphics for it so that drawing can be done.
             Graphics2D layerGraphics = layerImage.createGraphics();
@@ -352,6 +361,8 @@ public class GcSnapshot {
     }
 
     public void dispose() {
+        mCachedLayerBuffer.clear();
+
         for (Layer layer : mLayers) {
             layer.getGraphics().dispose();
         }
@@ -527,7 +538,12 @@ public class GcSnapshot {
     }
 
     public boolean clipRect(float left, float top, float right, float bottom, int regionOp) {
-        return clip(new Rectangle2D.Float(left, top, right - left, bottom - top), regionOp);
+        if (mCachedClipRect == null) {
+            mCachedClipRect = new Rectangle2D.Float(left, top, right - left, bottom - top);
+        } else {
+            mCachedClipRect.setRect(left, top, right - left, bottom - top);
+        }
+        return clip(mCachedClipRect, regionOp);
     }
 
     /**
@@ -640,17 +656,16 @@ public class GcSnapshot {
                 height = layer.getImage().getHeight();
             }
 
-            // Create a temporary image to which the color filter will be applied.
-            BufferedImage image = new BufferedImage(width, height,
-                    BufferedImage.TYPE_INT_ARGB);
-            Graphics2D imageBaseGraphics = (Graphics2D) image.getGraphics();
-            // Configure the Graphics2D object with drawing parameters and shader.
-            Graphics2D imageGraphics = createCustomGraphics(
-                    imageBaseGraphics, paint, compositeOnly,
-                    AlphaComposite.SRC_OVER);
             // get a Graphics2D object configured with the drawing parameters, but no shader.
             Graphics2D configuredGraphics = createCustomGraphics(originalGraphics, paint,
                     true /*compositeOnly*/, forceMode);
+
+            // Create or re-use a temporary image to which the color filter will be applied.
+            BufferedImage image = getTemporaryBuffer(configuredGraphics, width, height);
+            Graphics2D imageBaseGraphics = (Graphics2D) image.getGraphics();
+            // Configure the Graphics2D object with drawing parameters and shader.
+            Graphics2D imageGraphics = createCustomGraphics(imageBaseGraphics, paint, compositeOnly,
+                    AlphaComposite.SRC_OVER);
             try {
                 // The main draw operation.
                 // We translate the operation to take into account that the rendering does not
@@ -675,6 +690,28 @@ public class GcSnapshot {
                 configuredGraphics.dispose();
             }
         }
+    }
+
+    /**
+     * Returns a temporary buffer sized width * height and configured with the given
+     * {@link Graphics2D} device configuration.
+     */
+    @NonNull
+    private BufferedImage getTemporaryBuffer(@NonNull Graphics2D configuredGraphics,
+            int width, int height) {
+        BufferedImage cachedImage = mCachedLayerBuffer.get();
+        if (cachedImage == null ||
+                width > cachedImage.getWidth() || height > cachedImage.getHeight() ||
+                !configuredGraphics.getDeviceConfiguration().getColorModel()
+                        .isCompatibleSampleModel(cachedImage.getSampleModel())) {
+            // The current cached image is not valid or does not exist
+            cachedImage = configuredGraphics.getDeviceConfiguration()
+                    .createCompatibleImage(width, height);
+            mCachedLayerBuffer = new SoftReference<>(cachedImage);
+        } else {
+            cachedImage = cachedImage.getSubimage(0, 0, width, height);
+        }
+        return cachedImage;
     }
 
     private void drawOnGraphics(Graphics2D g, Drawable drawable, Paint_Delegate paint,
