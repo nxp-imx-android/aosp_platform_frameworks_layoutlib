@@ -69,15 +69,10 @@ public class StaticLayout_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static void nSetIndents(long nativeBuilder, int[] indents) {
-        // TODO.
-    }
-
-    @LayoutlibDelegate
     /*package*/ static void nSetupParagraph(long nativeBuilder, char[] text, int length,
             float firstWidth, int firstWidthLineCount, float restWidth,
             int[] variableTabStops, int defaultTabStop, int breakStrategy,
-            int hyphenationFrequency, boolean isJustified) {
+            int hyphenationFrequency, boolean isJustified, int[] indents, int intentsOffset) {
         // TODO: implement justified alignment
         Builder builder = sBuilderManager.getDelegate(nativeBuilder);
         if (builder == null) {

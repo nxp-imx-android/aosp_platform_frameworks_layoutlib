@@ -34,10 +34,11 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import libcore.util.NativeAllocationRegistry_Delegate;
 
@@ -55,23 +56,32 @@ import libcore.util.NativeAllocationRegistry_Delegate;
  *
  */
 public class Paint_Delegate {
+    private static final float DEFAULT_TEXT_SIZE = 20.f;
+    private static final float DEFAULT_TEXT_SCALE_X = 1.f;
+    private static final float DEFAULT_TEXT_SKEW_X = 0.f;
 
     /**
      * Class associating a {@link Font} and its {@link java.awt.FontMetrics}.
      */
     /*package*/ static final class FontInfo {
-        Font mFont;
-        java.awt.FontMetrics mMetrics;
+        final Font mFont;
+        final java.awt.FontMetrics mMetrics;
+
+        FontInfo(@NonNull Font font, @NonNull java.awt.FontMetrics fontMetrics) {
+            this.mFont = font;
+            this.mMetrics = fontMetrics;
+        }
     }
 
     // ---- delegate manager ----
     private static final DelegateManager<Paint_Delegate> sManager =
-            new DelegateManager<Paint_Delegate>(Paint_Delegate.class);
+            new DelegateManager<>(Paint_Delegate.class);
     private static long sFinalizer = -1;
 
     // ---- delegate helper data ----
 
     // This list can contain null elements.
+    @Nullable
     private List<FontInfo> mFonts;
 
     // ---- delegate data ----
@@ -100,6 +110,7 @@ public class Paint_Delegate {
     private PathEffect_Delegate mPathEffect;
     private MaskFilter_Delegate mMaskFilter;
 
+    @SuppressWarnings("FieldCanBeLocal") // Used to store the locale for future use
     private Locale mLocale = Locale.getDefault();
 
     // ---- Public Helper methods ----
@@ -112,7 +123,27 @@ public class Paint_Delegate {
     /**
      * Returns the list of {@link Font} objects.
      */
+    @NonNull
     public List<FontInfo> getFonts() {
+        if (mTypeface == null) {
+            return Collections.emptyList();
+        }
+
+        if (mFonts != null) {
+            return mFonts;
+        }
+
+        // Apply an optional transformation for skew and scale
+        AffineTransform affineTransform = mTextScaleX != 1.0 || mTextSkewX != 0 ?
+                new AffineTransform(mTextScaleX, mTextSkewX, 0, 1, 0, 0) :
+                null;
+
+        List<FontInfo> infoList = StreamSupport.stream(mTypeface.getFonts(mFontVariant).spliterator
+                (), false)
+                .map(font -> getFontInfo(font, mTextSize, affineTransform))
+                .collect(Collectors.toList());
+        mFonts = Collections.unmodifiableList(infoList);
+
         return mFonts;
     }
 
@@ -184,6 +215,7 @@ public class Paint_Delegate {
             if (mPathEffect.isSupported()) {
                 Stroke stroke = mPathEffect.getStroke(this);
                 assert stroke != null;
+                //noinspection ConstantConditions
                 if (stroke != null) {
                     return stroke;
                 }
@@ -480,7 +512,7 @@ public class Paint_Delegate {
 
         if (delegate.mTextSize != textSize) {
             delegate.mTextSize = textSize;
-            delegate.updateFontObject();
+            delegate.invalidateFonts();
         }
     }
 
@@ -505,7 +537,7 @@ public class Paint_Delegate {
 
         if (delegate.mTextScaleX != scaleX) {
             delegate.mTextScaleX = scaleX;
-            delegate.updateFontObject();
+            delegate.invalidateFonts();
         }
     }
 
@@ -530,7 +562,7 @@ public class Paint_Delegate {
 
         if (delegate.mTextSkewX != skewX) {
             delegate.mTextSkewX = skewX;
-            delegate.updateFontObject();
+            delegate.invalidateFonts();
         }
     }
 
@@ -542,8 +574,9 @@ public class Paint_Delegate {
             return 0;
         }
 
-        if (delegate.mFonts.size() > 0) {
-            java.awt.FontMetrics javaMetrics = delegate.mFonts.get(0).mMetrics;
+        List<FontInfo> fonts = delegate.getFonts();
+        if (fonts.size() > 0) {
+            java.awt.FontMetrics javaMetrics = fonts.get(0).mMetrics;
             // Android expects negative ascent so we invert the value from Java.
             return - javaMetrics.getAscent();
         }
@@ -559,8 +592,9 @@ public class Paint_Delegate {
             return 0;
         }
 
-        if (delegate.mFonts.size() > 0) {
-            java.awt.FontMetrics javaMetrics = delegate.mFonts.get(0).mMetrics;
+        List<FontInfo> fonts = delegate.getFonts();
+        if (fonts.size() > 0) {
+            java.awt.FontMetrics javaMetrics = fonts.get(0).mMetrics;
             return javaMetrics.getDescent();
         }
 
@@ -588,8 +622,9 @@ public class Paint_Delegate {
             return 0;
         }
 
-        if (delegate.mFonts.size() > 0) {
-            java.awt.FontMetrics javaMetrics = delegate.mFonts.get(0).mMetrics;
+        List<FontInfo> fonts = delegate.getFonts();
+        if (fonts.size() > 0) {
+            java.awt.FontMetrics javaMetrics = fonts.get(0).mMetrics;
             if (fmi != null) {
                 // Android expects negative ascent so we invert the value from Java.
                 fmi.top = (int)(- javaMetrics.getMaxAscent() * 1.15);
@@ -876,7 +911,7 @@ public class Paint_Delegate {
         Typeface_Delegate typefaceDelegate = Typeface_Delegate.getDelegate(typeface);
         if (delegate.mTypeface != typefaceDelegate) {
             delegate.mTypeface = typefaceDelegate;
-            delegate.updateFontObject();
+            delegate.invalidateFonts();
         }
     }
 
@@ -1175,25 +1210,24 @@ public class Paint_Delegate {
         mJoin = paint.mJoin;
         mTextAlign = paint.mTextAlign;
 
-        boolean needsFontUpdate = false;
         if (mTypeface != paint.mTypeface) {
             mTypeface = paint.mTypeface;
-            needsFontUpdate = true;
+            invalidateFonts();
         }
 
         if (mTextSize != paint.mTextSize) {
             mTextSize = paint.mTextSize;
-            needsFontUpdate = true;
+            invalidateFonts();
         }
 
         if (mTextScaleX != paint.mTextScaleX) {
             mTextScaleX = paint.mTextScaleX;
-            needsFontUpdate = true;
+            invalidateFonts();
         }
 
         if (mTextSkewX != paint.mTextSkewX) {
             mTextSkewX = paint.mTextSkewX;
-            needsFontUpdate = true;
+            invalidateFonts();
         }
 
         mStrokeWidth = paint.mStrokeWidth;
@@ -1204,76 +1238,70 @@ public class Paint_Delegate {
         mPathEffect = paint.mPathEffect;
         mMaskFilter = paint.mMaskFilter;
         mHintingMode = paint.mHintingMode;
-
-        if (needsFontUpdate) {
-            updateFontObject();
-        }
     }
 
     private void reset() {
+        Typeface_Delegate defaultTypeface =
+                Typeface_Delegate.getDelegate(Typeface.sDefaults[0].native_instance);
+
         mFlags = Paint.HIDDEN_DEFAULT_PAINT_FLAGS;
         mColor = 0xFF000000;
         mStyle = Paint.Style.FILL.nativeInt;
         mCap = Paint.Cap.BUTT.nativeInt;
         mJoin = Paint.Join.MITER.nativeInt;
         mTextAlign = 0;
-        mTypeface = Typeface_Delegate.getDelegate(Typeface.sDefaults[0].native_instance);
+
+        if (mTypeface != defaultTypeface) {
+            mTypeface = defaultTypeface;
+            invalidateFonts();
+        }
+
         mStrokeWidth = 1.f;
         mStrokeMiter = 4.f;
-        mTextSize = 20.f;
-        mTextScaleX = 1.f;
-        mTextSkewX = 0.f;
+
+        if (mTextSize != DEFAULT_TEXT_SIZE) {
+            mTextSize = DEFAULT_TEXT_SIZE;
+            invalidateFonts();
+        }
+
+        if (mTextScaleX != DEFAULT_TEXT_SCALE_X) {
+            mTextScaleX = DEFAULT_TEXT_SCALE_X;
+            invalidateFonts();
+        }
+
+        if (mTextSkewX != DEFAULT_TEXT_SKEW_X) {
+            mTextSkewX = DEFAULT_TEXT_SKEW_X;
+            invalidateFonts();
+        }
+
         mPorterDuffMode = Xfermode.DEFAULT;
         mColorFilter = null;
         mShader = null;
         mPathEffect = null;
         mMaskFilter = null;
-        updateFontObject();
         mHintingMode = Paint.HINTING_ON;
     }
 
-    /**
-     * Update the {@link Font} object from the typeface, text size and scaling
-     */
-    @SuppressWarnings("deprecation")
-    private void updateFontObject() {
-        if (mTypeface != null) {
-            // Get the fonts from the TypeFace object.
-            List<Font> fonts = mTypeface.getFonts(mFontVariant);
+    private void invalidateFonts() {
+        mFonts = null;
+    }
 
-            if (fonts.isEmpty()) {
-                mFonts = Collections.emptyList();
-                return;
-            }
-
-            // create new font objects as well as FontMetrics, based on the current text size
-            // and skew info.
-            int nFonts = fonts.size();
-            ArrayList<FontInfo> infoList = new ArrayList<FontInfo>(nFonts);
-            //noinspection ForLoopReplaceableByForEach (avoid iterator instantiation)
-            for (int i = 0; i < nFonts; i++) {
-                Font font = fonts.get(i);
-                if (font == null) {
-                    // If the font is null, add null to infoList. When rendering the text, if this
-                    // null is reached, a warning will be logged.
-                    infoList.add(null);
-                    continue;
-                }
-                FontInfo info = new FontInfo();
-                info.mFont = font.deriveFont(mTextSize);
-                if (mTextScaleX != 1.0 || mTextSkewX != 0) {
-                    // TODO: support skew
-                    info.mFont = info.mFont.deriveFont(new AffineTransform(
-                            mTextScaleX, mTextSkewX, 0, 1, 0, 0));
-                }
-                // The metrics here don't have anti-aliasing set.
-                info.mMetrics = Toolkit.getDefaultToolkit().getFontMetrics(info.mFont);
-
-                infoList.add(info);
-            }
-
-            mFonts = Collections.unmodifiableList(infoList);
+    @Nullable
+    private static FontInfo getFontInfo(@Nullable Font font, float textSize,
+            @Nullable AffineTransform transform) {
+        if (font == null) {
+            return null;
         }
+
+        Font transformedFont = font.deriveFont(textSize);
+        if (transform != null) {
+            // TODO: support skew
+            transformedFont = transformedFont.deriveFont(transform);
+        }
+
+        // The metrics here don't have anti-aliasing set.
+        return new FontInfo(transformedFont,
+                Toolkit.getDefaultToolkit().getFontMetrics(transformedFont));
     }
 
     /*package*/ RectF measureText(char[] text, int index, int count, float[] advances,
@@ -1289,8 +1317,9 @@ public class Paint_Delegate {
     }
 
     private float getFontMetrics(FontMetrics metrics) {
-        if (mFonts.size() > 0) {
-            java.awt.FontMetrics javaMetrics = mFonts.get(0).mMetrics;
+        List<FontInfo> fonts = getFonts();
+        if (fonts.size() > 0) {
+            java.awt.FontMetrics javaMetrics = fonts.get(0).mMetrics;
             if (metrics != null) {
                 // Android expects negative ascent so we invert the value from Java.
                 metrics.top = - javaMetrics.getMaxAscent();

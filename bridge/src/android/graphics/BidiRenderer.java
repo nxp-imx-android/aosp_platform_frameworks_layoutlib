@@ -33,6 +33,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -62,6 +63,8 @@ public class BidiRenderer {
     // Bounds of the text drawn so far.
     private RectF mBounds;
     private float mBaseline;
+    private final Bidi mBidi = new Bidi();
+
 
     /**
      * @param graphics May be null.
@@ -97,10 +100,10 @@ public class BidiRenderer {
      */
     public RectF renderText(int start, int limit, int bidiFlags, float[] advances,
             int advancesIndex, boolean draw) {
-        Bidi bidi = new Bidi(mText, start, null, 0, limit - start, getIcuFlags(bidiFlags));
-        mText = bidi.getText();
-        for (int i = 0; i < bidi.countRuns(); i++) {
-            BidiRun visualRun = bidi.getVisualRun(i);
+        mBidi.setPara(Arrays.copyOf(mText, limit - start), (byte)getIcuFlags(bidiFlags), null);
+        mText = mBidi.getText();
+        for (int i = 0; i < mBidi.countRuns(); i++) {
+            BidiRun visualRun = mBidi.getVisualRun(i);
             boolean isRtl = visualRun.getDirection() == Bidi.RTL;
             renderText(visualRun.getStart(), visualRun.getLimit(), isRtl, advances,
                     advancesIndex, draw);
