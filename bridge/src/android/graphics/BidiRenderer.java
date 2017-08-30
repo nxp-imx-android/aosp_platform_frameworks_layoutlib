@@ -100,7 +100,7 @@ public class BidiRenderer {
      */
     public RectF renderText(int start, int limit, int bidiFlags, float[] advances,
             int advancesIndex, boolean draw) {
-        mBidi.setPara(Arrays.copyOf(mText, limit - start), (byte)getIcuFlags(bidiFlags), null);
+        mBidi.setPara(Arrays.copyOfRange(mText, start, limit), (byte)getIcuFlags(bidiFlags), null);
         mText = mBidi.getText();
         for (int i = 0; i < mBidi.countRuns(); i++) {
             BidiRun visualRun = mBidi.getVisualRun(i);
