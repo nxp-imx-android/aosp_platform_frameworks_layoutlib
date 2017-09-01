@@ -91,10 +91,10 @@ public class RenderTestBase {
     private static final String PLATFORM_DIR_PROPERTY = "platform.dir";
     private static final String RESOURCE_DIR_PROPERTY = "test_res.dir";
 
-    private static final String PLATFORM_DIR;
+    protected static final String PLATFORM_DIR;
     private static final String TEST_RES_DIR;
     /** Location of the app to test inside {@link #TEST_RES_DIR} */
-    private static final String APP_TEST_DIR = "testApp/MyApplication";
+    protected static final String APP_TEST_DIR = "testApp/MyApplication";
     /** Location of the app's res dir inside {@link #TEST_RES_DIR} */
     private static final String APP_TEST_RES = APP_TEST_DIR + "/src/main/res";
     /** Location of the app's asset dir inside {@link #TEST_RES_DIR} */
@@ -165,6 +165,18 @@ public class RenderTestBase {
         if (currentDir.getName().equalsIgnoreCase("bridge")) {
             currentDir = currentDir.getParentFile();
         }
+
+        // Find frameworks/layoutlib
+        while (currentDir != null && !"layoutlib".equals(currentDir.getName())) {
+            currentDir = currentDir.getParentFile();
+        }
+
+        if (currentDir == null ||
+                currentDir.getParentFile() == null ||
+                !"frameworks".equals(currentDir.getParentFile().getName())) {
+            return null;
+        }
+
         // Test if currentDir is  platform/frameworks/layoutlib. That is, root should be
         // workingDir/../../ (2 levels up)
         for (int i = 0; i < 2; i++) {
@@ -188,7 +200,8 @@ public class RenderTestBase {
             return null;
         }
         File[] hosts = host.listFiles(path -> path.isDirectory() &&
-                (path.getName().startsWith("linux-") || path.getName().startsWith("darwin-")));
+                (path.getName().startsWith("linux-") ||
+                        path.getName().startsWith("darwin-")));
         assert hosts != null;
         for (File hostOut : hosts) {
             String platformDir = getPlatformDirFromHostOut(hostOut);
@@ -196,6 +209,7 @@ public class RenderTestBase {
                 return platformDir;
             }
         }
+
         return null;
     }
 
@@ -323,12 +337,14 @@ public class RenderTestBase {
     }
 
     @NonNull
-    protected static RenderResult render(SessionParams params, long frameTimeNanos) {
+    protected static RenderResult render(com.android.ide.common.rendering.api.Bridge bridge,
+            SessionParams params,
+            long frameTimeNanos) {
         // TODO: Set up action bar handler properly to test menu rendering.
         // Create session params.
         System_Delegate.setBootTimeNanos(TimeUnit.MILLISECONDS.toNanos(871732800000L));
         System_Delegate.setNanosTime(TimeUnit.MILLISECONDS.toNanos(871732800000L));
-        RenderSession session = sBridge.createSession(params);
+        RenderSession session = bridge.createSession(params);
 
         try {
             if (frameTimeNanos != -1) {
@@ -364,7 +380,7 @@ public class RenderTestBase {
     @Nullable
     protected static RenderResult renderAndVerify(SessionParams params, String goldenFileName,
             long frameTimeNanos) throws ClassNotFoundException {
-        RenderResult result = RenderTestBase.render(params, frameTimeNanos);
+        RenderResult result = RenderTestBase.render(sBridge, params, frameTimeNanos);
         try {
             String goldenImagePath = APP_TEST_DIR + "/golden/" + goldenFileName;
             assertNotNull(result.getImage());
@@ -386,7 +402,7 @@ public class RenderTestBase {
         return RenderTestBase.renderAndVerify(params, goldenFileName, -1);
     }
 
-    private static LayoutLog getLayoutLog() {
+    protected static LayoutLog getLayoutLog() {
         if (sLayoutLibLog == null) {
             sLayoutLibLog = new LayoutLog() {
                 @Override
