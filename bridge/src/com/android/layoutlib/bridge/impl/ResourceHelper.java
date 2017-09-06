@@ -159,31 +159,9 @@ public final class ResourceHelper {
         } catch (NumberFormatException ignored) {
         }
 
-        XmlPullParser parser = null;
-        // first check if the value is a file (xml most likely)
-        Boolean psiParserSupport = context.getLayoutlibCallback().getFlag(
-                RenderParamsFlags.FLAG_KEY_XML_FILE_PARSER_SUPPORT);
-        if (psiParserSupport != null && psiParserSupport) {
-            parser = context.getLayoutlibCallback().getXmlFileParser(value);
-        }
-        if (parser == null) {
-            File f = new File(value);
-            if (f.isFile()) {
-                // let the framework inflate the color from the XML file, by
-                // providing an XmlPullParser
-                try {
-                    parser = ParserFactory.create(f);
-                } catch (XmlPullParserException | FileNotFoundException e) {
-                    Bridge.getLog().error(LayoutLog.TAG_RESOURCES_READ,
-                            "Failed to parse file " + value, e, null /*data*/);
-                }
-            }
-        }
-
-        if (parser != null) {
-            try {
-                BridgeXmlBlockParser blockParser = new BridgeXmlBlockParser(
-                        parser, context, resValue.isFramework());
+        try {
+            BridgeXmlBlockParser blockParser = getXmlBlockParser(context, resValue);
+            if (blockParser != null) {
                 try {
                     // Advance the parser to the first element so we can detect if it's a
                     // color list or a gradient color
@@ -214,18 +192,18 @@ public final class ResourceHelper {
                 } finally {
                     blockParser.ensurePopped();
                 }
-            } catch (XmlPullParserException e) {
-                Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                        "Failed to configure parser for " + value, e, null /*data*/);
-                // we'll return null below.
-            } catch (Exception e) {
-                // this is an error and not warning since the file existence is
-                // checked before attempting to parse it.
-                Bridge.getLog().error(LayoutLog.TAG_RESOURCES_READ,
-                        "Failed to parse file " + value, e, null /*data*/);
-
-                return null;
             }
+        } catch (XmlPullParserException e) {
+            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+                    "Failed to configure parser for " + value, e, null /*data*/);
+            // we'll return null below.
+        } catch (Exception e) {
+            // this is an error and not warning since the file existence is
+            // checked before attempting to parse it.
+            Bridge.getLog().error(LayoutLog.TAG_RESOURCES_READ,
+                    "Failed to parse file " + value, e, null /*data*/);
+
+            return null;
         }
 
         return null;
