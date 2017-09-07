@@ -399,7 +399,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             // get the real cause of the exception.
             Throwable t2 = t;
             while (t2.getCause() != null) {
-                t2 = t.getCause();
+                t2 = t2.getCause();
             }
             return new BridgeRenderSession(null,
                     ERROR_UNKNOWN.createResult(t2.getMessage(), t));
