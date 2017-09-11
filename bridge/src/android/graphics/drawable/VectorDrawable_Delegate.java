@@ -36,6 +36,7 @@ import android.graphics.PathMeasure;
 import android.graphics.Path_Delegate;
 import android.graphics.Rect;
 import android.graphics.Region.Op;
+import android.graphics.Shader_Delegate;
 import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -1175,10 +1176,23 @@ public class VectorDrawable_Delegate {
                     // mFillPaint can not be null at this point so we will have a delegate
                     assert fillPaintDelegate != null;
                     fillPaintDelegate.setColorFilter(filterPtr);
+
+                    Shader_Delegate shaderDelegate =
+                            Shader_Delegate.getDelegate(fullPath.mFillGradient);
+                    if (shaderDelegate != null) {
+                        // If there is a shader, apply the local transformation to make sure
+                        // the gradient is transformed to match the viewport
+                        shaderDelegate.setLocalMatrix(mFinalPathMatrix.native_instance);
+                    }
+
                     fillPaintDelegate.setShader(fullPath.mFillGradient);
                     Path_Delegate.nSetFillType(mRenderPath.mNativePath, fullPath.mFillType);
                     BaseCanvas_Delegate.nDrawPath(canvasPtr, mRenderPath.mNativePath, fillPaint
                             .getNativeInstance());
+                    if (shaderDelegate != null) {
+                        // Remove the local matrix
+                        shaderDelegate.setLocalMatrix(0);
+                    }
                 }
 
                 if (fullPath.mStrokeColor != Color.TRANSPARENT) {

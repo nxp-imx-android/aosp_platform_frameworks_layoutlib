@@ -394,6 +394,41 @@ public class RenderTests extends RenderTestBase {
                 TimeUnit.SECONDS.toNanos(2));
     }
 
+    /**
+     * Tests that the gradients are correctly transformed using the viewport of the vector drawable.
+     * <p/>
+     * If a vector drawable is 50x50 and the gradient has startX=25 and startY=25, the gradient
+     * will start in the middle of the box.
+     * <p/>
+     * http://b/65495452
+     */
+    @Test
+    public void testVectorDrawableGradient() throws ClassNotFoundException {
+        // Create the layout pull parser.
+        LayoutPullParser parser = LayoutPullParser.createFromString(
+                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "              android:padding=\"16dp\"\n" +
+                        "              android:orientation=\"horizontal\"\n" +
+                        "              android:layout_width=\"match_parent\"\n" +
+                        "              android:layout_height=\"match_parent\">\n" +
+                        "    <ImageView\n" +
+                        "             android:layout_height=\"match_parent\"\n" +
+                        "             android:layout_width=\"match_parent\"\n" +
+                        "             android:src=\"@drawable/shadow\" />\n\n" +
+                        "</LinearLayout>");
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
+                layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
+                RenderingMode.V_SCROLL, 22);
+
+        renderAndVerify(params, "vector_drawable_gradient.png",
+                TimeUnit.SECONDS.toNanos(2));
+    }
+
     /** Test activity.xml */
     @Test
     public void testScrollingAndMeasure() throws ClassNotFoundException, FileNotFoundException {
