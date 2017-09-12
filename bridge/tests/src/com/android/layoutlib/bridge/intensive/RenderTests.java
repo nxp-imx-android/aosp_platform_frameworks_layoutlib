@@ -226,7 +226,7 @@ public class RenderTests extends RenderTestBase {
                 layoutLibCallback, "Theme.Material.Light.NoActionBar", false,
                 RenderingMode.NORMAL, 22);
 
-        render(params, -1);
+        render(sBridge, params, -1);
 
         assertTrue((Boolean)field.get(null));
         field.set(null, false);
