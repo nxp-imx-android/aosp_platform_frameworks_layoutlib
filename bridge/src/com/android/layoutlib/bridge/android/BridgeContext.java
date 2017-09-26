@@ -610,45 +610,35 @@ public class BridgeContext extends Context {
 
     @Override
     public Object getSystemService(String service) {
-        if (LAYOUT_INFLATER_SERVICE.equals(service)) {
-            return mBridgeInflater;
+        switch (service) {
+            case LAYOUT_INFLATER_SERVICE:
+                return mBridgeInflater;
+
+            case TEXT_SERVICES_MANAGER_SERVICE:
+                // we need to return a valid service to avoid NPE
+                return TextServicesManager.getInstance();
+
+            case WINDOW_SERVICE:
+                return mWindowManager;
+
+            case POWER_SERVICE:
+                return new PowerManager(this, new BridgePowerManager(), new Handler());
+
+            case DISPLAY_SERVICE:
+                return mDisplayManager;
+
+            case ACCESSIBILITY_SERVICE:
+                return AccessibilityManager.getInstance(this);
+
+            case INPUT_METHOD_SERVICE:  // needed by SearchView
+            case AUTOFILL_MANAGER_SERVICE:
+            case AUDIO_SERVICE:
+            case TEXT_CLASSIFICATION_SERVICE:
+                return null;
+            default:
+                assert false : "Unsupported Service: " + service;
         }
 
-        if (TEXT_SERVICES_MANAGER_SERVICE.equals(service)) {
-            // we need to return a valid service to avoid NPE
-            return TextServicesManager.getInstance();
-        }
-
-        if (WINDOW_SERVICE.equals(service)) {
-            return mWindowManager;
-        }
-
-        // needed by SearchView
-        if (INPUT_METHOD_SERVICE.equals(service)) {
-            return null;
-        }
-
-        if (POWER_SERVICE.equals(service)) {
-            return new PowerManager(this, new BridgePowerManager(), new Handler());
-        }
-
-        if (DISPLAY_SERVICE.equals(service)) {
-            return mDisplayManager;
-        }
-
-        if (ACCESSIBILITY_SERVICE.equals(service)) {
-            return AccessibilityManager.getInstance(this);
-        }
-
-        if (AUTOFILL_MANAGER_SERVICE.equals(service)) {
-            return null;
-        }
-
-        if (AUDIO_SERVICE.equals(service)) {
-            return null;
-        }
-
-        assert false : "Unsupported Service: " + service;
         return null;
     }
 
