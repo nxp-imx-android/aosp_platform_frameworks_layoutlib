@@ -40,7 +40,6 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.Notification;
 import android.app.SystemServiceRegistry_Accessor;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -86,7 +85,6 @@ import android.util.TypedValue;
 import android.view.BridgeInflater;
 import android.view.Display;
 import android.view.DisplayAdjustments;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -647,13 +645,13 @@ public class BridgeContext extends Context {
         return SystemServiceRegistry_Accessor.getSystemServiceName(serviceClass);
     }
 
-    @Override
-    public final BridgeTypedArray obtainStyledAttributes(int[] attrs) {
-        return obtainStyledAttributes(0, attrs);
-    }
 
-    @Override
-    public final BridgeTypedArray obtainStyledAttributes(int resId, int[] attrs)
+    /**
+     * Same as Context#obtainStyledAttributes. We do not override the base method to give the
+     * original Context the chance to override the theme when needed.
+     */
+    @Nullable
+    public final BridgeTypedArray internalObtainStyledAttributes(int resId, int[] attrs)
             throws Resources.NotFoundException {
         StyleResourceValue style = null;
         // get the StyleResourceValue based on the resId;
@@ -705,13 +703,12 @@ public class BridgeContext extends Context {
         return typeArrayAndPropertiesPair.getFirst();
     }
 
-    @Override
-    public final BridgeTypedArray obtainStyledAttributes(AttributeSet set, int[] attrs) {
-        return obtainStyledAttributes(set, attrs, 0, 0);
-    }
-
-    @Override
-    public BridgeTypedArray obtainStyledAttributes(AttributeSet set, int[] attrs,
+    /**
+     * Same as Context#obtainStyledAttributes. We do not override the base method to give the
+     * original Context the chance to override the theme when needed.
+     */
+    @Nullable
+    public BridgeTypedArray internalObtainStyledAttributes(@Nullable AttributeSet set, int[] attrs,
             int defStyleAttr, int defStyleRes) {
 
         PropertiesMap defaultPropMap = null;
