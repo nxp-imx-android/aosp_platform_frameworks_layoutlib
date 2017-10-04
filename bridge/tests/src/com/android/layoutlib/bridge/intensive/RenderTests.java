@@ -855,4 +855,29 @@ public class RenderTests extends RenderTestBase {
 
         renderAndVerify(params, "asset.png");
     }
+
+    /**
+     * Tests that calling setTheme in a ContextThemeWrapper actually applies the theme
+     *
+     * http://b/66902070
+     */
+    @Test
+    public void testContextThemeWrapper() throws ClassNotFoundException {
+        // Create the layout pull parser.
+        LayoutPullParser parser = LayoutPullParser.createFromString(
+                "<com.android.layoutlib.test.myapplication.ThemableWidget " +
+                        "xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "              android:layout_width=\"wrap_content\"\n" +
+                        "              android:layout_height=\"wrap_content\" />\n");
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
+                layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
+                RenderingMode.V_SCROLL, 22);
+
+        renderAndVerify(params, "context_theme_wrapper.png", TimeUnit.SECONDS.toNanos(2));
+    }
 }
