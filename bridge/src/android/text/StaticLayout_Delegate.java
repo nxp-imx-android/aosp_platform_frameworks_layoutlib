@@ -71,17 +71,17 @@ public class StaticLayout_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static float nAddStyleRun(long nativeBuilder, long nativePaint, int start,
+    /*package*/ static void nAddStyleRun(long nativeBuilder, long nativePaint, int start,
             int end, boolean isRtl, String languageTags, long[] hyphenators) {
         Builder builder = sBuilderManager.getDelegate(nativeBuilder);
         if (builder == null) {
-            return 0;
+            return;
         }
         builder.mLocales = languageTags;
         builder.mNativeHyphenators = hyphenators;
 
         int bidiFlags = isRtl ? Paint.BIDI_FORCE_RTL : Paint.BIDI_FORCE_LTR;
-        return measureText(nativePaint, builder.mText, start, end - start, builder.mWidths,
+        measureText(nativePaint, builder.mText, start, end - start, builder.mWidths,
                 bidiFlags);
     }
 
