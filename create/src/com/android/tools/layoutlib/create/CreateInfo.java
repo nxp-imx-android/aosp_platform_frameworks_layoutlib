@@ -177,7 +177,6 @@ public final class CreateInfo implements ICreateInfo {
         "android.os.HandlerThread#run",
         "android.preference.Preference#getView",
         "android.text.format.DateFormat#is24HourFormat",
-        "android.text.Hyphenator#getSystemHyphenatorLocation",
         "android.util.Xml#newPullParser",
         "android.view.Choreographer#getInstance",
         "android.view.Choreographer#getRefreshRate",
