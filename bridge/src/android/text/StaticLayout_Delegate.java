@@ -71,13 +71,11 @@ public class StaticLayout_Delegate {
 
     @LayoutlibDelegate
     /*package*/ static void nAddStyleRun(long nativeBuilder, long nativePaint, int start,
-            int end, boolean isRtl, String languageTags, long[] hyphenators) {
+            int end, boolean isRtl) {
         Builder builder = sBuilderManager.getDelegate(nativeBuilder);
         if (builder == null) {
             return;
         }
-        builder.mLocales = languageTags;
-        builder.mNativeHyphenators = hyphenators;
 
         int bidiFlags = isRtl ? Paint.BIDI_FORCE_RTL : Paint.BIDI_FORCE_LTR;
         measureText(nativePaint, builder.mText, start, end - start, builder.mWidths,
@@ -85,14 +83,12 @@ public class StaticLayout_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static void nAddReplacementRun(long nativeBuilder, int start, int end, float width,
-            String languageTags, long[] hyphenators) {
+    /*package*/ static void nAddReplacementRun(long nativeBuilder, long nativePaint, int start,
+            int end, float width) {
         Builder builder = sBuilderManager.getDelegate(nativeBuilder);
         if (builder == null) {
             return;
         }
-        builder.mLocales = languageTags;
-        builder.mNativeHyphenators = hyphenators;
         builder.mWidths[start] = width;
         Arrays.fill(builder.mWidths, start + 1, end, 0.0f);
     }
@@ -109,7 +105,7 @@ public class StaticLayout_Delegate {
 
         // compute all possible breakpoints.
         int length = builder.mWidths.length;
-        BreakIterator it = BreakIterator.getLineInstance(new ULocale(builder.mLocales));
+        BreakIterator it = BreakIterator.getLineInstance();
         it.setText(new Segment(builder.mText, 0, length));
 
         // average word length in english is 5. So, initialize the possible breaks with a guess.
@@ -198,11 +194,9 @@ public class StaticLayout_Delegate {
      * Java representation of the native Builder class.
      */
     private static class Builder {
-        String mLocales;
         char[] mText;
         float[] mWidths;
         LineBreaker mLineBreaker;
-        long[] mNativeHyphenators;
         int mBreakStrategy;
         LineWidth mLineWidth;
         TabStops mTabStopCalculator;
