@@ -273,7 +273,6 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.drawable.VectorDrawable",
         "android.os.SystemClock",
         "android.os.SystemProperties",
-        "android.text.AndroidBidi",
         "android.text.StaticLayout",
         "android.util.PathParser",
         "android.view.Display",
