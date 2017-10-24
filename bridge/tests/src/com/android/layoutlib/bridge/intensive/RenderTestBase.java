@@ -24,8 +24,6 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
 import com.android.ide.common.resources.FrameworkResources;
 import com.android.ide.common.resources.ResourceItem;
 import com.android.ide.common.resources.ResourceRepository;
-import com.android.ide.common.resources.ResourceResolver;
-import com.android.ide.common.resources.configuration.FolderConfiguration;
 import com.android.io.FolderWrapper;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
@@ -35,6 +33,7 @@ import com.android.layoutlib.bridge.intensive.setup.LayoutLibTestCallback;
 import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser;
 import com.android.layoutlib.bridge.intensive.util.ImageUtils;
 import com.android.layoutlib.bridge.intensive.util.ModuleClassLoader;
+import com.android.layoutlib.bridge.intensive.util.SessionParamsBuilder;
 import com.android.layoutlib.bridge.intensive.util.TestAssetRepository;
 import com.android.layoutlib.bridge.intensive.util.TestUtils;
 import com.android.tools.layoutlib.java.System_Delegate;
@@ -135,9 +134,8 @@ public class RenderTestBase {
             }
         }
     };
-    // Default class loader with access to the app classes
-    protected ClassLoader mDefaultClassLoader =
-            new ModuleClassLoader(APP_CLASSES_LOCATION, getClass().getClassLoader());
+
+    protected ClassLoader mDefaultClassLoader;
 
     private static String getPlatformDir() {
         String platformDir = System.getProperty(PLATFORM_DIR_PROPERTY);
@@ -498,6 +496,8 @@ public class RenderTestBase {
 
     @Before
     public void beforeTestCase() {
+        // Default class loader with access to the app classes
+        mDefaultClassLoader = new ModuleClassLoader(APP_CLASSES_LOCATION, getClass().getClassLoader());
         sRenderMessages.clear();
     }
 
@@ -538,28 +538,28 @@ public class RenderTestBase {
         layoutLibCallback.initResources();
         // TODO: Set up action bar handler properly to test menu rendering.
         // Create session params.
-        return getSessionParams(parser, deviceConfig, layoutLibCallback, "AppTheme", true,
-                RenderingMode.NORMAL, 22);
+        return getSessionParamsBuilder()
+                .setParser(parser)
+                .setConfigGenerator(deviceConfig)
+                .setCallback(layoutLibCallback)
+                .build();
     }
 
     /**
-     * Uses Theme.Material and Target sdk version as 22.
+     * Returns a pre-configured {@link SessionParamsBuilder} for target API 22, Normal rendering
+     * mode, AppTheme as theme and Nexus 5.
      */
-    protected SessionParams getSessionParams(LayoutPullParser layoutParser,
-            ConfigGenerator configGenerator, LayoutLibTestCallback layoutLibCallback,
-            String themeName, boolean isProjectTheme, RenderingMode renderingMode,
-            @SuppressWarnings("SameParameterValue") int targetSdk) {
-        FolderConfiguration config = configGenerator.getFolderConfig();
-        ResourceResolver resourceResolver =
-                ResourceResolver.create(sProjectResources.getConfiguredResources(config),
-                        sFrameworkRepo.getConfiguredResources(config), themeName, isProjectTheme);
-
-        SessionParams sessionParams =
-                new SessionParams(layoutParser, renderingMode, null /*used for caching*/,
-                        configGenerator.getHardwareConfig(), resourceResolver, layoutLibCallback, 0,
-                        targetSdk, getLayoutLog());
-        sessionParams.setFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true);
-        sessionParams.setAssetRepository(new TestAssetRepository(TEST_RES_DIR + "/" + APP_TEST_ASSET));
-        return sessionParams;
+    @NonNull
+    protected SessionParamsBuilder getSessionParamsBuilder() {
+        return new SessionParamsBuilder()
+                .setLayoutLog(getLayoutLog())
+                .setFrameworkResources(sFrameworkRepo)
+                .setConfigGenerator(ConfigGenerator.NEXUS_5)
+                .setProjectResources(sProjectResources)
+                .setTheme("AppTheme", true)
+                .setRenderingMode(RenderingMode.NORMAL)
+                .setTargetSdk(22)
+                .setFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true)
+                .setAssetRepository(new TestAssetRepository(TEST_RES_DIR + "/" + APP_TEST_ASSET));
     }
 }
