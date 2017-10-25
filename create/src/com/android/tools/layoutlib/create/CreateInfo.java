@@ -132,6 +132,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.content.res.Resources#getDimensionPixelOffset",
         "android.content.res.Resources#getDimensionPixelSize",
         "android.content.res.Resources#getDrawable",
+        "android.content.res.Resources#getFloat",
         "android.content.res.Resources#getFont",
         "android.content.res.Resources#getIdentifier",
         "android.content.res.Resources#getIntArray",
