@@ -50,7 +50,6 @@ import android.graphics.Color;
 import android.util.DisplayMetrics;
 import android.util.StateSet;
 import android.util.TypedValue;
-import android.view.ContextThemeWrapper;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -99,9 +98,11 @@ public class RenderTests extends RenderTestBase {
                 "        android:background=\"#FF0000\"\n" +
                 "        android:id=\"@+id/text1\"/>\n" +
                 "</RelativeLayout>");
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.NoTitleBar", false,
-                RenderingMode.NORMAL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.NoTitleBar", false)
+                .build();
 
         renderAndVerify(params, "simple_activity-old-theme.png");
     }
@@ -113,21 +114,28 @@ public class RenderTests extends RenderTestBase {
         layoutLibCallback.initResources();
 
         LayoutPullParser parser = createParserFromPath("four_corners.xml");
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.Light.NoActionBar.TranslucentDecor", false,
-                RenderingMode.NORMAL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.Light.NoActionBar.TranslucentDecor", false)
+                .build();
         renderAndVerify(params, "four_corners_translucent.png");
 
         parser = createParserFromPath("four_corners.xml");
-        params = getSessionParams(parser, ConfigGenerator.NEXUS_5_LAND,
-                layoutLibCallback, "Theme.Material.Light.NoActionBar.TranslucentDecor", false,
-                RenderingMode.NORMAL, 22);
+        params = getSessionParamsBuilder()
+                .setConfigGenerator(ConfigGenerator.NEXUS_5_LAND)
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.Light.NoActionBar.TranslucentDecor", false)
+                .build();
         renderAndVerify(params, "four_corners_translucent_land.png");
 
         parser = createParserFromPath("four_corners.xml");
-        params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.Light.NoActionBar", false,
-                RenderingMode.NORMAL, 22);
+        params = getSessionParamsBuilder()
+                    .setParser(parser)
+                    .setCallback(layoutLibCallback)
+                    .setTheme("Theme.Material.Light.NoActionBar", false)
+                    .build();
         renderAndVerify(params, "four_corners.png");
     }
 
@@ -175,25 +183,34 @@ public class RenderTests extends RenderTestBase {
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
 
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.Light.NoActionBar", false,
-                RenderingMode.V_SCROLL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.Light.NoActionBar", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
 
         renderAndVerify(params, "simple_activity_noactionbar.png");
 
         parser = LayoutPullParser.createFromString(simpleActivity);
-        params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.Light", false,
-                RenderingMode.V_SCROLL, 22);
+        params = getSessionParamsBuilder()
+                    .setParser(parser)
+                    .setCallback(layoutLibCallback)
+                    .setTheme("Theme.Material.Light", false)
+                    .setRenderingMode(RenderingMode.V_SCROLL)
+                    .build();
 
         renderAndVerify(params, "simple_activity.png");
 
         // This also tests that a theme with "NoActionBar" DOES HAVE an action bar when we are
         // displaying menus.
         parser = LayoutPullParser.createFromString(simpleActivity);
-        params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.Light.NoActionBar", false,
-                RenderingMode.V_SCROLL, 22);
+        params = getSessionParamsBuilder()
+                    .setParser(parser)
+                    .setCallback(layoutLibCallback)
+                    .setTheme("Theme.Material.Light.NoActionBar", false)
+                    .setRenderingMode(RenderingMode.V_SCROLL)
+                    .build();
         params.setFlag(RenderParamsFlags.FLAG_KEY_ROOT_TAG, "menu");
         renderAndVerify(params, "simple_activity.png");
     }
@@ -222,9 +239,11 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.Light.NoActionBar", false,
-                RenderingMode.NORMAL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.Light.NoActionBar", false)
+                .build();
 
         render(sBridge, params, -1);
 
@@ -248,9 +267,13 @@ public class RenderTests extends RenderTestBase {
                 .setDensity(Density.XHIGH)
                 .setNavigation(Navigation.NONAV);
 
-        SessionParams params = getSessionParams(parser, customConfigGenerator,
-                layoutLibCallback, "Theme.Material.Light.NoActionBar.Fullscreen", false,
-                RenderingMode.V_SCROLL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setConfigGenerator(customConfigGenerator)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.Light.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
 
         renderAndVerify(params, "expand_vert_layout.png");
 
@@ -260,9 +283,13 @@ public class RenderTests extends RenderTestBase {
                 .setDensity(Density.XHIGH)
                 .setNavigation(Navigation.NONAV);
         parser = createParserFromPath("expand_horz_layout.xml");
-        params = getSessionParams(parser, customConfigGenerator,
-                layoutLibCallback, "Theme.Material.Light.NoActionBar.Fullscreen", false,
-                RenderingMode.H_SCROLL, 22);
+        params = getSessionParamsBuilder()
+                    .setParser(parser)
+                    .setConfigGenerator(customConfigGenerator)
+                    .setCallback(layoutLibCallback)
+                    .setTheme("Theme.Material.Light.NoActionBar.Fullscreen", false)
+                    .setRenderingMode(RenderingMode.H_SCROLL)
+                    .build();
 
         renderAndVerify(params, "expand_horz_layout.png");
     }
@@ -287,16 +314,22 @@ public class RenderTests extends RenderTestBase {
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
 
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                RenderingMode.V_SCROLL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
 
         renderAndVerify(params, "animated_vector.png", TimeUnit.SECONDS.toNanos(2));
 
         parser = LayoutPullParser.createFromString(layout);
-        params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                RenderingMode.V_SCROLL, 22);
+        params = getSessionParamsBuilder()
+                    .setParser(parser)
+                    .setCallback(layoutLibCallback)
+                    .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                    .setRenderingMode(RenderingMode.V_SCROLL)
+                    .build();
         renderAndVerify(params, "animated_vector_1.png", TimeUnit.SECONDS.toNanos(3));
     }
 
@@ -323,9 +356,12 @@ public class RenderTests extends RenderTestBase {
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
 
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                RenderingMode.V_SCROLL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
 
         renderAndVerify(params, "vector_drawable.png", TimeUnit.SECONDS.toNanos(2));
     }
@@ -356,9 +392,12 @@ public class RenderTests extends RenderTestBase {
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
 
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                RenderingMode.V_SCROLL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
 
         renderAndVerify(params, "vector_drawable_91383.png", TimeUnit.SECONDS.toNanos(2));
     }
@@ -386,9 +425,12 @@ public class RenderTests extends RenderTestBase {
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
 
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                RenderingMode.V_SCROLL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
 
         renderAndVerify(params, "vector_drawable_multi_line_of_path_data.png",
                 TimeUnit.SECONDS.toNanos(2));
@@ -421,9 +463,12 @@ public class RenderTests extends RenderTestBase {
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
 
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                RenderingMode.V_SCROLL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
 
         renderAndVerify(params, "vector_drawable_gradient.png",
                 TimeUnit.SECONDS.toNanos(2));
@@ -454,9 +499,12 @@ public class RenderTests extends RenderTestBase {
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
 
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                RenderingMode.V_SCROLL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
 
         renderAndVerify(params, "vector_drawable_radial_gradient.png",
                 TimeUnit.SECONDS.toNanos(2));
@@ -472,9 +520,12 @@ public class RenderTests extends RenderTestBase {
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
 
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                RenderingMode.V_SCROLL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
         params.setForceNoDecor();
         params.setExtendedViewInfoMode(true);
 
@@ -502,9 +553,12 @@ public class RenderTests extends RenderTestBase {
         // Do a full render pass
         parser = createParserFromPath("scrolled.xml");
 
-        params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                RenderingMode.V_SCROLL, 22);
+        params = getSessionParamsBuilder()
+                    .setParser(parser)
+                    .setCallback(layoutLibCallback)
+                    .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                    .setRenderingMode(RenderingMode.V_SCROLL)
+                    .build();
         params.setForceNoDecor();
         params.setExtendedViewInfoMode(true);
 
@@ -524,8 +578,11 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_4,
-                layoutLibCallback, "AppTheme", true, RenderingMode.NORMAL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setConfigGenerator(ConfigGenerator.NEXUS_4)
+                .setCallback(layoutLibCallback)
+                .build();
         AssetManager assetManager = AssetManager.getSystem();
         DisplayMetrics metrics = new DisplayMetrics();
         Configuration configuration = RenderAction.getConfiguration(params);
@@ -563,8 +620,11 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(RenderTestBase.getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_4,
-                layoutLibCallback, "AppTheme", true, RenderingMode.NORMAL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setConfigGenerator(ConfigGenerator.NEXUS_4)
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .build();
         AssetManager assetManager = AssetManager.getSystem();
         DisplayMetrics metrics = new DisplayMetrics();
         Configuration configuration = RenderAction.getConfiguration(params);
@@ -612,36 +672,45 @@ public class RenderTests extends RenderTestBase {
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
 
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                RenderingMode.V_SCROLL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
 
         renderAndVerify(params, "adaptive_icon.png");
 
         layoutLibCallback.setAdaptiveIconMaskPath(
                 "M50 0C77.6 0 100 22.4 100 50C100 77.6 77.6 100 50 100C22.4 100 0 77.6 0 50C0 " +
                         "22.4 22.4 0 50 0Z");
-        params =
-                getSessionParams(LayoutPullParser.createFromString(layout), ConfigGenerator.NEXUS_5,
-                        layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                        RenderingMode.V_SCROLL, 22);
+        params = getSessionParamsBuilder()
+                    .setParser(LayoutPullParser.createFromString(layout))
+                    .setCallback(layoutLibCallback)
+                    .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                    .setRenderingMode(RenderingMode.V_SCROLL)
+                    .build();
         renderAndVerify(params, "adaptive_icon_circle.png");
 
         layoutLibCallback.setAdaptiveIconMaskPath(
                 "M50,0L92,0C96.42,0 100,4.58 100 8L100,92C100, 96.42 96.42 100 92 100L8 100C4.58," +
                         " 100 0 96.42 0 92L0 8 C 0 4.42 4.42 0 8 0L50 0Z");
-        params =
-                getSessionParams(LayoutPullParser.createFromString(layout), ConfigGenerator.NEXUS_5,
-                        layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                        RenderingMode.V_SCROLL, 22);
+        params = getSessionParamsBuilder()
+                    .setParser(LayoutPullParser.createFromString(layout))
+                    .setCallback(layoutLibCallback)
+                    .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                    .setRenderingMode(RenderingMode.V_SCROLL)
+                    .build();
         renderAndVerify(params, "adaptive_icon_rounded_corners.png");
 
         layoutLibCallback.setAdaptiveIconMaskPath(
                 "M50,0 C10,0 0,10 0,50 0,90 10,100 50,100 90,100 100,90 100,50 100,10 90,0 50,0 Z");
-        params =
-                getSessionParams(LayoutPullParser.createFromString(layout), ConfigGenerator.NEXUS_5,
-                        layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                        RenderingMode.V_SCROLL, 22);
+        params = getSessionParamsBuilder()
+                    .setParser(LayoutPullParser.createFromString(layout))
+                    .setCallback(layoutLibCallback)
+                    .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                    .setRenderingMode(RenderingMode.V_SCROLL)
+                    .build();
         renderAndVerify(params, "adaptive_icon_squircle.png");
     }
 
@@ -655,8 +724,11 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(RenderTestBase.getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_4,
-                layoutLibCallback, "AppTheme", true, RenderingMode.NORMAL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setConfigGenerator(ConfigGenerator.NEXUS_4)
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .build();
         DisplayMetrics metrics = new DisplayMetrics();
         Configuration configuration = RenderAction.getConfiguration(params);
 
@@ -701,8 +773,12 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(RenderTestBase.getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_4,
-                layoutLibCallback, "Theme.Material", false, RenderingMode.NORMAL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setConfigGenerator(ConfigGenerator.NEXUS_4)
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material", false)
+                .build();
         DisplayMetrics metrics = new DisplayMetrics();
         Configuration configuration = RenderAction.getConfiguration(params);
 
@@ -765,8 +841,11 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_4,
-                layoutLibCallback, "AppTheme", true, RenderingMode.NORMAL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setConfigGenerator(ConfigGenerator.NEXUS_4)
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .build();
         AssetManager assetManager = AssetManager.getSystem();
         DisplayMetrics metrics = new DisplayMetrics();
         Configuration configuration = RenderAction.getConfiguration(params);
@@ -825,8 +904,12 @@ public class RenderTests extends RenderTestBase {
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
 
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5, layoutLibCallback,
-                "Theme.Material.NoActionBar.Fullscreen", false, RenderingMode.V_SCROLL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
 
         renderAndVerify(params, "ninepatch_background.png");
     }
@@ -849,9 +932,12 @@ public class RenderTests extends RenderTestBase {
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
 
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                RenderingMode.V_SCROLL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
 
         renderAndVerify(params, "asset.png");
     }
@@ -874,9 +960,12 @@ public class RenderTests extends RenderTestBase {
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
 
-        SessionParams params = getSessionParams(parser, ConfigGenerator.NEXUS_5,
-                layoutLibCallback, "Theme.Material.NoActionBar.Fullscreen", false,
-                RenderingMode.V_SCROLL, 22);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
 
         renderAndVerify(params, "context_theme_wrapper.png", TimeUnit.SECONDS.toNanos(2));
     }
