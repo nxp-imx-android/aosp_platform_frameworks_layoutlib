@@ -507,7 +507,7 @@ public class IWindowManagerImpl implements IWindowManager {
         throws RemoteException {}
 
     @Override
-    public void createInputConsumer(String name, InputChannel inputChannel)
+    public void createInputConsumer(IBinder token, String name, InputChannel inputChannel)
             throws RemoteException {}
 
     @Override
