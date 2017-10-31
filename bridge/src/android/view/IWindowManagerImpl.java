@@ -29,7 +29,7 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.util.DisplayMetrics;
 
-import com.android.internal.app.IAssistScreenshotReceiver;
+import com.android.internal.app.IAssistDataReceiver;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.policy.IKeyguardDismissCallback;
 import com.android.internal.policy.IShortcutService;
@@ -261,7 +261,7 @@ public class IWindowManagerImpl implements IWindowManager {
     }
 
     @Override
-    public boolean requestAssistScreenshot(IAssistScreenshotReceiver receiver)
+    public boolean requestAssistScreenshot(IAssistDataReceiver receiver)
             throws RemoteException {
         // TODO Auto-generated method stub
         return false;
