@@ -543,4 +543,8 @@ public class IWindowManagerImpl implements IWindowManager {
     public void unregisterWallpaperVisibilityListener(IWallpaperVisibilityListener listener,
             int displayId) throws RemoteException {
     }
+
+    @Override
+    public void requestUserActivityNotification() throws RemoteException {
+    }
 }
