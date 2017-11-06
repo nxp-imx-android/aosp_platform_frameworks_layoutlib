@@ -20,6 +20,8 @@ import com.android.ide.common.rendering.api.SessionParams;
 import com.android.layoutlib.bridge.intensive.RenderResult;
 import com.android.layoutlib.bridge.intensive.RenderTestBase;
 import com.android.layoutlib.bridge.intensive.setup.ConfigGenerator;
+import com.android.layoutlib.bridge.intensive.setup.LayoutLibTestCallback;
+import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser;
 import com.android.layoutlib.bridge.intensive.util.ImageUtils;
 import com.android.layoutlib.bridge.remote.client.RemoteBridgeClient;
 import com.android.layoutlib.bridge.remote.server.ServerMain;
@@ -60,8 +62,7 @@ public class RemoteBridgeTest extends RenderTestBase {
     }
 
     @Before
-    public void setupServer()
-            throws IOException, NotBoundException, InterruptedException {
+    public void setupServer() throws IOException, NotBoundException, InterruptedException {
         mServerMain = ServerMain.forkAndStartServer(ServerMain.REGISTRY_BASE_PORT, 10);
         mClient = RemoteBridgeClient.getRemoteBridge(mServerMain.getPort());
 
@@ -85,9 +86,52 @@ public class RemoteBridgeTest extends RenderTestBase {
      * Same test as RenderTest#testActivity but using the remote bridge
      */
     @Test
-    public void testActivity() throws IOException, NotBoundException, ClassNotFoundException {
+    public void testActivity() throws IOException, ClassNotFoundException {
         SessionParams params = createSessionParams("activity.xml", ConfigGenerator.NEXUS_5);
         RenderResult result = renderAndVerify(mClient, params, "activity.png", 250);
+        assertEquals(Result.Status.SUCCESS, result.getResult().getStatus());
+        if (result.getResult().getException() != null) {
+            result.getResult().getException().printStackTrace();
+            fail("Unexpected exception");
+        }
+    }
+
+    /**
+     * Same test as RenderTest#testActivity but using the remote bridge
+     */
+    @Test
+    public void testCustomClassLoading() throws ClassNotFoundException {
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        LayoutPullParser parser = LayoutPullParser.createFromString(
+                "<CustomComponent xmlns:android=\"http://schemas" +
+                        ".android.com/apk/res/android\"\n" +
+                        "                android:layout_width=\"match_parent\"\n" +
+                        "                android:layout_height=\"match_parent\"\n>" +
+                        "</CustomComponent>");
+        SessionParams params =
+                getSessionParamsBuilder().setParser(parser).setCallback(layoutLibCallback).setTheme(
+                        "Theme.NoTitleBar", false).build();
+
+        RenderResult result = renderAndVerify(mClient, params, "remote_component_load.png", 250);
+        assertEquals(Result.Status.SUCCESS, result.getResult().getStatus());
+        if (result.getResult().getException() != null) {
+            result.getResult().getException().printStackTrace();
+            fail("Unexpected exception");
+        }
+
+        parser = LayoutPullParser.createFromString(
+                "<MissingCustomComponent xmlns:android=\"http://schemas" +
+                        ".android.com/apk/res/android\"\n" +
+                        "                android:layout_width=\"match_parent\"\n" +
+                        "                android:layout_height=\"match_parent\"\n>" +
+                        "</MissingCustomComponent>");
+        params =
+                getSessionParamsBuilder().setParser(parser).setCallback(layoutLibCallback).setTheme(
+                        "Theme.NoTitleBar", false).build();
+        result = renderAndVerify(mClient, params, "remote_component_load_fail.png", 250);
         assertEquals(Result.Status.SUCCESS, result.getResult().getStatus());
         if (result.getResult().getException() != null) {
             result.getResult().getException().printStackTrace();
