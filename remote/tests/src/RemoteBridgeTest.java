@@ -31,7 +31,6 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -61,8 +60,9 @@ public class RemoteBridgeTest extends RenderTestBase {
     }
 
     @Before
-    public void setupServer() throws RemoteException, NotBoundException {
-        mServerMain = ServerMain.startServer(ServerMain.REGISTRY_BASE_PORT, 10);
+    public void setupServer()
+            throws IOException, NotBoundException, InterruptedException {
+        mServerMain = ServerMain.forkAndStartServer(ServerMain.REGISTRY_BASE_PORT, 10);
         mClient = RemoteBridgeClient.getRemoteBridge(mServerMain.getPort());
 
         File data_dir = new File(PLATFORM_DIR, "data");
