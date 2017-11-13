@@ -173,6 +173,11 @@ public class TestDelegates extends TestCase {
                 continue;
             }
 
+            // constructor_after methods are called by the constructor of the original class
+            if ("constructor_after".equals(delegateMethod.getName())) {
+                continue;
+            }
+
             if (!checkedDelegateMethods.contains(delegateMethod)) {
                 mErrors.add(String.format(
                         "Delegate method %1$s.%2$s is not used anymore and must be removed",

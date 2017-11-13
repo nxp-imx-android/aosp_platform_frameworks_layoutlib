@@ -19,14 +19,11 @@ package android.graphics;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.impl.DelegateManager;
-import com.android.layoutlib.bridge.impl.GcSnapshot;
 import com.android.ninepatch.NinePatchChunk;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import android.graphics.drawable.NinePatchDrawable;
 
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -50,7 +47,7 @@ public final class NinePatch_Delegate {
 
     // ---- delegate manager ----
     private static final DelegateManager<NinePatch_Delegate> sManager =
-            new DelegateManager<NinePatch_Delegate>(NinePatch_Delegate.class);
+            new DelegateManager<>(NinePatch_Delegate.class);
 
     // ---- delegate helper data ----
     /**
@@ -62,8 +59,7 @@ public final class NinePatch_Delegate {
      * Using the cache map allows us to not have to deserialize the byte[] back into a
      * {@link NinePatchChunk} every time a rendering is done.
      */
-    private final static Map<byte[], SoftReference<NinePatchChunk>> sChunkCache =
-        new HashMap<byte[], SoftReference<NinePatchChunk>>();
+    private final static Map<byte[], SoftReference<NinePatchChunk>> sChunkCache = new HashMap<>();
 
     // ---- delegate data ----
     private byte[] chunk;
@@ -97,7 +93,7 @@ public final class NinePatch_Delegate {
 
         // get the array and add it to the cache
         byte[] array = baos.toByteArray();
-        sChunkCache.put(array, new SoftReference<NinePatchChunk>(chunk));
+        sChunkCache.put(array, new SoftReference<>(chunk));
         return array;
     }
 
@@ -122,7 +118,7 @@ public final class NinePatch_Delegate {
 
                 // put back the chunk in the cache
                 if (chunk != null) {
-                    sChunkCache.put(array, new SoftReference<NinePatchChunk>(chunk));
+                    sChunkCache.put(array, new SoftReference<>(chunk));
                 }
             } catch (IOException e) {
                 Bridge.getLog().error(LayoutLog.TAG_BROKEN,
@@ -151,7 +147,6 @@ public final class NinePatch_Delegate {
     /*package*/ static boolean isNinePatchChunk(byte[] chunk) {
         NinePatchChunk chunkObject = getChunk(chunk);
         return chunkObject != null;
-
     }
 
     @LayoutlibDelegate

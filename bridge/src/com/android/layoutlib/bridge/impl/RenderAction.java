@@ -29,6 +29,7 @@ import com.android.resources.ResourceType;
 import com.android.resources.ScreenOrientation;
 import com.android.resources.ScreenRound;
 import com.android.resources.ScreenSize;
+import com.android.tools.layoutlib.annotations.VisibleForTesting;
 
 import android.content.res.Configuration;
 import android.os.HandlerThread_Delegate;
@@ -67,7 +68,8 @@ public abstract class RenderAction<T extends RenderParams> extends FrameworkReso
      * The current context being rendered. This is set through {@link #acquire(long)} and
      * {@link #init(long)}, and unset in {@link #release()}.
      */
-    private static BridgeContext sCurrentContext = null;
+    @VisibleForTesting
+    static BridgeContext sCurrentContext = null;
 
     private final T mParams;
 

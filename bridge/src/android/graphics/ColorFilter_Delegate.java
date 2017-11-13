@@ -21,6 +21,8 @@ import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import java.awt.Graphics2D;
 
+import libcore.util.NativeAllocationRegistry_Delegate;
+
 /**
  * Delegate implementing the native methods of android.graphics.ColorFilter
  *
@@ -41,6 +43,7 @@ public abstract class ColorFilter_Delegate {
     // ---- delegate manager ----
     protected static final DelegateManager<ColorFilter_Delegate> sManager =
             new DelegateManager<ColorFilter_Delegate>(ColorFilter_Delegate.class);
+    private static long sFinalizer = -1;
 
     // ---- delegate helper data ----
 
@@ -66,8 +69,14 @@ public abstract class ColorFilter_Delegate {
     // ---- native methods ----
 
     @LayoutlibDelegate
-    /*package*/ static void nSafeUnref(long native_instance) {
-        sManager.removeJavaReferenceFor(native_instance);
+    /*package*/ static long nativeGetFinalizer() {
+        synchronized (ColorFilter_Delegate.class) {
+            if (sFinalizer == -1) {
+                sFinalizer = NativeAllocationRegistry_Delegate.createFinalizer(
+                        sManager::removeJavaReferenceFor);
+            }
+        }
+        return sFinalizer;
     }
 
     // ---- Private delegate/helper methods ----

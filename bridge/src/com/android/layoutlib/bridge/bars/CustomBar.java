@@ -209,7 +209,7 @@ abstract class CustomBar extends LinearLayout {
                 textColor = res.resolveResValue(textColor);
                 if (textColor != null) {
                     ColorStateList stateList = ResourceHelper.getColorStateList(
-                            textColor, bridgeContext);
+                            textColor, bridgeContext, null);
                     if (stateList != null) {
                         textView.setTextColor(stateList);
                     }
