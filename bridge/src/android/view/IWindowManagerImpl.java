@@ -16,6 +16,7 @@
 
 package android.view;
 
+import android.app.IAssistDataReceiver;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.GraphicBuffer;
@@ -29,7 +30,6 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.util.DisplayMetrics;
 
-import com.android.internal.app.IAssistDataReceiver;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.policy.IKeyguardDismissCallback;
 import com.android.internal.policy.IShortcutService;
