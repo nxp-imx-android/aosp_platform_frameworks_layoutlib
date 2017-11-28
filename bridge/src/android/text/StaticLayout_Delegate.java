@@ -14,6 +14,7 @@ import android.text.Primitive.PrimitiveType;
 import android.text.StaticLayout.LineBreaks;
 
 import java.nio.ByteBuffer;
+import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -140,7 +141,7 @@ public class StaticLayout_Delegate {
         // compute all possible breakpoints.
         int length = builder.mWidths.length;
         BreakIterator it = BreakIterator.getLineInstance(new ULocale(builder.mLocales));
-        it.setText(new Segment(builder.mText, 0, length));
+        it.setText((CharacterIterator) new Segment(builder.mText, 0, length));
 
         // average word length in english is 5. So, initialize the possible breaks with a guess.
         List<Integer> breaks = new ArrayList<Integer>((int) Math.ceil(length / 5d));
