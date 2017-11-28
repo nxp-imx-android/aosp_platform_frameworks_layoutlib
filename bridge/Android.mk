@@ -34,6 +34,25 @@ include $(BUILD_HOST_JAVA_LIBRARY)
 
 $(call dist-for-goals, layoutlib, $(LOCAL_INSTALLED_MODULE))
 
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := $(call all-java-files-under,src)
+LOCAL_JAVA_RESOURCE_DIRS := resources
+
+LOCAL_JAVA_LIBRARIES := temp_layoutlib
+
+LOCAL_STATIC_JAVA_LIBRARIES := \
+	layoutlib_create \
+	layoutlib_api-prebuilt \
+	tools-common-prebuilt \
+	ninepatch-prebuilt \
+	layoutlib-common
+
+LOCAL_MODULE := layoutlib-no-framework
+
+include $(BUILD_HOST_JAVA_LIBRARY)
+
+$(call dist-for-goals, layoutlib, $(LOCAL_INSTALLED_MODULE))
+
 # Build all sub-directories
 include $(call all-makefiles-under,$(LOCAL_PATH))
-
