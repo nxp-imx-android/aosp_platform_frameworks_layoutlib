@@ -159,6 +159,18 @@ public final class AccessibilityManager {
     }
 
     /**
+     * Returns whether there are observers registered for this event type. If
+     * this method returns false you shuold not generate events of this type
+     * to conserve resources.
+     *
+     * @param type The event type.
+     * @return Whether the event is being observed.
+     */
+    public boolean isObservedEventType(@AccessibilityEvent.EventType int type) {
+        return false;
+    }
+
+    /**
      * Requests interruption of the accessibility feedback from all accessibility services.
      */
     public void interrupt() {

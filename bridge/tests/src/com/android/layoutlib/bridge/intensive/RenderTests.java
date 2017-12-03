@@ -36,6 +36,7 @@ import com.android.resources.Navigation;
 import com.android.resources.ResourceType;
 import com.android.resources.ResourceUrl;
 
+import org.junit.After;
 import org.junit.Test;
 import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParser;
@@ -63,13 +64,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
  * Set of render tests
  */
 public class RenderTests extends RenderTestBase {
+
+    @After
+    public void afterTestCase() {
+        com.android.layoutlib.bridge.test.widgets.HookWidget.reset();
+    }
 
     @Test
     public void testActivity() throws ClassNotFoundException, FileNotFoundException {
@@ -968,5 +973,74 @@ public class RenderTests extends RenderTestBase {
                 .build();
 
         renderAndVerify(params, "context_theme_wrapper.png", TimeUnit.SECONDS.toNanos(2));
+    }
+
+    /**
+     * Tests that a crashing view does not prevent others from working. This is meant to prevent
+     * crashes in framework views since custom views are already handled by Android Studio by
+     * rewriting the byte code.
+     */
+    @Test
+    public void testCrashes() throws ClassNotFoundException {
+        final String layout =
+                "<LinearLayout " +
+                    "xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                    "              android:layout_width=\"match_parent\"\n" +
+                    "              android:layout_height=\"match_parent\">\n" +
+                    "<com.android.layoutlib.bridge.test.widgets.HookWidget " +
+                    "              android:layout_width=\"100dp\"\n" +
+                    "              android:layout_height=\"200dp\" />\n" +
+                    "<LinearLayout " +
+                    "              android:background=\"#CBBAF0\"\n" +
+                    "              android:layout_width=\"100dp\"\n" +
+                    "              android:layout_height=\"200dp\" />\n" +
+                "</LinearLayout>";
+        {
+            com.android.layoutlib.bridge.test.widgets.HookWidget.setOnPreDrawHook(() -> {
+                throw new NullPointerException();
+            });
+
+            // Create the layout pull parser.
+            LayoutPullParser parser = LayoutPullParser.createFromString(layout);
+            // Create LayoutLibCallback.
+            LayoutLibTestCallback layoutLibCallback =
+                    new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+            layoutLibCallback.initResources();
+
+            SessionParams params = getSessionParamsBuilder()
+                    .setParser(parser)
+                    .setCallback(layoutLibCallback)
+                    .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                    .setRenderingMode(RenderingMode.V_SCROLL)
+                    .build();
+
+            renderAndVerify(params, "ondraw_crash.png", TimeUnit.SECONDS.toNanos(2));
+        }
+
+        com.android.layoutlib.bridge.test.widgets.HookWidget.reset();
+
+        {
+            com.android.layoutlib.bridge.test.widgets.HookWidget.setOnPreMeasure(() -> {
+                throw new NullPointerException();
+            });
+
+            LayoutPullParser parser = LayoutPullParser.createFromString(layout);
+            LayoutLibTestCallback layoutLibCallback =
+                    new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+            layoutLibCallback.initResources();
+
+            SessionParams params = getSessionParamsBuilder()
+                    .setParser(parser)
+                    .setCallback(layoutLibCallback)
+                    .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                    .setRenderingMode(RenderingMode.V_SCROLL)
+                    .build();
+
+            renderAndVerify(params, "onmeasure_crash.png", TimeUnit.SECONDS.toNanos(2));
+        }
+
+        // We expect the view error messages. Fail for anything else.
+        sRenderMessages.removeIf(message -> message.equals("View draw failed"));
+        sRenderMessages.removeIf(message -> message.equals("View measure failed"));
     }
 }
