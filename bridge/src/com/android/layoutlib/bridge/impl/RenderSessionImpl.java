@@ -18,8 +18,6 @@ package com.android.layoutlib.bridge.impl;
 
 import com.android.ide.common.rendering.api.AdapterBinding;
 import com.android.ide.common.rendering.api.HardwareConfig;
-import com.android.ide.common.rendering.api.IAnimationListener;
-import com.android.ide.common.rendering.api.ILayoutPullParser;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.RenderResources;
@@ -27,7 +25,6 @@ import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.Result;
-import com.android.ide.common.rendering.api.Result.Status;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
 import com.android.ide.common.rendering.api.ViewInfo;
@@ -40,24 +37,20 @@ import com.android.internal.view.menu.MenuItemImpl;
 import com.android.internal.view.menu.MenuView;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.BridgeContext;
-import com.android.layoutlib.bridge.android.BridgeLayoutParamsMapAttributes;
 import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.layoutlib.bridge.android.graphics.NopCanvas;
 import com.android.layoutlib.bridge.android.support.DesignLibUtil;
+import com.android.layoutlib.bridge.android.support.FragmentTabHostUtil;
 import com.android.layoutlib.bridge.android.support.SupportPreferencesUtil;
 import com.android.layoutlib.bridge.impl.binding.FakeAdapter;
 import com.android.layoutlib.bridge.impl.binding.FakeExpandableAdapter;
+import com.android.layoutlib.bridge.util.ReflectionUtils;
 import com.android.resources.ResourceType;
 import com.android.tools.layoutlib.java.System_Delegate;
 import com.android.util.Pair;
 import com.android.util.PropertiesMap;
 
-import android.animation.AnimationThread;
-import android.animation.Animator;
-import android.animation.AnimatorInflater;
-import android.animation.LayoutTransition;
-import android.animation.LayoutTransition.TransitionListener;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Fragment_Delegate;
@@ -96,11 +89,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.android.ide.common.rendering.api.Result.Status.ERROR_ANIM_NOT_FOUND;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_INFLATION;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_NOT_INFLATED;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN;
-import static com.android.ide.common.rendering.api.Result.Status.ERROR_VIEWGROUP_NO_CHILDREN;
 import static com.android.ide.common.rendering.api.Result.Status.SUCCESS;
 import static com.android.layoutlib.bridge.util.ReflectionUtils.isInstanceOf;
 
@@ -357,6 +348,8 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                     visitAllChildren(mViewRoot, 0, 0, params.getExtendedViewInfoMode(),
                     false);
 
+            Choreographer_Delegate.clearFrames();
+
             return SUCCESS.createResult();
         } catch (PostInflateException e) {
             return ERROR_INFLATION.createResult(e.getMessage(), e);
@@ -604,407 +597,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
     }
 
     /**
-     * Animate an object
-     * <p>
-     * {@link #acquire(long)} must have been called before this.
-     *
-     * @throws IllegalStateException if the current context is different than the one owned by
-     *      the scene, or if {@link #acquire(long)} was not called.
-     *
-     * @see RenderSession#animate(Object, String, boolean, IAnimationListener)
-     */
-    public Result animate(Object targetObject, String animationName,
-            boolean isFrameworkAnimation, IAnimationListener listener) {
-        checkLock();
-
-        BridgeContext context = getContext();
-
-        // find the animation file.
-        ResourceValue animationResource;
-        int animationId = 0;
-        if (isFrameworkAnimation) {
-            animationResource = context.getRenderResources().getFrameworkResource(
-                    ResourceType.ANIMATOR, animationName);
-            if (animationResource != null) {
-                animationId = Bridge.getResourceId(ResourceType.ANIMATOR, animationName);
-            }
-        } else {
-            animationResource = context.getRenderResources().getProjectResource(
-                    ResourceType.ANIMATOR, animationName);
-            if (animationResource != null) {
-                animationId = context.getLayoutlibCallback().getResourceId(
-                        ResourceType.ANIMATOR, animationName);
-            }
-        }
-
-        if (animationResource != null) {
-            try {
-                Animator anim = AnimatorInflater.loadAnimator(context, animationId);
-                if (anim != null) {
-                    anim.setTarget(targetObject);
-
-                    new PlayAnimationThread(anim, this, animationName, listener).start();
-
-                    return SUCCESS.createResult();
-                }
-            } catch (Exception e) {
-                // get the real cause of the exception.
-                Throwable t = e;
-                while (t.getCause() != null) {
-                    t = t.getCause();
-                }
-
-                return ERROR_UNKNOWN.createResult(t.getMessage(), t);
-            }
-        }
-
-        return ERROR_ANIM_NOT_FOUND.createResult();
-    }
-
-    /**
-     * Insert a new child into an existing parent.
-     * <p>
-     * {@link #acquire(long)} must have been called before this.
-     *
-     * @throws IllegalStateException if the current context is different than the one owned by
-     *      the scene, or if {@link #acquire(long)} was not called.
-     *
-     * @see RenderSession#insertChild(Object, ILayoutPullParser, int, IAnimationListener)
-     */
-    public Result insertChild(final ViewGroup parentView, ILayoutPullParser childXml,
-            final int index, IAnimationListener listener) {
-        checkLock();
-
-        BridgeContext context = getContext();
-
-        // create a block parser for the XML
-        BridgeXmlBlockParser blockParser = new BridgeXmlBlockParser(
-                childXml, context, false /* platformResourceFlag */);
-
-        // inflate the child without adding it to the root since we want to control where it'll
-        // get added. We do pass the parentView however to ensure that the layoutParams will
-        // be created correctly.
-        final View child = mInflater.inflate(blockParser, parentView, false /*attachToRoot*/);
-        blockParser.ensurePopped();
-
-        invalidateRenderingSize();
-
-        if (listener != null) {
-            new AnimationThread(this, "insertChild", listener) {
-
-                @Override
-                public Result preAnimation() {
-                    parentView.setLayoutTransition(new LayoutTransition());
-                    return addView(parentView, child, index);
-                }
-
-                @Override
-                public void postAnimation() {
-                    parentView.setLayoutTransition(null);
-                }
-            }.start();
-
-            // always return success since the real status will come through the listener.
-            return SUCCESS.createResult(child);
-        }
-
-        // add it to the parentView in the correct location
-        Result result = addView(parentView, child, index);
-        if (!result.isSuccess()) {
-            return result;
-        }
-
-        result = render(false /*freshRender*/);
-        if (result.isSuccess()) {
-            result = result.getCopyWithData(child);
-        }
-
-        return result;
-    }
-
-    /**
-     * Adds a given view to a given parent at a given index.
-     *
-     * @param parent the parent to receive the view
-     * @param view the view to add to the parent
-     * @param index the index where to do the add.
-     *
-     * @return a Result with {@link Status#SUCCESS} or
-     *     {@link Status#ERROR_VIEWGROUP_NO_CHILDREN} if the given parent doesn't support
-     *     adding views.
-     */
-    private Result addView(ViewGroup parent, View view, int index) {
-        try {
-            parent.addView(view, index);
-            return SUCCESS.createResult();
-        } catch (UnsupportedOperationException e) {
-            // looks like this is a view class that doesn't support children manipulation!
-            return ERROR_VIEWGROUP_NO_CHILDREN.createResult();
-        }
-    }
-
-    /**
-     * Moves a view to a new parent at a given location
-     * <p>
-     * {@link #acquire(long)} must have been called before this.
-     *
-     * @throws IllegalStateException if the current context is different than the one owned by
-     *      the scene, or if {@link #acquire(long)} was not called.
-     *
-     * @see RenderSession#moveChild(Object, Object, int, Map, IAnimationListener)
-     */
-    public Result moveChild(final ViewGroup newParentView, final View childView, final int index,
-            Map<String, String> layoutParamsMap, final IAnimationListener listener) {
-        checkLock();
-
-        invalidateRenderingSize();
-
-        LayoutParams layoutParams = null;
-        if (layoutParamsMap != null) {
-            // need to create a new LayoutParams object for the new parent.
-            layoutParams = newParentView.generateLayoutParams(
-                    new BridgeLayoutParamsMapAttributes(layoutParamsMap));
-        }
-
-        // get the current parent of the view that needs to be moved.
-        final ViewGroup previousParent = (ViewGroup) childView.getParent();
-
-        if (listener != null) {
-            final LayoutParams params = layoutParams;
-
-            // there is no support for animating views across layouts, so in case the new and old
-            // parent views are different we fake the animation through a no animation thread.
-            if (previousParent != newParentView) {
-                new Thread("not animated moveChild") {
-                    @Override
-                    public void run() {
-                        Result result = moveView(previousParent, newParentView, childView, index,
-                                params);
-                        if (!result.isSuccess()) {
-                            listener.done(result);
-                        }
-
-                        // ready to do the work, acquire the scene.
-                        result = acquire(250);
-                        if (!result.isSuccess()) {
-                            listener.done(result);
-                            return;
-                        }
-
-                        try {
-                            result = render(false /*freshRender*/);
-                            if (result.isSuccess()) {
-                                listener.onNewFrame(RenderSessionImpl.this.getSession());
-                            }
-                        } finally {
-                            release();
-                        }
-
-                        listener.done(result);
-                    }
-                }.start();
-            } else {
-                new AnimationThread(this, "moveChild", listener) {
-
-                    @Override
-                    public Result preAnimation() {
-                        // set up the transition for the parent.
-                        LayoutTransition transition = new LayoutTransition();
-                        previousParent.setLayoutTransition(transition);
-
-                        // tweak the animation durations and start delays (to match the duration of
-                        // animation playing just before).
-                        // Note: Cannot user Animation.setDuration() directly. Have to set it
-                        // on the LayoutTransition.
-                        transition.setDuration(LayoutTransition.DISAPPEARING, 100);
-                        // CHANGE_DISAPPEARING plays after DISAPPEARING
-                        transition.setStartDelay(LayoutTransition.CHANGE_DISAPPEARING, 100);
-
-                        transition.setDuration(LayoutTransition.CHANGE_DISAPPEARING, 100);
-
-                        transition.setDuration(LayoutTransition.CHANGE_APPEARING, 100);
-                        // CHANGE_APPEARING plays after CHANGE_APPEARING
-                        transition.setStartDelay(LayoutTransition.APPEARING, 100);
-
-                        transition.setDuration(LayoutTransition.APPEARING, 100);
-
-                        return moveView(previousParent, newParentView, childView, index, params);
-                    }
-
-                    @Override
-                    public void postAnimation() {
-                        previousParent.setLayoutTransition(null);
-                        newParentView.setLayoutTransition(null);
-                    }
-                }.start();
-            }
-
-            // always return success since the real status will come through the listener.
-            return SUCCESS.createResult(layoutParams);
-        }
-
-        Result result = moveView(previousParent, newParentView, childView, index, layoutParams);
-        if (!result.isSuccess()) {
-            return result;
-        }
-
-        result = render(false /*freshRender*/);
-        if (layoutParams != null && result.isSuccess()) {
-            result = result.getCopyWithData(layoutParams);
-        }
-
-        return result;
-    }
-
-    /**
-     * Moves a View from its current parent to a new given parent at a new given location, with
-     * an optional new {@link LayoutParams} instance
-     *
-     * @param previousParent the previous parent, still owning the child at the time of the call.
-     * @param newParent the new parent
-     * @param movedView the view to move
-     * @param index the new location in the new parent
-     * @param params an option (can be null) {@link LayoutParams} instance.
-     *
-     * @return a Result with {@link Status#SUCCESS} or
-     *     {@link Status#ERROR_VIEWGROUP_NO_CHILDREN} if the given parent doesn't support
-     *     adding views.
-     */
-    private Result moveView(ViewGroup previousParent, final ViewGroup newParent,
-            final View movedView, final int index, final LayoutParams params) {
-        try {
-            // check if there is a transition on the previousParent.
-            LayoutTransition previousTransition = previousParent.getLayoutTransition();
-            if (previousTransition != null) {
-                // in this case there is an animation. This means we have to wait for the child's
-                // parent reference to be null'ed out so that we can add it to the new parent.
-                // It is technically removed right before the DISAPPEARING animation is done (if
-                // the animation of this type is not null, otherwise it's after which is impossible
-                // to handle).
-                // Because there is no move animation, if the new parent is the same as the old
-                // parent, we need to wait until the CHANGE_DISAPPEARING animation is done before
-                // adding the child or the child will appear in its new location before the
-                // other children have made room for it.
-
-                // add a listener to the transition to be notified of the actual removal.
-                previousTransition.addTransitionListener(new TransitionListener() {
-                    private int mChangeDisappearingCount = 0;
-
-                    @Override
-                    public void startTransition(LayoutTransition transition, ViewGroup container,
-                            View view, int transitionType) {
-                        if (transitionType == LayoutTransition.CHANGE_DISAPPEARING) {
-                            mChangeDisappearingCount++;
-                        }
-                    }
-
-                    @Override
-                    public void endTransition(LayoutTransition transition, ViewGroup container,
-                            View view, int transitionType) {
-                        if (transitionType == LayoutTransition.CHANGE_DISAPPEARING) {
-                            mChangeDisappearingCount--;
-                        }
-
-                        if (transitionType == LayoutTransition.CHANGE_DISAPPEARING &&
-                                mChangeDisappearingCount == 0) {
-                            // add it to the parentView in the correct location
-                            if (params != null) {
-                                newParent.addView(movedView, index, params);
-                            } else {
-                                newParent.addView(movedView, index);
-                            }
-                        }
-                    }
-                });
-
-                // remove the view from the current parent.
-                previousParent.removeView(movedView);
-
-                // and return since adding the view to the new parent is done in the listener.
-                return SUCCESS.createResult();
-            } else {
-                // standard code with no animation. pretty simple.
-                previousParent.removeView(movedView);
-
-                // add it to the parentView in the correct location
-                if (params != null) {
-                    newParent.addView(movedView, index, params);
-                } else {
-                    newParent.addView(movedView, index);
-                }
-
-                return SUCCESS.createResult();
-            }
-        } catch (UnsupportedOperationException e) {
-            // looks like this is a view class that doesn't support children manipulation!
-            return ERROR_VIEWGROUP_NO_CHILDREN.createResult();
-        }
-    }
-
-    /**
-     * Removes a child from its current parent.
-     * <p>
-     * {@link #acquire(long)} must have been called before this.
-     *
-     * @throws IllegalStateException if the current context is different than the one owned by
-     *      the scene, or if {@link #acquire(long)} was not called.
-     *
-     * @see RenderSession#removeChild(Object, IAnimationListener)
-     */
-    public Result removeChild(final View childView, IAnimationListener listener) {
-        checkLock();
-
-        invalidateRenderingSize();
-
-        final ViewGroup parent = (ViewGroup) childView.getParent();
-
-        if (listener != null) {
-            new AnimationThread(this, "moveChild", listener) {
-
-                @Override
-                public Result preAnimation() {
-                    parent.setLayoutTransition(new LayoutTransition());
-                    return removeView(parent, childView);
-                }
-
-                @Override
-                public void postAnimation() {
-                    parent.setLayoutTransition(null);
-                }
-            }.start();
-
-            // always return success since the real status will come through the listener.
-            return SUCCESS.createResult();
-        }
-
-        Result result = removeView(parent, childView);
-        if (!result.isSuccess()) {
-            return result;
-        }
-
-        return render(false /*freshRender*/);
-    }
-
-    /**
-     * Removes a given view from its current parent.
-     *
-     * @param view the view to remove from its parent
-     *
-     * @return a Result with {@link Status#SUCCESS} or
-     *     {@link Status#ERROR_VIEWGROUP_NO_CHILDREN} if the given parent doesn't support
-     *     adding views.
-     */
-    private Result removeView(ViewGroup parent, View view) {
-        try {
-            parent.removeView(view);
-            return SUCCESS.createResult();
-        } catch (UnsupportedOperationException e) {
-            // looks like this is a view class that doesn't support children manipulation!
-            return ERROR_VIEWGROUP_NO_CHILDREN.createResult();
-        }
-    }
-
-    /**
      * Post process on a view hierarchy that was just inflated.
      * <p/>
      * At the moment this only supports TabHost: If {@link TabHost} is detected, look for the
@@ -1240,7 +832,11 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
         // this must be called before addTab() so that the TabHost searches its TabWidget
         // and FrameLayout.
-        tabHost.setup();
+        if (ReflectionUtils.isInstanceOf(tabHost, FragmentTabHostUtil.CN_FRAGMENT_TAB_HOST)) {
+            FragmentTabHostUtil.setup(tabHost, getContext());
+        } else {
+            tabHost.setup();
+        }
 
         if (count == 0) {
             // Create a dummy child to get a single tab
@@ -1539,8 +1135,8 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         mContentRoot = null;
 
         if (createdLooper) {
-            Bridge.cleanupThread();
             Choreographer_Delegate.dispose();
+            Bridge.cleanupThread();
         }
     }
 }

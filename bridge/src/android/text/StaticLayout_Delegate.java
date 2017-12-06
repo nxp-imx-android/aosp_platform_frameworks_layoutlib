@@ -60,11 +60,12 @@ public class StaticLayout_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static void nSetLocale(long nativeBuilder, String locale, long nativeHyphenator) {
+    /*package*/ static void nSetLocales(long nativeBuilder, String locales,
+            long[] nativeHyphenators) {
         Builder builder = sBuilderManager.getDelegate(nativeBuilder);
         if (builder != null) {
-            builder.mLocale = locale;
-            builder.mNativeHyphenator = nativeHyphenator;
+            builder.mLocales = locales;
+            builder.mNativeHyphenators = nativeHyphenators;
         }
     }
 
@@ -139,7 +140,7 @@ public class StaticLayout_Delegate {
 
         // compute all possible breakpoints.
         int length = builder.mWidths.length;
-        BreakIterator it = BreakIterator.getLineInstance(new ULocale(builder.mLocale));
+        BreakIterator it = BreakIterator.getLineInstance(new ULocale(builder.mLocales));
         it.setText((CharacterIterator) new Segment(builder.mText, 0, length));
 
         // average word length in english is 5. So, initialize the possible breaks with a guess.
@@ -227,11 +228,11 @@ public class StaticLayout_Delegate {
      * Java representation of the native Builder class.
      */
     private static class Builder {
-        String mLocale;
+        String mLocales;
         char[] mText;
         float[] mWidths;
         LineBreaker mLineBreaker;
-        long mNativeHyphenator;
+        long[] mNativeHyphenators;
         int mBreakStrategy;
         LineWidth mLineWidth;
         TabStops mTabStopCalculator;

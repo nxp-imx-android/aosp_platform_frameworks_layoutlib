@@ -2017,7 +2017,7 @@ public class BridgeContext extends Context {
 
     @Override
     public boolean canLoadUnsafeResources() {
-        return false;
+        return true;
     }
 
     private class AttributeHolder {

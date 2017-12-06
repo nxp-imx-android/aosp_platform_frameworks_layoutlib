@@ -19,8 +19,9 @@ package android.graphics;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.layoutlib.bridge.Bridge;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.graphics.Paint_Delegate.FontInfo;
-import android.icu.lang.UScript;
 import android.icu.lang.UScriptRun;
 import android.icu.text.Bidi;
 import android.icu.text.BidiRun;
@@ -32,7 +33,6 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,26 +45,20 @@ public class BidiRenderer {
     private static String JAVA_VENDOR = System.getProperty("java.vendor");
 
     private static class ScriptRun {
-        int start;
-        int limit;
-        boolean isRtl;
-        int scriptCode;
-        Font font;
+        private final int start;
+        private final int limit;
+        private final Font font;
 
-        public ScriptRun(int start, int limit, boolean isRtl) {
+        private ScriptRun(int start, int limit, @NonNull Font font) {
             this.start = start;
             this.limit = limit;
-            this.isRtl = isRtl;
-            this.scriptCode = UScript.INVALID_CODE;
+            this.font = font;
         }
     }
 
     private final Graphics2D mGraphics;
     private final Paint_Delegate mPaint;
     private char[] mText;
-    // This List can contain nulls. A null font implies that the we weren't able to load the font
-    // properly. So, if we encounter a situation where we try to use that font, log a warning.
-    private List<Font> mFonts;
     // Bounds of the text drawn so far.
     private RectF mBounds;
     private float mBaseline;
@@ -79,14 +73,6 @@ public class BidiRenderer {
         mGraphics = graphics;
         mPaint = paint;
         mText = text;
-        mFonts = new ArrayList<Font>(paint.getFonts().size());
-        for (FontInfo fontInfo : paint.getFonts()) {
-            if (fontInfo == null) {
-                mFonts.add(null);
-                continue;
-            }
-            mFonts.add(fontInfo.mFont);
-        }
         mBounds = new RectF();
     }
 
@@ -98,7 +84,7 @@ public class BidiRenderer {
      *
      */
     public BidiRenderer setRenderLocation(float x, float y) {
-        mBounds = new RectF(x, y, x, y);
+        mBounds.set(x, y, x, y);
         mBaseline = y;
         return this;
     }
@@ -112,6 +98,7 @@ public class BidiRenderer {
     public RectF renderText(int start, int limit, int bidiFlags, float[] advances,
             int advancesIndex, boolean draw) {
         Bidi bidi = new Bidi(mText, start, null, 0, limit - start, getIcuFlags(bidiFlags));
+        mText = bidi.getText();
         for (int i = 0; i < bidi.countRuns(); i++) {
             BidiRun visualRun = bidi.getVisualRun(i);
             boolean isRtl = visualRun.getDirection() == Bidi.RTL;
@@ -140,7 +127,7 @@ public class BidiRenderer {
             int advancesIndex, boolean draw) {
         // We break the text into scripts and then select font based on it and then render each of
         // the script runs.
-        for (ScriptRun run : getScriptRuns(mText, start, limit, isRtl, mFonts)) {
+        for (ScriptRun run : getScriptRuns(mText, start, limit, mPaint.getFonts())) {
             int flag = Font.LAYOUT_NO_LIMIT_CONTEXT | Font.LAYOUT_NO_START_CONTEXT;
             flag |= isRtl ? Font.LAYOUT_RIGHT_TO_LEFT : Font.LAYOUT_LEFT_TO_RIGHT;
             renderScript(run.start, run.limit, run.font, flag, advances, advancesIndex, draw);
@@ -156,7 +143,7 @@ public class BidiRenderer {
      */
     private void renderScript(int start, int limit, Font preferredFont, int flag,
             float[] advances, int advancesIndex, boolean draw) {
-        if (mFonts.size() == 0 || preferredFont == null) {
+        if (mPaint.getFonts().size() == 0 || preferredFont == null) {
             return;
         }
 
@@ -178,7 +165,10 @@ public class BidiRenderer {
             // The current character cannot be drawn with the preferred font. Cycle through all the
             // fonts to check which one can draw it.
             int charCount = Character.isHighSurrogate(mText[start]) ? 2 : 1;
-            for (Font font : mFonts) {
+            List<FontInfo> fontInfos = mPaint.getFonts();
+            //noinspection ForLoopReplaceableByForEach (avoid iterator allocation)
+            for (int i = 0; i < fontInfos.size(); i++) {
+                Font font = fontInfos.get(i).mFont;
                 if (font == null) {
                     logFontWarning();
                     continue;
@@ -249,60 +239,62 @@ public class BidiRenderer {
 
         // Update the bounds.
         Rectangle2D awtBounds = gv.getLogicalBounds();
-        RectF bounds = awtRectToAndroidRect(awtBounds, mBounds.right, mBaseline);
         // If the width of the bounds is zero, no text had been drawn earlier. Hence, use the
         // coordinates from the bounds as an offset.
         if (Math.abs(mBounds.right - mBounds.left) == 0) {
-            mBounds = bounds;
+            mBounds = awtRectToAndroidRect(awtBounds, mBounds.right, mBaseline, mBounds);
         } else {
-            mBounds.union(bounds);
+            mBounds.union(awtRectToAndroidRect(awtBounds, mBounds.right, mBaseline, null));
         }
     }
 
     // --- Static helper methods ---
 
-    private static RectF awtRectToAndroidRect(Rectangle2D awtRec, float offsetX, float offsetY) {
+    private static RectF awtRectToAndroidRect(Rectangle2D awtRec, float offsetX, float offsetY,
+            @Nullable RectF destination) {
         float left = (float) awtRec.getX();
         float top = (float) awtRec.getY();
         float right = (float) (left + awtRec.getWidth());
         float bottom = (float) (top + awtRec.getHeight());
-        RectF androidRect = new RectF(left, top, right, bottom);
-        androidRect.offset(offsetX, offsetY);
-        return androidRect;
+        if (destination != null) {
+            destination.set(left, top, right, bottom);
+        } else {
+            destination = new RectF(left, top, right, bottom);
+        }
+        destination.offset(offsetX, offsetY);
+        return destination;
     }
 
-    /* package */  static List<ScriptRun> getScriptRuns(char[] text, int start, int limit,
-            boolean isRtl, List<Font> fonts) {
-        LinkedList<ScriptRun> scriptRuns = new LinkedList<ScriptRun>();
+    private static List<ScriptRun> getScriptRuns(char[] text, int start, int limit, List<FontInfo> fonts) {
+        LinkedList<ScriptRun> scriptRuns = new LinkedList<>();
 
         int count = limit - start;
         UScriptRun uScriptRun = new UScriptRun(text, start, count);
         while (uScriptRun.next()) {
             int scriptStart = uScriptRun.getScriptStart();
             int scriptLimit = uScriptRun.getScriptLimit();
-            ScriptRun run = new ScriptRun(scriptStart, scriptLimit, isRtl);
-            run.scriptCode = uScriptRun.getScriptCode();
-            setScriptFont(text, run, fonts);
+            ScriptRun run = new ScriptRun(
+                    scriptStart, scriptLimit,
+                    getScriptFont(text, scriptStart, scriptLimit, fonts));
             scriptRuns.add(run);
         }
-
         return scriptRuns;
     }
 
     // TODO: Replace this method with one which returns the font based on the scriptCode.
-    private static void setScriptFont(char[] text, ScriptRun run,
-            List<Font> fonts) {
-        for (Font font : fonts) {
-            if (font == null) {
+    @NonNull
+    private static Font getScriptFont(char[] text, int start, int limit, List<FontInfo> fonts) {
+        for (FontInfo fontInfo : fonts) {
+            if (fontInfo.mFont == null) {
                 logFontWarning();
                 continue;
             }
-            if (font.canDisplayUpTo(text, run.start, run.limit) == -1) {
-                run.font = font;
-                return;
+            if (fontInfo.mFont.canDisplayUpTo(text, start, limit) == -1) {
+                return fontInfo.mFont;
             }
         }
-        run.font = fonts.get(0);
+
+        return fonts.get(0).mFont;
     }
 
     private static int getIcuFlags(int bidiFlag) {

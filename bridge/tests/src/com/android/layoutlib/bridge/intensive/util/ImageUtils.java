@@ -56,7 +56,7 @@ public class ImageUtils {
 
     private static final int THUMBNAIL_SIZE = 1000;
 
-    private static final double MAX_PERCENT_DIFFERENCE = 0.3;
+    private static final double MAX_PERCENT_DIFFERENCE = 0.1;
 
     public static void requireSimilar(@NonNull String relativePath, @NonNull BufferedImage image)
             throws IOException {

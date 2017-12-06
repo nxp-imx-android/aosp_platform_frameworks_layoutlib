@@ -43,9 +43,6 @@ import java.io.FileNotFoundException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Map;
 
 import com.google.android.collect.Maps;
@@ -64,6 +61,7 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     private final ILogger mLog;
     private final ActionBarCallback mActionBarCallback = new ActionBarCallback();
     private final ClassLoader mModuleClassLoader;
+    private String mAdaptiveIconMaskPath;
 
     public LayoutLibTestCallback(ILogger logger, ClassLoader classLoader) {
         mLog = logger;
@@ -197,6 +195,13 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
         if (key.equals(RenderParamsFlags.FLAG_KEY_APPLICATION_PACKAGE)) {
             return (T) PACKAGE_NAME;
         }
+        if (key.equals(RenderParamsFlags.FLAG_KEY_ADAPTIVE_ICON_MASK_PATH)) {
+            return (T) mAdaptiveIconMaskPath;
+        }
         return null;
+    }
+
+    public void setAdaptiveIconMaskPath(String adaptiveIconMaskPath) {
+        mAdaptiveIconMaskPath = adaptiveIconMaskPath;
     }
 }
