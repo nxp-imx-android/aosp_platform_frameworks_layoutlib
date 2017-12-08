@@ -255,4 +255,10 @@ public class BridgeIInputMethodManager implements IInputMethodManager {
     public void reportFullscreenMode(IBinder token, boolean fullscreen) {
         // TODO Auto-generated method stub
     }
+
+    @Override
+    public List<InputMethodInfo> getVrInputMethodList() {
+        // TODO Auto-generated method stub.
+        return null;
+    }
 }
