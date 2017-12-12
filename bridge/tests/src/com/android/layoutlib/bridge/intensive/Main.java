@@ -20,6 +20,7 @@ import com.android.layoutlib.bridge.BridgeRenderSessionTest;
 import com.android.layoutlib.bridge.TestDelegates;
 import com.android.layoutlib.bridge.android.BridgeXmlBlockParserTest;
 import com.android.layoutlib.bridge.impl.LayoutParserWrapperTest;
+import com.android.layoutlib.bridge.impl.ResourceHelperTest;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -36,7 +37,7 @@ import android.util.BridgeXmlPullAttributesTest;
         RenderTests.class, LayoutParserWrapperTest.class,
         BridgeXmlBlockParserTest.class, BridgeXmlPullAttributesTest.class,
         Matrix_DelegateTest.class, TestDelegates.class, PerformanceTests.class,
-        BridgeRenderSessionTest.class
+        BridgeRenderSessionTest.class, ResourceHelperTest.class
 })
 public class Main {
 }

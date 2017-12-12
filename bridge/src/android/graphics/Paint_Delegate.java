@@ -1158,6 +1158,26 @@ public class Paint_Delegate {
         return distanceToI > distanceToIMinus1 ? i : i - 1;
     }
 
+    @LayoutlibDelegate
+    /*package*/ static float nGetUnderlinePosition(long paintPtr, long typefacePtr) {
+        return (1.0f / 9.0f) * nGetTextSize(paintPtr);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static float nGetUnderlineThickness(long paintPtr, long typefacePtr) {
+        return (1.0f / 18.0f) * nGetTextSize(paintPtr);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static float nGetStrikeThruPosition(long paintPtr, long typefacePtr) {
+        return (-79.0f / 252.0f) * nGetTextSize(paintPtr);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static float nGetStrikeThruThickness(long paintPtr, long typefacePtr) {
+        return (1.0f / 18.0f) * nGetTextSize(paintPtr);
+    }
+
     // ---- Private delegate/helper methods ----
 
     /*package*/ Paint_Delegate() {

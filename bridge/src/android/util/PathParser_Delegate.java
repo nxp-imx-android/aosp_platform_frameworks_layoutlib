@@ -286,6 +286,8 @@ public class PathParser_Delegate {
             switch (currentChar) {
                 case ' ':
                 case ',':
+                case '\t':
+                case '\n':
                     foundSeparator = true;
                     break;
                 case '-':

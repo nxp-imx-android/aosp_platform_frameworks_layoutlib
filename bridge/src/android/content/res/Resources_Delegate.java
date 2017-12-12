@@ -45,6 +45,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.res.Resources.NotFoundException;
 import android.content.res.Resources.Theme;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.icu.text.PluralRules;
@@ -259,9 +260,9 @@ public class Resources_Delegate {
 
         if (resValue != null) {
             ColorStateList stateList = ResourceHelper.getColorStateList(resValue.getSecond(),
-                    getContext(resources));
+                    getContext(resources), theme);
             if (stateList != null) {
-                return stateList.obtainForTheme(theme);
+                return stateList;
             }
         }
 
@@ -382,10 +383,18 @@ public class Resources_Delegate {
         for (Iterator<String> iterator = resValue.iterator(); iterator.hasNext(); i++) {
             String element = resolveReference(resources, iterator.next(), resValue.isFramework());
             try {
-                values[i] = getInt(element);
+                if (element.startsWith("#")) {
+                    // This integer represents a color (starts with #)
+                    values[i] = Color.parseColor(element);
+                } else {
+                    values[i] = getInt(element);
+                }
             } catch (NumberFormatException e) {
                 Bridge.getLog().error(LayoutLog.TAG_RESOURCES_FORMAT,
                         "Integer resource array contains non-integer value: " + element, null);
+            } catch (IllegalArgumentException e2) {
+                Bridge.getLog().error(LayoutLog.TAG_RESOURCES_FORMAT,
+                        "Integer resource array contains wrong color format: " + element, null);
             }
         }
         return values;

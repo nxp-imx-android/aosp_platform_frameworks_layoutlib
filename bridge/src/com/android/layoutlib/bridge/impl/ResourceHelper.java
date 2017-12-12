@@ -40,6 +40,7 @@ import android.content.res.ComplexColor;
 import android.content.res.ComplexColor_Accessor;
 import android.content.res.FontResourcesParser;
 import android.content.res.GradientColor;
+import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap_Delegate;
@@ -80,55 +81,57 @@ public final class ResourceHelper {
      * @return the color as an int
      * @throws NumberFormatException if the conversion failed.
      */
-    public static int getColor(String value) {
-        if (value != null) {
-            value = value.trim();
-            if (!value.startsWith("#")) {
-                if (value.startsWith(SdkConstants.PREFIX_THEME_REF)) {
-                    throw new NumberFormatException(String.format(
-                            "Attribute '%s' not found. Are you using the right theme?", value));
-                }
-                throw new NumberFormatException(
-                        String.format("Color value '%s' must start with #", value));
-            }
-
-            value = value.substring(1);
-
-            // make sure it's not longer than 32bit
-            if (value.length() > 8) {
-                throw new NumberFormatException(String.format(
-                        "Color value '%s' is too long. Format is either" +
-                        "#AARRGGBB, #RRGGBB, #RGB, or #ARGB",
-                        value));
-            }
-
-            if (value.length() == 3) { // RGB format
-                char[] color = new char[8];
-                color[0] = color[1] = 'F';
-                color[2] = color[3] = value.charAt(0);
-                color[4] = color[5] = value.charAt(1);
-                color[6] = color[7] = value.charAt(2);
-                value = new String(color);
-            } else if (value.length() == 4) { // ARGB format
-                char[] color = new char[8];
-                color[0] = color[1] = value.charAt(0);
-                color[2] = color[3] = value.charAt(1);
-                color[4] = color[5] = value.charAt(2);
-                color[6] = color[7] = value.charAt(3);
-                value = new String(color);
-            } else if (value.length() == 6) {
-                value = "FF" + value;
-            }
-
-            // this is a RRGGBB or AARRGGBB value
-
-            // Integer.parseInt will fail to parse strings like "ff191919", so we use
-            // a Long, but cast the result back into an int, since we know that we're only
-            // dealing with 32 bit values.
-            return (int)Long.parseLong(value, 16);
+    public static int getColor(@Nullable String value) {
+        if (value == null) {
+            throw new NumberFormatException("null value");
         }
 
-        throw new NumberFormatException();
+        value = value.trim();
+        int len = value.length();
+
+        // make sure it's not longer than 32bit or smaller than the RGB format
+        if (len < 2 || len > 9) {
+            throw new NumberFormatException(String.format(
+                    "Color value '%s' has wrong size. Format is either" +
+                            "#AARRGGBB, #RRGGBB, #RGB, or #ARGB",
+                    value));
+        }
+
+        if (value.charAt(0) != '#') {
+            if (value.startsWith(SdkConstants.PREFIX_THEME_REF)) {
+                throw new NumberFormatException(String.format(
+                        "Attribute '%s' not found. Are you using the right theme?", value));
+            }
+            throw new NumberFormatException(
+                    String.format("Color value '%s' must start with #", value));
+        }
+
+        value = value.substring(1);
+
+        if (len == 4) { // RGB format
+            char[] color = new char[8];
+            color[0] = color[1] = 'F';
+            color[2] = color[3] = value.charAt(0);
+            color[4] = color[5] = value.charAt(1);
+            color[6] = color[7] = value.charAt(2);
+            value = new String(color);
+        } else if (len == 5) { // ARGB format
+            char[] color = new char[8];
+            color[0] = color[1] = value.charAt(0);
+            color[2] = color[3] = value.charAt(1);
+            color[4] = color[5] = value.charAt(2);
+            color[6] = color[7] = value.charAt(3);
+            value = new String(color);
+        } else if (len == 7) {
+            value = "FF" + value;
+        }
+
+        // this is a RRGGBB or AARRGGBB value
+
+        // Integer.parseInt will fail to parse strings like "ff191919", so we use
+        // a Long, but cast the result back into an int, since we know that we're only
+        // dealing with 32 bit values.
+        return (int)Long.parseLong(value, 16);
     }
 
     /**
@@ -147,6 +150,13 @@ public final class ResourceHelper {
         String value = resValue.getValue();
         if (value == null || RenderResources.REFERENCE_NULL.equals(value)) {
             return null;
+        }
+
+        // try to load the color state list from an int
+        try {
+            int color = getColor(value);
+            return ColorStateList.valueOf(color);
+        } catch (NumberFormatException ignored) {
         }
 
         XmlPullParser parser = null;
@@ -216,16 +226,6 @@ public final class ResourceHelper {
 
                 return null;
             }
-        } else {
-            // try to load the color state list from an int
-            try {
-                int color = getColor(value);
-                return ColorStateList.valueOf(color);
-            } catch (NumberFormatException e) {
-                Bridge.getLog().error(LayoutLog.TAG_RESOURCES_FORMAT,
-                        "Failed to convert " + value + " into a ColorStateList", e,
-                        null /*data*/);
-            }
         }
 
         return null;
@@ -240,8 +240,9 @@ public final class ResourceHelper {
      */
     @Nullable
     public static ColorStateList getColorStateList(@NonNull ResourceValue resValue,
-            @NonNull BridgeContext context) {
-        return (ColorStateList) getInternalComplexColor(resValue, context, context.getTheme(),
+            @NonNull BridgeContext context, @Nullable Resources.Theme theme) {
+        return (ColorStateList) getInternalComplexColor(resValue, context,
+                theme != null ? theme : context.getTheme(),
                 false);
     }
 
@@ -254,8 +255,10 @@ public final class ResourceHelper {
      */
     @Nullable
     public static ComplexColor getComplexColor(@NonNull ResourceValue resValue,
-            @NonNull BridgeContext context) {
-        return getInternalComplexColor(resValue, context, context.getTheme(), true);
+            @NonNull BridgeContext context, @Nullable Resources.Theme theme) {
+        return getInternalComplexColor(resValue, context,
+                theme != null ? theme : context.getTheme(),
+                true);
     }
 
     /**
@@ -316,10 +319,19 @@ public final class ResourceHelper {
         }
 
         String lowerCaseValue = stringValue.toLowerCase();
+        // try the simple case first. Attempt to get a color from the value
+        try {
+            int color = getColor(stringValue);
+            return new ColorDrawable(color);
+        } catch (NumberFormatException ignore) {
+        }
 
         Density density = Density.MEDIUM;
         if (value instanceof DensityBasedResourceValue) {
             density = ((DensityBasedResourceValue) value).getResourceDensity();
+            if (density == Density.NODPI || density == Density.ANYDPI) {
+                density = Density.getEnum(context.getConfiguration().densityDpi);
+            }
         }
 
         if (lowerCaseValue.endsWith(NinePatch.EXTENSION_9PATCH)) {
@@ -374,17 +386,6 @@ public final class ResourceHelper {
                     // we'll return null below
                     Bridge.getLog().error(LayoutLog.TAG_RESOURCES_READ,
                             "Failed lot load " + bmpFile.getAbsolutePath(), e, null /*data*/);
-                }
-            } else {
-                // attempt to get a color from the value
-                try {
-                    int color = getColor(stringValue);
-                    return new ColorDrawable(color);
-                } catch (NumberFormatException e) {
-                    // we'll return null below.
-                    Bridge.getLog().error(LayoutLog.TAG_RESOURCES_FORMAT,
-                            "Failed to convert " + stringValue + " into a drawable", e,
-                            null /*data*/);
                 }
             }
         }

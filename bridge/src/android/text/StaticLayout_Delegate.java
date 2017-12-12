@@ -14,6 +14,7 @@ import android.text.Primitive.PrimitiveType;
 import android.text.StaticLayout.LineBreaks;
 
 import java.nio.ByteBuffer;
+import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -59,11 +60,12 @@ public class StaticLayout_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static void nSetLocale(long nativeBuilder, String locale, long nativeHyphenator) {
+    /*package*/ static void nSetLocales(long nativeBuilder, String locales,
+            long[] nativeHyphenators) {
         Builder builder = sBuilderManager.getDelegate(nativeBuilder);
         if (builder != null) {
-            builder.mLocale = locale;
-            builder.mNativeHyphenator = nativeHyphenator;
+            builder.mLocales = locales;
+            builder.mNativeHyphenators = nativeHyphenators;
         }
     }
 
@@ -138,8 +140,8 @@ public class StaticLayout_Delegate {
 
         // compute all possible breakpoints.
         int length = builder.mWidths.length;
-        BreakIterator it = BreakIterator.getLineInstance(new ULocale(builder.mLocale));
-        it.setText(new Segment(builder.mText, 0, length));
+        BreakIterator it = BreakIterator.getLineInstance(new ULocale(builder.mLocales));
+        it.setText((CharacterIterator) new Segment(builder.mText, 0, length));
 
         // average word length in english is 5. So, initialize the possible breaks with a guess.
         List<Integer> breaks = new ArrayList<Integer>((int) Math.ceil(length / 5d));
@@ -226,11 +228,11 @@ public class StaticLayout_Delegate {
      * Java representation of the native Builder class.
      */
     private static class Builder {
-        String mLocale;
+        String mLocales;
         char[] mText;
         float[] mWidths;
         LineBreaker mLineBreaker;
-        long mNativeHyphenator;
+        long[] mNativeHyphenators;
         int mBreakStrategy;
         LineWidth mLineWidth;
         TabStops mTabStopCalculator;
