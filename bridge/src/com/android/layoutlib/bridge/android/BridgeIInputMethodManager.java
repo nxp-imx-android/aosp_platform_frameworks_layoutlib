@@ -226,7 +226,8 @@ public class BridgeIInputMethodManager implements IInputMethodManager {
             IInputMethodClient client, IBinder windowToken, int controlFlags,
             /* @android.view.WindowManager.LayoutParams.SoftInputModeFlags */ int softInputMode,
             int windowFlags, EditorInfo attribute, IInputContext inputContext,
-            /* @InputConnectionInspector.MissingMethodFlags */ int missingMethodFlags)
+            /* @InputConnectionInspector.MissingMethodFlags */ int missingMethodFlags,
+            int unverifiedTargetSdkVersion)
             throws RemoteException {
         // TODO Auto-generated method stub
         return null;
