@@ -537,4 +537,17 @@ public class IWindowManagerImpl implements IWindowManager {
     public void unregisterWallpaperVisibilityListener(IWallpaperVisibilityListener listener,
             int displayId) throws RemoteException {
     }
+
+    @Override
+    public void startWindowTrace() throws RemoteException {
+    }
+
+    @Override
+    public void stopWindowTrace() throws RemoteException {
+    }
+
+    @Override
+    public boolean isWindowTraceEnabled() throws RemoteException {
+        return false;
+    }
 }
