@@ -76,6 +76,11 @@ public class IWindowManagerImpl implements IWindowManager {
     // ---- unused implementation of IWindowManager ----
 
     @Override
+    public int getNavBarPosition() throws RemoteException {
+        return 0;
+    }
+
+    @Override
     public void addWindowToken(IBinder arg0, int arg1, int arg2) throws RemoteException {
         // TODO Auto-generated method stub
 
