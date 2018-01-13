@@ -416,7 +416,8 @@ public class IWindowManagerImpl implements IWindowManager {
     }
 
     @Override
-    public void dismissKeyguard(IKeyguardDismissCallback callback) throws RemoteException {
+    public void dismissKeyguard(IKeyguardDismissCallback callback, CharSequence message)
+            throws RemoteException {
     }
 
     @Override
