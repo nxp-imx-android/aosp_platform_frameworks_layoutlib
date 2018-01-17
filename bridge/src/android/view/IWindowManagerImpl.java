@@ -29,6 +29,7 @@ import android.os.IRemoteCallback;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.util.DisplayMetrics;
+import android.view.RemoteAnimationAdapter;
 
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.policy.IKeyguardDismissCallback;
@@ -239,6 +240,10 @@ public class IWindowManagerImpl implements IWindowManager {
     public void overridePendingAppTransitionMultiThumb(AppTransitionAnimationSpec[] specs,
             IRemoteCallback callback0, IRemoteCallback callback1, boolean scaleUp) {
         // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void overridePendingAppTransitionRemote(RemoteAnimationAdapter adapter) {
     }
 
     @Override
