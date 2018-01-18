@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import static android.graphics.Typeface.RESOLVE_BY_FONT_TABLE;
 import static android.graphics.Typeface_Delegate.SYSTEM_FONTS;
@@ -476,6 +477,7 @@ public class FontFamily_Delegate {
     private boolean addFont(@NonNull String path, int weight, int italic) {
         if (path.startsWith(SYSTEM_FONTS) &&
                 !SDK_FONTS.contains(path.substring(SYSTEM_FONTS.length()))) {
+            Logger.getLogger(FontFamily_Delegate.class.getSimpleName()).warning("Unable to load font " + path);
             return mValid = false;
         }
         // Set valid to true, even if the font fails to load.
