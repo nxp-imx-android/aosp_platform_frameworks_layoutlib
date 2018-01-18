@@ -1145,4 +1145,53 @@ public class RenderTests extends RenderTestBase {
 
         RenderTestBase.verify("view_boundaries.png", image);
     }
+
+    /**
+     * Test rendering of strings that have mixed RTL and LTR scripts.
+     * <p>
+     * http://b/37510906
+     */
+    @Test
+    public void testMixedRtlLtrRendering() throws Exception {
+        //
+        final String layout =
+                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "              android:layout_width=\"match_parent\"\n" +
+                        "              android:layout_height=\"match_parent\"\n" +
+                        "              android:orientation=\"vertical\">\n" + "\n" +
+                        "    <TextView\n" +
+                        "        android:layout_width=\"wrap_content\"\n" +
+                        "        android:layout_height=\"wrap_content\"\n" +
+                        "        android:textSize=\"30sp\"\n" +
+                        "        android:background=\"#55FF0000\"\n" +
+                        "        android:text=\"این یک رشته ایرانی است\"/>\n" +
+                        "    <TextView\n" +
+                        "        android:layout_width=\"wrap_content\"\n" +
+                        "        android:layout_height=\"wrap_content\"\n" +
+                        "        android:textSize=\"30sp\"\n" +
+                        "        android:background=\"#55FF00FF\"\n" +
+                        "        android:text=\"این یک رشته ایرانی است(\"/>\n" +
+                        "    <TextView\n" +
+                        "        android:layout_width=\"wrap_content\"\n" +
+                        "        android:layout_height=\"wrap_content\"\n" +
+                        "        android:textSize=\"30sp\"\n" +
+                        "        android:background=\"#55FAF012\"\n" +
+                        "        android:text=\")(این یک رشته ایرانی است(\"/>\n" +
+                        "</LinearLayout>";
+
+        LayoutPullParser parser = LayoutPullParser.createFromString(layout);
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
+
+        renderAndVerify(params, "rtl_ltr.png", -1);
+    }
 }
