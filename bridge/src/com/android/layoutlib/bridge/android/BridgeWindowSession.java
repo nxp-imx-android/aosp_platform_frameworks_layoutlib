@@ -231,4 +231,10 @@ public final class BridgeWindowSession implements IWindowSession {
     public void updatePointerIcon(IWindow window) {
         // pass for now.
     }
+
+    @Override
+    public void updateTapExcludeRegion(IWindow window, int regionId, int left, int top, int width,
+            int height) {
+        // pass for now.
+    }
 }
