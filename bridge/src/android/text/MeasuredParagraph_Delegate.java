@@ -94,7 +94,8 @@ public class MeasuredParagraph_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static long nBuildNativeMeasuredParagraph(long nativeBuilderPtr, @NonNull char[] text) {
+    /*package*/ static long nBuildNativeMeasuredParagraph(long nativeBuilderPtr,
+            @NonNull char[] text, boolean computeHyphenation) {
         MeasuredParagraph_Delegate delegate = new MeasuredParagraph_Delegate();
         delegate.mNativeBuilderPtr = nativeBuilderPtr;
         return sManager.addNewDelegate(delegate);
