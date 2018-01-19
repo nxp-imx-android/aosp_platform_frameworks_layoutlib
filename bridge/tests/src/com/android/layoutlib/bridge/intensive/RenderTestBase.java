@@ -49,6 +49,7 @@ import org.junit.runner.Description;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -369,6 +370,18 @@ public class RenderTestBase {
     }
 
     /**
+     * Compares the golden image with the passed image
+     */
+    protected static void verify(@NonNull String goldenImageName, @NonNull BufferedImage image) {
+        try {
+            String goldenImagePath = APP_TEST_DIR + "/golden/" + goldenImageName;
+            ImageUtils.requireSimilar(goldenImagePath, image);
+        } catch (IOException e) {
+            getLogger().error(e, e.getMessage());
+        }
+    }
+
+    /**
      * Create a new rendering session and test that rendering the given layout doesn't throw any
      * exceptions and matches the provided image.
      * <p>
@@ -379,13 +392,8 @@ public class RenderTestBase {
     protected static RenderResult renderAndVerify(SessionParams params, String goldenFileName,
             long frameTimeNanos) throws ClassNotFoundException {
         RenderResult result = RenderTestBase.render(sBridge, params, frameTimeNanos);
-        try {
-            String goldenImagePath = APP_TEST_DIR + "/golden/" + goldenFileName;
-            assertNotNull(result.getImage());
-            ImageUtils.requireSimilar(goldenImagePath, result.getImage());
-        } catch (IOException e) {
-            getLogger().error(e, e.getMessage());
-        }
+        assertNotNull(result.getImage());
+        verify(goldenFileName, result.getImage());
 
         return result;
     }
