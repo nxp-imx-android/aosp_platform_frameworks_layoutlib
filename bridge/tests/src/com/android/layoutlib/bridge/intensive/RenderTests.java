@@ -42,6 +42,7 @@ import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import android.annotation.NonNull;
 import android.content.res.AssetManager;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
@@ -52,6 +53,9 @@ import android.util.DisplayMetrics;
 import android.util.StateSet;
 import android.util.TypedValue;
 
+import java.awt.BasicStroke;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -1042,5 +1046,92 @@ public class RenderTests extends RenderTestBase {
         // We expect the view error messages. Fail for anything else.
         sRenderMessages.removeIf(message -> message.equals("View draw failed"));
         sRenderMessages.removeIf(message -> message.equals("View measure failed"));
+    }
+
+    /**
+     * Paints the borders of the given {@link ViewInfo} and its children to the passed
+     * {@link Graphics2D} context.
+     * The method will used the given parentLeft and parentTop as the given vInfo coordinates.
+     * The depth is used to calculate different colors for the borders depending on the hierarchy
+     * depth.
+     */
+    private void paintBorders(@NonNull Graphics2D g, int parentLeft, int parentTop, int depth,
+            @NonNull ViewInfo vInfo) {
+        int leftMargin = Math.max(0, vInfo.getLeftMargin());
+        int topMargin = Math.max(0, vInfo.getTopMargin());
+        int x = parentLeft + vInfo.getLeft() + leftMargin;
+        int y = parentTop + vInfo.getTop() + topMargin;
+        int w = vInfo.getRight() - vInfo.getLeft();
+        int h = vInfo.getBottom() - vInfo.getTop();
+        g.setXORMode(java.awt.Color.decode(Integer.toString(depth * 50000)));
+        g.drawRect(x, y, w, h);
+
+        for (ViewInfo child : vInfo.getChildren()) {
+            paintBorders(g, x, y, depth + 1, child);
+        }
+    }
+
+    @Test
+    public void testViewBoundariesReporting() throws Exception {
+        String layout =
+                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "              android:layout_width=\"match_parent\"\n" +
+                        "              android:layout_height=\"match_parent\"\n" +
+                        "              android:background=\"@drawable/ninepatch\"\n" +
+                        "              android:layout_margin=\"20dp\"\n" +
+                        "              android:orientation=\"vertical\">\n" + "\n" +
+                        "    <TextView\n" +
+                        "        android:layout_width=\"150dp\"\n" +
+                        "        android:layout_height=\"50dp\"\n" +
+                        "        android:background=\"#FF0\"/>\n" +
+                        "    <TextView\n" +
+                        "        android:layout_width=\"150dp\"\n" +
+                        "        android:layout_height=\"50dp\"\n" +
+                        "        android:background=\"#F00\"/>\n" +
+                        "    <LinearLayout\n" +
+                        "        android:layout_width=\"wrap_content\"\n" +
+                        "        android:layout_height=\"wrap_content\"\n" +
+                        "        android:paddingLeft=\"10dp\">\n" +
+                        "        <TextView\n" +
+                        "            android:layout_width=\"150dp\"\n" +
+                        "            android:layout_height=\"50dp\"\n" +
+                        "            android:background=\"#00F\"/>\n" +
+                        "    </LinearLayout>\n" +
+                        "    <LinearLayout\n" +
+                        "        android:layout_width=\"wrap_content\"\n" +
+                        "        android:layout_height=\"wrap_content\"\n" +
+                        "        android:layout_marginLeft=\"30dp\"\n" +
+                        "        android:layout_marginTop=\"15dp\">\n" +
+                        "        <TextView\n" +
+                        "            android:layout_width=\"150dp\"\n" +
+                        "            android:layout_height=\"50dp\"\n" +
+                        "            android:background=\"#F0F\"/>\n" +
+                        "    </LinearLayout>\n" +
+                        "</LinearLayout>";
+
+        LayoutPullParser parser = LayoutPullParser.createFromString(layout);
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
+        params.setForceNoDecor();
+
+        RenderResult result = RenderTestBase.render(sBridge, params, -1);
+        BufferedImage image = result.getImage();
+        assertNotNull(image);
+        Graphics2D g = (Graphics2D) image.getGraphics();
+        g.setStroke(new BasicStroke(8));
+        for (ViewInfo vInfo : result.getSystemViews()) {
+            paintBorders(g, 0, 0, 0, vInfo);
+        }
+
+        RenderTestBase.verify("view_boundaries.png", image);
     }
 }
