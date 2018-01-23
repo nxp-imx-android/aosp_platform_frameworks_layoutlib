@@ -149,6 +149,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.content.res.Resources#getText",
         "android.content.res.Resources#getTextArray",
         "android.content.res.Resources#getValue",
+        "android.content.res.Resources#getValueForDensity",
         "android.content.res.Resources#getXml",
         "android.content.res.Resources#loadXmlResourceParser",
         "android.content.res.Resources#obtainAttributes",
@@ -171,6 +172,8 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.drawable.GradientDrawable#buildRing",
         "android.graphics.drawable.AdaptiveIconDrawable#<init>",
         "android.graphics.FontFamily#addFont",
+        "android.graphics.ImageDecoder#decodeBitmap",
+        "android.graphics.ImageDecoder#decodeDrawable",
         "android.graphics.Typeface#buildSystemFallback",
         "android.graphics.Typeface#create",
         "android.graphics.Typeface#createFontFamily",
@@ -346,6 +349,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.FontFamily#mBuilderPtr",
         "android.graphics.Typeface#sDynamicTypefaceCache",
         "android.graphics.drawable.AdaptiveIconDrawable#sMask",
+        "android.graphics.ImageDecoder$InputStreamSource#mInputStream",
     };
 
     /**
@@ -353,6 +357,7 @@ public final class CreateInfo implements ICreateInfo {
      * if possible.
      */
     private final static String[] PROMOTED_CLASSES = new String[] {
+        "android.graphics.ImageDecoder$InputStreamSource",
     };
 
     /**
