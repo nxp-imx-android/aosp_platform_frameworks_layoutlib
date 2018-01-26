@@ -95,7 +95,7 @@ public class MeasuredParagraph_Delegate {
 
     @LayoutlibDelegate
     /*package*/ static long nBuildNativeMeasuredParagraph(long nativeBuilderPtr,
-            @NonNull char[] text, boolean computeHyphenation) {
+            @NonNull char[] text, boolean computeHyphenation, boolean computeLayout) {
         MeasuredParagraph_Delegate delegate = new MeasuredParagraph_Delegate();
         delegate.mNativeBuilderPtr = nativeBuilderPtr;
         return sManager.addNewDelegate(delegate);
@@ -104,6 +104,12 @@ public class MeasuredParagraph_Delegate {
     @LayoutlibDelegate
     /*package*/ static void nFreeBuilder(long nativeBuilderPtr) {
         sBuilderManager.removeJavaReferenceFor(nativeBuilderPtr);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static float nGetWidth(long nativePtr, int start, int end) {
+        // Ignore as it is not used for the layoutlib implementation
+        return 0.0f;
     }
 
     @LayoutlibDelegate
