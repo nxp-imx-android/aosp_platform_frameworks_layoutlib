@@ -18,6 +18,7 @@ package com.android.layoutlib.bridge.intensive;
 
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.RenderSession;
+import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
@@ -59,6 +60,7 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import com.google.android.collect.Lists;
+import com.google.common.collect.ImmutableMap;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -418,9 +420,8 @@ public class RenderTestBase {
                 }
 
                 @Override
-                public void fidelityWarning(@Nullable String tag, String message,
-                        Throwable throwable, Object data) {
-
+                public void fidelityWarning(String tag, String message, Throwable throwable,
+                        Object viewCookie, Object data) {
                     System.out.println("FidelityWarning " + tag + ": " + message);
                     if (throwable != null) {
                         throwable.printStackTrace();

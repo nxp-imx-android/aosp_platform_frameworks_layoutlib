@@ -17,6 +17,7 @@
 package com.android.layoutlib.bridge.intensive;
 
 import com.android.ide.common.rendering.api.RenderSession;
+import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
@@ -800,8 +801,13 @@ public class RenderTests extends RenderTestBase {
 
         try {
             ColorStateList stateList = ResourceHelper.getColorStateList(
-                    new ResourceValue(ResourceUrl.create(null, ResourceType.COLOR, "test_list"),
-                            tmpColorList.getAbsolutePath()), mContext, null);
+                    new ResourceValue(
+                            ResourceNamespace.RES_AUTO,
+                            ResourceType.COLOR,
+                            "test_list",
+                            tmpColorList.getAbsolutePath()),
+                    mContext,
+                    null);
             assertNotNull(stateList);
             assertEquals(Color.parseColor("#ffffffff"), stateList.getColorForState(
                     StateSet.get(StateSet.VIEW_STATE_PRESSED),
@@ -817,8 +823,13 @@ public class RenderTests extends RenderTestBase {
             Resources.Theme theme = mContext.getResources().newTheme();
             theme.applyStyle(R.style.ThemeOverlay_Material_Light, true);
             stateList = ResourceHelper.getColorStateList(
-                    new ResourceValue(ResourceUrl.create(null, ResourceType.COLOR, "test_list"),
-                            tmpColorList.getAbsolutePath()), mContext, theme);
+                    new ResourceValue(
+                            ResourceNamespace.RES_AUTO,
+                            ResourceType.COLOR,
+                            "test_list",
+                            tmpColorList.getAbsolutePath()),
+                    mContext,
+                    theme);
             assertNotNull(stateList);
             assertEquals(Color.parseColor("#ff000000"), stateList.getColorForState(
                     StateSet.get(StateSet.VIEW_STATE_PRESSED),
