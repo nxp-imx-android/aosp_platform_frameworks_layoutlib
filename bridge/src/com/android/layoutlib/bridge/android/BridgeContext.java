@@ -971,8 +971,8 @@ public class BridgeContext extends Context {
                     ResourceValue dummy =
                             new ResourceValue(
                                     currentFileNamespace,
-                                    null,
-                                    attrName,
+                                    ResourceType.STRING,
+                                    "layoutlib",
                                     value);
                     dummy.setNamespaceLookup(resolver);
 
