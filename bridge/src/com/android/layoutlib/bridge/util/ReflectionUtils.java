@@ -22,6 +22,8 @@ import android.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import javax.management.ReflectionException;
+
 /**
  * Utility to convert checked Reflection exceptions to unchecked exceptions.
  */
@@ -68,6 +70,24 @@ public class ReflectionUtils {
             String name = superClass.getName();
             if (name.equals(className)) {
                 return true;
+            }
+            superClass = superClass.getSuperclass();
+        }
+        return false;
+    }
+
+    /**
+     * Check if the object is an instance of any of the class named in {@code className}. This
+     * doesn't work for interfaces.
+     */
+    public static boolean isInstanceOf(Object object, String[] classNames) {
+        Class superClass = object.getClass();
+        while (superClass != null) {
+            String name = superClass.getName();
+            for (String className : classNames) {
+                if (name.equals(className)) {
+                    return true;
+                }
             }
             superClass = superClass.getSuperclass();
         }
