@@ -123,6 +123,12 @@ public class MeasuredParagraph_Delegate {
         return sFinalizer;
     }
 
+    @LayoutlibDelegate
+    /*package*/ static int nGetMemoryUsage(long nativePtr) {
+        // Ignore as it is not used for the layoutlib implementation
+        return 0;
+    }
+
     private static float measureText(long nativePaint, char[] text, int index, int count,
             float[] widths, int bidiFlags) {
         Paint_Delegate paint = Paint_Delegate.getDelegate(nativePaint);
