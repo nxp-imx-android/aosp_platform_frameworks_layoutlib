@@ -90,11 +90,14 @@ public final class BridgeInflater extends LayoutInflater {
     private boolean mIsInMerge = false;
     private ResourceReference mResourceReference;
     private Map<View, String> mOpenDrawerLayouts;
+    @NonNull
+    private String[] mAppCompatPrefixes = new String[] {
+            "android.support.v7.widget.AppCompat", "androidx.AppCompat"
+    };
 
     // Keep in sync with the same value in LayoutInflater.
     private static final int[] ATTRS_THEME = new int[] {com.android.internal.R.attr.theme };
 
-    private static final String APPCOMPAT_WIDGET_PREFIX = "android.support.v7.widget.AppCompat";
     /** List of platform widgets that have an AppCompat version */
     private static final Set<String> APPCOMPAT_VIEWS = Collections.unmodifiableSet(
             new HashSet<>(
@@ -151,11 +154,27 @@ public final class BridgeInflater extends LayoutInflater {
             if (mLoadAppCompatViews
                     && APPCOMPAT_VIEWS.contains(name)
                     && !mFailedAppCompatViews.contains(name)) {
-                // We are using an AppCompat theme so try to load the appcompat views
-                view = loadCustomView(APPCOMPAT_WIDGET_PREFIX + name, attrs, true);
+                // We are using an AppCompat theme so try to load the appcompat views. We'll try
+                // with both prefixes until we find one of them that succeeds. After that, we'll
+                // switch to always use only that prefix.
+                String[] newAppCompatPrefixes = mAppCompatPrefixes;
+                for (String prefix : mAppCompatPrefixes) {
+                    view = loadCustomView(prefix + name, attrs, true);
+                    if (view != null) {
+                        if (mAppCompatPrefixes.length > 1) {
+                            // We now know the exact prefix to use so select
+                            newAppCompatPrefixes = new String[] { prefix };
+                        }
+                        break;
+                    }
+                }
 
                 if (view == null) {
                     mFailedAppCompatViews.add(name); // Do not try this one anymore
+                }
+                else {
+                    // We successfully found the view so we might need to restrict the namespaces
+                    mAppCompatPrefixes = newAppCompatPrefixes;
                 }
             }
 

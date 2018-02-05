@@ -161,6 +161,12 @@ public class BridgeIInputMethodManager implements IInputMethodManager {
     }
 
     @Override
+    public boolean isInputMethodPickerShownForTest() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
     public void showInputMethodPickerFromClient(IInputMethodClient arg0,
             int arg1) throws RemoteException {
         // TODO Auto-generated method stub
