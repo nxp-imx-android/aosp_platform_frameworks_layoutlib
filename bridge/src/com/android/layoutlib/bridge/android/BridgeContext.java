@@ -802,7 +802,9 @@ public class BridgeContext extends Context {
                             null);
                 }
             }
-        } else if (defStyleRes != 0) {
+        }
+
+        if (defStyleValues == null && defStyleRes != 0) {
             StyleResourceValue item = getStyleByDynamicId(defStyleRes);
             if (item != null) {
                 defStyleValues = item;
