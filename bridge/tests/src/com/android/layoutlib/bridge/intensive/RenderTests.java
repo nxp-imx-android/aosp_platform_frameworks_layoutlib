@@ -1194,4 +1194,39 @@ public class RenderTests extends RenderTestBase {
 
         renderAndVerify(params, "rtl_ltr.png", -1);
     }
+
+    @Test
+    public void testViewStub() throws Exception {
+        //
+        final String layout =
+                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "              android:layout_width=\"match_parent\"\n" +
+                        "              android:layout_height=\"match_parent\"\n" +
+                        "              android:orientation=\"vertical\">\n" + "\n" +
+                        "      <ViewStub\n" +
+                        "        xmlns:tools=\"http://schemas.android.com/tools\"\n" +
+                        "        android:layout_width=\"match_parent\"\n" +
+                        "        android:layout_height=\"match_parent\"\n" +
+                        "        android:layout=\"@layout/four_corners\"\n" +
+                        "        tools:visibility=\"visible\" />" +
+                        "</LinearLayout>";
+
+        // Create the layout pull parser.
+        LayoutPullParser parser = LayoutPullParser.createFromString(layout);
+
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
+        params.setForceNoDecor();
+
+        renderAndVerify(params, "view_stub.png", -1);
+    }
 }

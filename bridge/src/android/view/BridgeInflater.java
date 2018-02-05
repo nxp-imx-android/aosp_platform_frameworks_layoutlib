@@ -16,6 +16,7 @@
 
 package android.view;
 
+import com.android.SdkConstants;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.MergeCookie;
@@ -43,6 +44,7 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.View.OnAttachStateChangeListener;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
 
@@ -407,72 +409,97 @@ public final class BridgeInflater extends LayoutInflater {
     private void setupViewInContext(View view, AttributeSet attrs) {
         Context context = getContext();
         context = getBaseContext(context);
-        if (context instanceof BridgeContext) {
-            BridgeContext bc = (BridgeContext) context;
-            // get the view key
-            Object viewKey = getViewKeyFromParser(attrs, bc, mResourceReference, mIsInMerge);
-            if (viewKey != null) {
-                bc.addViewKey(view, viewKey);
-            }
-            String scrollPosX = attrs.getAttributeValue(BridgeConstants.NS_RESOURCES, "scrollX");
-            if (scrollPosX != null && scrollPosX.endsWith("px")) {
-                int value = Integer.parseInt(scrollPosX.substring(0, scrollPosX.length() - 2));
-                bc.setScrollXPos(view, value);
-            }
-            String scrollPosY = attrs.getAttributeValue(BridgeConstants.NS_RESOURCES, "scrollY");
-            if (scrollPosY != null && scrollPosY.endsWith("px")) {
-                int value = Integer.parseInt(scrollPosY.substring(0, scrollPosY.length() - 2));
-                bc.setScrollYPos(view, value);
-            }
-            if (ReflectionUtils.isInstanceOf(view, RecyclerViewUtil.CN_RECYCLER_VIEW)) {
-                Integer resourceId = null;
-                String attrListItemValue = attrs.getAttributeValue(BridgeConstants.NS_TOOLS_URI,
-                        BridgeConstants.ATTR_LIST_ITEM);
-                int attrItemCountValue = attrs.getAttributeIntValue(BridgeConstants.NS_TOOLS_URI,
-                        BridgeConstants.ATTR_ITEM_COUNT, -1);
-                if (attrListItemValue != null && !attrListItemValue.isEmpty()) {
-                    ResourceValue resValue = bc.getRenderResources().findResValue(attrListItemValue, false);
-                    if (resValue.isFramework()) {
-                        resourceId = Bridge.getResourceId(resValue.getResourceType(),
-                                resValue.getName());
-                    } else {
-                        resourceId = mLayoutlibCallback.getResourceId(resValue.getResourceType(),
-                                resValue.getName());
-                    }
-                }
-                if (resourceId == null) {
-                    resourceId = 0;
-                }
-                RecyclerViewUtil.setAdapter(view, bc, mLayoutlibCallback, resourceId, attrItemCountValue);
-            } else if (ReflectionUtils.isInstanceOf(view, DrawerLayoutUtil.CN_DRAWER_LAYOUT)) {
-                String attrVal = attrs.getAttributeValue(BridgeConstants.NS_TOOLS_URI,
-                        BridgeConstants.ATTR_OPEN_DRAWER);
-                if (attrVal != null) {
-                    getDrawerLayoutMap().put(view, attrVal);
-                }
-            }
-            else if (view instanceof NumberPicker) {
-                NumberPicker numberPicker = (NumberPicker) view;
-                String minValue = attrs.getAttributeValue(BridgeConstants.NS_TOOLS_URI, "minValue");
-                if (minValue != null) {
-                    numberPicker.setMinValue(Integer.parseInt(minValue));
-                }
-                String maxValue = attrs.getAttributeValue(BridgeConstants.NS_TOOLS_URI, "maxValue");
-                if (maxValue != null) {
-                    numberPicker.setMaxValue(Integer.parseInt(maxValue));
-                }
-            }
-            else if (view instanceof ImageView) {
-                ImageView img = (ImageView) view;
-                Drawable drawable = img.getDrawable();
-                if (drawable instanceof Animatable) {
-                    if (!((Animatable) drawable).isRunning()) {
-                        ((Animatable) drawable).start();
-                    }
-                }
-            }
-
+        if (!(context instanceof BridgeContext)) {
+            return;
         }
+
+        BridgeContext bc = (BridgeContext) context;
+        // get the view key
+        Object viewKey = getViewKeyFromParser(attrs, bc, mResourceReference, mIsInMerge);
+        if (viewKey != null) {
+            bc.addViewKey(view, viewKey);
+        }
+        String scrollPosX = attrs.getAttributeValue(BridgeConstants.NS_RESOURCES, "scrollX");
+        if (scrollPosX != null && scrollPosX.endsWith("px")) {
+            int value = Integer.parseInt(scrollPosX.substring(0, scrollPosX.length() - 2));
+            bc.setScrollXPos(view, value);
+        }
+        String scrollPosY = attrs.getAttributeValue(BridgeConstants.NS_RESOURCES, "scrollY");
+        if (scrollPosY != null && scrollPosY.endsWith("px")) {
+            int value = Integer.parseInt(scrollPosY.substring(0, scrollPosY.length() - 2));
+            bc.setScrollYPos(view, value);
+        }
+        if (ReflectionUtils.isInstanceOf(view, RecyclerViewUtil.CN_RECYCLER_VIEW)) {
+            Integer resourceId = null;
+            String attrListItemValue = attrs.getAttributeValue(BridgeConstants.NS_TOOLS_URI,
+                    BridgeConstants.ATTR_LIST_ITEM);
+            int attrItemCountValue = attrs.getAttributeIntValue(BridgeConstants.NS_TOOLS_URI,
+                    BridgeConstants.ATTR_ITEM_COUNT, -1);
+            if (attrListItemValue != null && !attrListItemValue.isEmpty()) {
+                ResourceValue resValue = bc.getRenderResources().findResValue(attrListItemValue, false);
+                if (resValue.isFramework()) {
+                    resourceId = Bridge.getResourceId(resValue.getResourceType(),
+                            resValue.getName());
+                } else {
+                    resourceId = mLayoutlibCallback.getResourceId(resValue.getResourceType(),
+                            resValue.getName());
+                }
+            }
+            if (resourceId == null) {
+                resourceId = 0;
+            }
+            RecyclerViewUtil.setAdapter(view, bc, mLayoutlibCallback, resourceId, attrItemCountValue);
+        } else if (ReflectionUtils.isInstanceOf(view, DrawerLayoutUtil.CN_DRAWER_LAYOUT)) {
+            String attrVal = attrs.getAttributeValue(BridgeConstants.NS_TOOLS_URI,
+                    BridgeConstants.ATTR_OPEN_DRAWER);
+            if (attrVal != null) {
+                getDrawerLayoutMap().put(view, attrVal);
+            }
+        }
+        else if (view instanceof NumberPicker) {
+            NumberPicker numberPicker = (NumberPicker) view;
+            String minValue = attrs.getAttributeValue(BridgeConstants.NS_TOOLS_URI, "minValue");
+            if (minValue != null) {
+                numberPicker.setMinValue(Integer.parseInt(minValue));
+            }
+            String maxValue = attrs.getAttributeValue(BridgeConstants.NS_TOOLS_URI, "maxValue");
+            if (maxValue != null) {
+                numberPicker.setMaxValue(Integer.parseInt(maxValue));
+            }
+        }
+        else if (view instanceof ImageView) {
+            ImageView img = (ImageView) view;
+            Drawable drawable = img.getDrawable();
+            if (drawable instanceof Animatable) {
+                if (!((Animatable) drawable).isRunning()) {
+                    ((Animatable) drawable).start();
+                }
+            }
+        }
+        else if (view instanceof ViewStub) {
+            // By default, ViewStub will be set to GONE and won't be inflate. If the XML has the
+            // tools:visibility attribute we'll workaround that behavior.
+            String visibility = attrs.getAttributeValue(BridgeConstants.NS_TOOLS_URI,
+                    SdkConstants.ATTR_VISIBILITY);
+
+            boolean isVisible = "visible".equals(visibility);
+            if (isVisible || "invisible".equals(visibility)) {
+                // We can not inflate the view until is attached to its parent so we need to delay
+                // the setVisible call until after that happens.
+                final int visibilityValue = isVisible ? View.VISIBLE : View.INVISIBLE;
+                view.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+                    @Override
+                    public void onViewAttachedToWindow(View v) {
+                        v.removeOnAttachStateChangeListener(this);
+                        view.setVisibility(visibilityValue);
+                    }
+
+                    @Override
+                    public void onViewDetachedFromWindow(View v) {}
+                });
+            }
+        }
+
     }
 
     public void setIsInMerge(boolean isInMerge) {
