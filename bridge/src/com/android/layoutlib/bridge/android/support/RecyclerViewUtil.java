@@ -112,14 +112,14 @@ public class RecyclerViewUtil {
 
     @Nullable
     private static Object createAdapter(@NonNull LayoutlibCallback layoutlibCallback,
-            @NonNull String layoutMgrClassName) throws ReflectionException {
+            @NonNull String adapterClassName) throws ReflectionException {
         Boolean ideSupport =
                 layoutlibCallback.getFlag(RenderParamsFlags.FLAG_KEY_RECYCLER_VIEW_SUPPORT);
         if (ideSupport != Boolean.TRUE) {
             return null;
         }
         try {
-            return layoutlibCallback.loadClass(layoutMgrClassName, new Class[0], new Object[0]);
+            return layoutlibCallback.loadClass(adapterClassName, new Class[0], new Object[0]);
         } catch (Exception e) {
             throw new ReflectionException(e);
         }
