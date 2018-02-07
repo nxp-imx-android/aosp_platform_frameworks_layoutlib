@@ -19,11 +19,13 @@ package android.graphics;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.ContentResolver;
+import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.graphics.drawable.AnimatedImageDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.util.DisplayMetrics;
 import android.util.Size;
 import android.util.TypedValue;
 
@@ -135,6 +137,44 @@ public final class ImageDecoder implements AutoCloseable {
 
         @Override
         public int getDensity() { return mInputDensity; }
+
+        @Override
+        public ImageDecoder createImageDecoder() throws IOException {
+            return new ImageDecoder();
+        }
+    }
+
+    /**
+     * Takes ownership of the AssetInputStream.
+     *
+     * @hide
+     */
+    public static class AssetInputStreamSource extends Source {
+        public AssetInputStreamSource(@NonNull AssetInputStream ais,
+                @NonNull Resources res, @NonNull TypedValue value) {
+            mAssetInputStream = ais;
+            mResources = res;
+
+            if (value.density == TypedValue.DENSITY_DEFAULT) {
+                mDensity = DisplayMetrics.DENSITY_DEFAULT;
+            } else if (value.density != TypedValue.DENSITY_NONE) {
+                mDensity = value.density;
+            } else {
+                mDensity = Bitmap.DENSITY_NONE;
+            }
+        }
+
+        private AssetInputStream mAssetInputStream;
+        private final Resources  mResources;
+        private final int        mDensity;
+
+        @Override
+        public Resources getResources() { return mResources; }
+
+        @Override
+        public int getDensity() {
+            return mDensity;
+        }
 
         @Override
         public ImageDecoder createImageDecoder() throws IOException {
