@@ -52,11 +52,10 @@ public interface RemoteRenderResources extends Remote {
             throws RemoteException;
 
 
-    ResourceValue findItemInTheme(String attrName, boolean isFrameworkAttr) throws RemoteException;
+    ResourceValue findItemInTheme(ResourceReference attr) throws RemoteException;
 
-
-    ResourceValue findItemInStyle(StyleResourceValue style, String attrName,
-            boolean isFrameworkAttr) throws RemoteException;
+    ResourceValue findItemInStyle(StyleResourceValue style, ResourceReference attr)
+            throws RemoteException;
 
     ResourceValue resolveValue(ResourceValue value) throws RemoteException;
 
