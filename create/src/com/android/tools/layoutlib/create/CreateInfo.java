@@ -160,8 +160,10 @@ public final class CreateInfo implements ICreateInfo {
         "android.content.res.Resources$Theme#resolveAttribute",
         "android.content.res.Resources$Theme#resolveAttributes",
         "android.content.res.AssetManager#open",
-        "android.content.res.AssetManager#newTheme",
-        "android.content.res.AssetManager#deleteTheme",
+        "android.content.res.AssetManager#nativeCreate",
+        "android.content.res.AssetManager#nativeDestroy",
+        "android.content.res.AssetManager#nativeThemeCreate",
+        "android.content.res.AssetManager#nativeThemeDestroy",
         "android.content.res.AssetManager#getAssignedPackageIdentifiers",
         "android.content.res.TypedArray#getValueAt",
         "android.content.res.TypedArray#obtain",
@@ -172,8 +174,6 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.drawable.GradientDrawable#buildRing",
         "android.graphics.drawable.AdaptiveIconDrawable#<init>",
         "android.graphics.FontFamily#addFont",
-        "android.graphics.ImageDecoder#decodeBitmap",
-        "android.graphics.ImageDecoder#decodeDrawable",
         "android.graphics.Typeface#buildSystemFallback",
         "android.graphics.Typeface#create",
         "android.graphics.Typeface#createFontFamily",
@@ -303,6 +303,7 @@ public final class CreateInfo implements ICreateInfo {
             "android.view.SurfaceView",                        "android.view._Original_SurfaceView",
             "android.view.accessibility.AccessibilityManager", "android.view.accessibility._Original_AccessibilityManager",
             "android.webkit.WebView",                          "android.webkit._Original_WebView",
+            "android.graphics.ImageDecoder",                   "android.graphics._Original_ImageDecoder",
         };
 
     /**
@@ -349,7 +350,6 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.FontFamily#mBuilderPtr",
         "android.graphics.Typeface#sDynamicTypefaceCache",
         "android.graphics.drawable.AdaptiveIconDrawable#sMask",
-        "android.graphics.ImageDecoder$InputStreamSource#mInputStream",
     };
 
     /**
@@ -357,7 +357,6 @@ public final class CreateInfo implements ICreateInfo {
      * if possible.
      */
     private final static String[] PROMOTED_CLASSES = new String[] {
-        "android.graphics.ImageDecoder$InputStreamSource",
     };
 
     /**
