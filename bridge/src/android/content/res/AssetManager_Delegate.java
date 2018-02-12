@@ -16,7 +16,6 @@
 
 package android.content.res;
 
-import com.android.layoutlib.bridge.impl.DelegateManager;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import android.util.SparseArray;
@@ -33,28 +32,6 @@ import java.io.InputStream;
  */
 public class AssetManager_Delegate {
 
-    // ---- delegate manager ----
-
-    private static final DelegateManager<AssetManager_Delegate> sManager =
-            new DelegateManager<>(AssetManager_Delegate.class);
-
-    public static DelegateManager<AssetManager_Delegate> getDelegateManager() {
-        return sManager;
-    }
-
-    // ---- delegate methods. ----
-
-    @LayoutlibDelegate
-    /*package*/ static long nativeCreate() {
-        AssetManager_Delegate delegate = new AssetManager_Delegate();
-        return sManager.addNewDelegate(delegate);
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static void nativeDestroy(long ptr) {
-        sManager.removeJavaReferenceFor(ptr);
-    }
-
     @LayoutlibDelegate
     public static InputStream open(AssetManager mgr, String fileName) throws IOException {
         return mgr.open_Original(fileName);
@@ -70,13 +47,13 @@ public class AssetManager_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static long nativeThemeCreate(long ptr) {
+    /*package*/ static long newTheme(AssetManager manager) {
         return Resources_Theme_Delegate.getDelegateManager()
                 .addNewDelegate(new Resources_Theme_Delegate());
     }
 
     @LayoutlibDelegate
-    /*package*/ static void nativeThemeDestroy(long theme) {
+    /*package*/ static void deleteTheme(AssetManager manager, long theme) {
         Resources_Theme_Delegate.getDelegateManager().removeJavaReferenceFor(theme);
     }
 
