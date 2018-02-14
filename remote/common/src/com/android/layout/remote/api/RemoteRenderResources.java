@@ -17,6 +17,7 @@
 package com.android.layout.remote.api;
 
 import com.android.ide.common.rendering.api.RenderResources;
+import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.StyleResourceValue;
 import com.android.resources.ResourceType;
@@ -57,9 +58,6 @@ public interface RemoteRenderResources extends Remote {
     ResourceValue findItemInStyle(StyleResourceValue style, String attrName,
             boolean isFrameworkAttr) throws RemoteException;
 
-
-    ResourceValue findResValue(String reference, boolean forceFrameworkOnly) throws RemoteException;
-
     ResourceValue resolveValue(ResourceValue value) throws RemoteException;
 
     ResourceValue resolveValue(ResourceType type, String name, String value,
@@ -68,4 +66,8 @@ public interface RemoteRenderResources extends Remote {
     StyleResourceValue getParent(StyleResourceValue style) throws RemoteException;
 
     StyleResourceValue getStyle(String styleName, boolean isFramework) throws RemoteException;
+
+    ResourceValue dereference(ResourceValue resourceValue) throws RemoteException;
+
+    ResourceValue getUnresolvedResource(ResourceReference reference) throws RemoteException;
 }

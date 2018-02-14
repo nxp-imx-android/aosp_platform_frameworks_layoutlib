@@ -20,6 +20,7 @@ import com.android.SdkConstants;
 import com.android.ide.common.rendering.api.AssetRepository;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
+import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
 import com.android.ide.common.resources.ResourceRepository;
@@ -32,6 +33,8 @@ import android.annotation.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Builder to help setting up {@link SessionParams} objects.
@@ -149,10 +152,12 @@ public class SessionParamsBuilder {
         assert mLayoutlibCallback != null;
 
         FolderConfiguration config = mConfigGenerator.getFolderConfig();
-        ResourceResolver resourceResolver =
-                ResourceResolver.create(mProjectResources.getConfiguredResources(config),
-                        mFrameworkResources.getConfiguredResources(config), mThemeName,
-                        isProjectTheme);
+        ResourceResolver resourceResolver = ResourceResolver.create(
+                ImmutableMap.of(
+                        ResourceNamespace.ANDROID, mFrameworkResources.getConfiguredResources(config),
+                        ResourceNamespace.TODO, mProjectResources.getConfiguredResources(config)),
+                mThemeName,
+                isProjectTheme);
 
         SessionParams params = new SessionParams(mLayoutParser, mRenderingMode, mProjectKey /* for
         caching */, mConfigGenerator.getHardwareConfig(), resourceResolver, mLayoutlibCallback,

@@ -17,6 +17,7 @@
 package com.android.layoutlib.bridge.remote.client.adapters;
 
 import com.android.ide.common.rendering.api.RenderResources;
+import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.StyleResourceValue;
 import com.android.layout.remote.api.RemoteRenderResources;
@@ -92,11 +93,6 @@ public class RemoteRenderResourcesAdapter implements RemoteRenderResources {
     }
 
     @Override
-    public ResourceValue findResValue(String reference, boolean forceFrameworkOnly) {
-        return mDelegate.findResValue(reference, forceFrameworkOnly);
-    }
-
-    @Override
     public ResourceValue resolveValue(ResourceValue value) {
         return mDelegate.resolveResValue(value);
     }
@@ -115,5 +111,15 @@ public class RemoteRenderResourcesAdapter implements RemoteRenderResources {
     @Override
     public StyleResourceValue getStyle(String styleName, boolean isFramework) {
         return mDelegate.getStyle(styleName, isFramework);
+    }
+
+    @Override
+    public ResourceValue dereference(ResourceValue resourceValue) throws RemoteException {
+        return mDelegate.dereference(resourceValue);
+    }
+
+    @Override
+    public ResourceValue getUnresolvedResource(ResourceReference reference) {
+        return mDelegate.getUnresolvedResource(reference);
     }
 }
