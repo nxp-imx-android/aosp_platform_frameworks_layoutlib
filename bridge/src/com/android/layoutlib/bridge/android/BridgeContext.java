@@ -441,23 +441,27 @@ public class BridgeContext extends Context {
         // The base value for R.style is 0x01030000 and the custom style is 0x02030000.
         // So, if the second byte is 03, it's probably a style.
         if ((id >> 16 & 0xFF) == 0x03) {
-            return getStyleByDynamicId(id);
+            StyleResourceValue style = getStyleByDynamicId(id);
+            if (style != null) {
+                return new ResourceReference(
+                        style.getNamespace(), style.getResourceType(), style.getName());
+            }
         }
         return null;
     }
 
-    public Pair<View, Boolean> inflateView(ResourceReference resource, ViewGroup parent,
+    public Pair<View, Boolean> inflateView(ResourceReference layout, ViewGroup parent,
             @SuppressWarnings("SameParameterValue") boolean attachToRoot,
             boolean skipCallbackParser) {
-        boolean isPlatformLayout = resource.isFramework();
+        boolean isPlatformLayout = layout.isFramework();
 
         if (!isPlatformLayout && !skipCallbackParser) {
             // check if the project callback can provide us with a custom parser.
-            ILayoutPullParser parser = getParser(resource);
+            ILayoutPullParser parser = getLayoutlibCallback().getParser(layout.getName());
 
             if (parser != null) {
                 BridgeXmlBlockParser blockParser = new BridgeXmlBlockParser(parser,
-                        this, resource.isFramework());
+                        this, layout.isFramework());
                 try {
                     pushParser(blockParser);
                     return Pair.of(
@@ -470,16 +474,12 @@ public class BridgeContext extends Context {
         }
 
         ResourceValue resValue;
-        if (resource instanceof ResourceValue) {
-            resValue = (ResourceValue) resource;
+        if (isPlatformLayout) {
+            resValue = mRenderResources.getFrameworkResource(ResourceType.LAYOUT,
+                    layout.getName());
         } else {
-            if (isPlatformLayout) {
-                resValue = mRenderResources.getFrameworkResource(ResourceType.LAYOUT,
-                        resource.getName());
-            } else {
-                resValue = mRenderResources.getProjectResource(ResourceType.LAYOUT,
-                        resource.getName());
-            }
+            resValue = mRenderResources.getProjectResource(ResourceType.LAYOUT,
+                    layout.getName());
         }
 
         if (resValue != null) {
@@ -491,11 +491,11 @@ public class BridgeContext extends Context {
                 try {
                     XmlPullParser parser = ParserFactory.create(xml, true);
 
-                    // set the resource ref to have correct view cookies
-                    mBridgeInflater.setResourceReference(resource);
+                    // set the layout ref to have correct view cookies
+                    mBridgeInflater.setResourceReference(layout);
 
                     BridgeXmlBlockParser blockParser = new BridgeXmlBlockParser(parser,
-                            this, resource.isFramework());
+                            this, layout.isFramework());
                     try {
                         pushParser(blockParser);
                         return Pair.of(
@@ -520,7 +520,7 @@ public class BridgeContext extends Context {
         } else {
             Bridge.getLog().error(LayoutLog.TAG_BROKEN,
                     String.format("Layout %s%s does not exist.", isPlatformLayout ? "android:" : "",
-                            resource.getName()), null);
+                            layout.getName()), null);
         }
 
         return Pair.of(null, Boolean.FALSE);
@@ -554,17 +554,6 @@ public class BridgeContext extends Context {
         }
         mIsThemeAppCompat = isThemeAppCompat;
         return isThemeAppCompat;
-    }
-
-    @SuppressWarnings("deprecation")
-    private ILayoutPullParser getParser(ResourceReference resource) {
-        ILayoutPullParser parser;
-        if (resource instanceof ResourceValue) {
-            parser = mLayoutlibCallback.getParser((ResourceValue) resource);
-        } else {
-            parser = mLayoutlibCallback.getParser(resource.getName());
-        }
-        return parser;
     }
 
     // ------------ Context methods
