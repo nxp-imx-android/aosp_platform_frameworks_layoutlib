@@ -21,13 +21,15 @@ import com.android.ide.common.rendering.api.AssetRepository;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.ResourceNamespace;
+import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
-import com.android.ide.common.resources.ResourceRepository;
 import com.android.ide.common.resources.ResourceResolver;
 import com.android.ide.common.resources.configuration.FolderConfiguration;
+import com.android.ide.common.resources.deprecated.ResourceRepository;
 import com.android.layoutlib.bridge.intensive.setup.ConfigGenerator;
 import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser;
+import com.android.resources.ResourceType;
 
 import android.annotation.NonNull;
 
@@ -156,8 +158,10 @@ public class SessionParamsBuilder {
                 ImmutableMap.of(
                         ResourceNamespace.ANDROID, mFrameworkResources.getConfiguredResources(config),
                         ResourceNamespace.TODO, mProjectResources.getConfiguredResources(config)),
-                mThemeName,
-                isProjectTheme);
+                new ResourceReference(
+                        ResourceNamespace.fromBoolean(!isProjectTheme),
+                        ResourceType.STYLE,
+                        mThemeName));
 
         SessionParams params = new SessionParams(mLayoutParser, mRenderingMode, mProjectKey /* for
         caching */, mConfigGenerator.getHardwareConfig(), resourceResolver, mLayoutlibCallback,

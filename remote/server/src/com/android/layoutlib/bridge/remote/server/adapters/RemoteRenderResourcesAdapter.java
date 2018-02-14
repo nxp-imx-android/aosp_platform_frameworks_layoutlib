@@ -123,32 +123,19 @@ public class RemoteRenderResourcesAdapter extends RenderResources {
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public ResourceValue findItemInTheme(String itemName) {
-        throw new UnsupportedOperationException("Deprecated");
-    }
-
-    @Override
-    public ResourceValue findItemInTheme(String attrName, boolean isFrameworkAttr) {
+    public ResourceValue findItemInTheme(ResourceReference attr) {
         try {
-            return mDelegate.findItemInTheme(attrName, isFrameworkAttr);
+            return mDelegate.findItemInTheme(attr);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public ResourceValue findItemInStyle(StyleResourceValue style, String attrName) {
-        throw new UnsupportedOperationException("Deprecated");
-    }
-
-    @Override
-    public ResourceValue findItemInStyle(StyleResourceValue style, String attrName,
-            boolean isFrameworkAttr) {
+    public ResourceValue findItemInStyle(StyleResourceValue style, ResourceReference attr) {
         try {
-            return mDelegate.findItemInStyle(style, attrName, isFrameworkAttr);
+            return mDelegate.findItemInStyle(style, attr);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
@@ -202,12 +189,4 @@ public class RemoteRenderResourcesAdapter extends RenderResources {
         }
     }
 
-    @Override
-    public StyleResourceValue getStyle(String styleName, boolean isFramework) {
-        try {
-            return mDelegate.getStyle(styleName, isFramework);
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

@@ -18,13 +18,12 @@ package com.android.layoutlib.bridge.intensive;
 
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.RenderSession;
-import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
-import com.android.ide.common.resources.FrameworkResources;
-import com.android.ide.common.resources.ResourceItem;
-import com.android.ide.common.resources.ResourceRepository;
+import com.android.ide.common.resources.deprecated.FrameworkResources;
+import com.android.ide.common.resources.deprecated.ResourceItem;
+import com.android.ide.common.resources.deprecated.ResourceRepository;
 import com.android.io.FolderWrapper;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
