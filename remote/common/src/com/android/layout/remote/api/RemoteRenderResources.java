@@ -59,9 +59,6 @@ public interface RemoteRenderResources extends Remote {
 
     ResourceValue resolveValue(ResourceValue value) throws RemoteException;
 
-    ResourceValue resolveValue(ResourceType type, String name, String value,
-            boolean isFrameworkValue) throws RemoteException;
-
     StyleResourceValue getParent(StyleResourceValue style) throws RemoteException;
 
     StyleResourceValue getStyle(String styleName, boolean isFramework) throws RemoteException;

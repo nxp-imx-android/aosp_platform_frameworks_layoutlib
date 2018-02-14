@@ -18,6 +18,8 @@ package android.util;
 
 import com.android.ide.common.rendering.api.AttrResourceValue;
 import com.android.ide.common.rendering.api.RenderResources;
+import com.android.ide.common.rendering.api.ResourceNamespace;
+import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.internal.util.XmlUtils;
 import com.android.layoutlib.bridge.Bridge;
@@ -90,9 +92,11 @@ public class BridgeXmlPullAttributes extends XmlPullAttributes {
         // this is not an attribute in the android namespace, we query the customviewloader, if
         // the namespaces match.
         if (mContext.getLayoutlibCallback().getNamespace().equals(ns)) {
-            Integer v = mContext.getLayoutlibCallback().getResourceId(ResourceType.ATTR, name);
-            if (v != null) {
-                return v;
+            // TODO(namespaces): cache the namespace objects.
+            ResourceNamespace namespace = ResourceNamespace.fromNamespaceUri(ns);
+            if (namespace != null) {
+                return mContext.getLayoutlibCallback().getOrGenerateResourceId(
+                        new ResourceReference(namespace, ResourceType.ATTR, name));
             }
         }
 
@@ -295,17 +299,9 @@ public class BridgeXmlPullAttributes extends XmlPullAttributes {
     private int resolveResourceValue(String value, int defaultValue) {
         ResourceValue resource = getResourceValue(value);
         if (resource != null) {
-            Integer id;
-            if (mPlatformFile || resource.isFramework()) {
-                id = Bridge.getResourceId(resource.getResourceType(), resource.getName());
-            } else {
-                id = mContext.getLayoutlibCallback().getResourceId(
-                        resource.getResourceType(), resource.getName());
-            }
-
-            if (id != null) {
-                return id;
-            }
+            return mPlatformFile || resource.isFramework() ?
+                    Bridge.getResourceId(resource.getResourceType(), resource.getName()) :
+                    mContext.getLayoutlibCallback().getOrGenerateResourceId(resource.asReference());
         }
 
         return defaultValue;

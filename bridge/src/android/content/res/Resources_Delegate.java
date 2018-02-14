@@ -23,6 +23,9 @@ import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.PluralsResourceValue;
 import com.android.ide.common.rendering.api.RenderResources;
+import com.android.ide.common.rendering.api.ResourceNamespace;
+import com.android.ide.common.rendering.api.ResourceNamespace.Resolver;
+import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.BridgeConstants;
@@ -122,15 +125,14 @@ public class Resources_Delegate {
         Resources.mSystem = null;
     }
 
-    public static BridgeTypedArray newTypeArray(Resources resources, int numEntries,
-            boolean platformFile) {
-        return new BridgeTypedArray(resources, getContext(resources), numEntries, platformFile);
+    public static BridgeTypedArray newTypeArray(Resources resources, int numEntries) {
+        return new BridgeTypedArray(resources, getContext(resources), numEntries);
     }
 
     private static Pair<ResourceType, String> getResourceInfo(Resources resources, int id,
             boolean[] platformResFlag_out) {
         // first get the String related to this id in the framework
-        Pair<ResourceType, String> resourceInfo = Bridge.resolveResourceId(id);
+        ResourceReference resourceInfo = Bridge.resolveResourceId(id);
 
         assert Resources.mSystem != null : "Resources_Delegate.initSystem wasn't called";
         // Set the layoutlib callback and context for resources
@@ -142,7 +144,7 @@ public class Resources_Delegate {
 
         if (resourceInfo != null) {
             platformResFlag_out[0] = true;
-            return resourceInfo;
+            return Pair.of(resourceInfo.getResourceType(), resourceInfo.getName());
         }
 
         // didn't find a match in the framework? look in the project.
@@ -150,7 +152,7 @@ public class Resources_Delegate {
 
         if (resourceInfo != null) {
             platformResFlag_out[0] = false;
-            return resourceInfo;
+            return Pair.of(resourceInfo.getResourceType(), resourceInfo.getName());
         }
         return null;
     }
@@ -1016,9 +1018,8 @@ public class Resources_Delegate {
 
     @VisibleForTesting
     @Nullable
-    static ResourceUrl resourceUrlFromName(@NonNull String name, @Nullable String defType,
-            @Nullable
-            String defPackage) {
+    static ResourceUrl resourceUrlFromName(
+            @NonNull String name, @Nullable String defType, @Nullable String defPackage) {
         int colonIdx = name.indexOf(':');
         int slashIdx = name.indexOf('/');
 
@@ -1068,13 +1069,19 @@ public class Resources_Delegate {
         }
 
         ResourceUrl url = resourceUrlFromName(name, defType, defPackage);
-        Integer id = null;
         if (url != null) {
-            id = ANDROID_PKG.equals(url.namespace) ? Bridge.getResourceId(url.type, url.name) :
-                    getLayoutlibCallback(resources).getResourceId(url.type, url.name);
+            ResourceNamespace defNamespace =
+                    defPackage == null
+                            ? ResourceNamespace.RES_AUTO
+                            : ResourceNamespace.fromPackageName(defPackage);
+
+            return ANDROID_PKG.equals(url.namespace)
+                    ? Bridge.getResourceId(url.type, url.name)
+                    : getLayoutlibCallback(resources).getOrGenerateResourceId(
+                            url.resolve(defNamespace, Resolver.EMPTY_RESOLVER));
         }
 
-        return id != null ? id : 0;
+        return 0;
     }
 
     /**
