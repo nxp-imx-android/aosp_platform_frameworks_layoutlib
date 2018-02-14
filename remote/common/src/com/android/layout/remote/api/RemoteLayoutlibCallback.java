@@ -22,11 +22,7 @@ import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams.Key;
-import com.android.resources.ResourceType;
-import com.android.util.Pair;
 
-import java.io.Serializable;
-import java.nio.file.Path;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -37,15 +33,13 @@ public interface RemoteLayoutlibCallback extends Remote {
     boolean supports(int ideFeature) throws RemoteException;
 
     Object loadView(String name, Class[] constructorSignature, Object[] constructorArgs)
-            throws Exception, RemoteException;
+            throws Exception;
 
     String getNamespace() throws RemoteException;
 
-    RemoteResolveResult resolveResourceId(int id) throws RemoteException;
+    ResourceReference resolveResourceId(int id) throws RemoteException;
 
-    String resolveResourceId(int[] id) throws RemoteException;
-
-    Integer getResourceId(ResourceType type, String name) throws RemoteException;
+    int getOrGenerateResourceId(ResourceReference resource) throws RemoteException;
 
     RemoteILayoutPullParser getParser(ResourceValue layoutResource) throws RemoteException;
 
@@ -66,18 +60,4 @@ public interface RemoteLayoutlibCallback extends Remote {
     Path findClassPath(String name) throws RemoteException;
 
     RemoteXmlPullParser getXmlFileParser(String fileName) throws RemoteException;
-
-    class RemoteResolveResult implements Serializable {
-        private ResourceType type;
-        private String value;
-
-        public RemoteResolveResult(ResourceType type, String value) {
-            this.type = type;
-            this.value = value;
-        }
-
-        public Pair<ResourceType, String> asPair() {
-            return Pair.of(type, value);
-        }
-    }
 }

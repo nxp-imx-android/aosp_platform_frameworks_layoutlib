@@ -21,6 +21,8 @@ import com.android.ide.common.rendering.api.DrawableParams;
 import com.android.ide.common.rendering.api.Features;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.RenderSession;
+import com.android.ide.common.rendering.api.ResourceNamespace;
+import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.Result.Status;
 import com.android.ide.common.rendering.api.SessionParams;
@@ -30,11 +32,11 @@ import com.android.layoutlib.bridge.impl.RenderSessionImpl;
 import com.android.layoutlib.bridge.util.DynamicIdMap;
 import com.android.ninepatch.NinePatchChunk;
 import com.android.resources.ResourceType;
+import com.android.tools.layoutlib.annotations.Nullable;
 import com.android.tools.layoutlib.create.MethodAdapter;
 import com.android.tools.layoutlib.create.OverrideMethod;
 import com.android.util.Pair;
 
-import android.annotation.NonNull;
 import android.content.res.BridgeAssetManager;
 import android.graphics.Bitmap;
 import android.graphics.FontFamily_Delegate;
@@ -530,17 +532,20 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
 
     /**
      * Returns details of a framework resource from its integer value.
-     * @param value the integer value
-     * @return a Pair containing the resource type and name, or null if the id
-     *     does not match any resource.
+     *
+     * <p>TODO(namespaces): remove this and just do all id resolution through the callback.
      */
-    @SuppressWarnings("deprecation")
-    public static Pair<ResourceType, String> resolveResourceId(int value) {
+    @Nullable
+    public static ResourceReference resolveResourceId(int value) {
         Pair<ResourceType, String> pair = sRMap.get(value);
         if (pair == null) {
             pair = sDynamicIds.resolveId(value);
         }
-        return pair;
+
+        if (pair != null) {
+            return new ResourceReference(ResourceNamespace.ANDROID, pair.getFirst(), pair.getSecond());
+        }
+        return null;
     }
 
     /**
@@ -551,10 +556,9 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
      * @param type the type of the resource
      * @param name the name of the resource.
      *
-     * @return an {@link Integer} containing the resource id.
+     * @return an int containing the resource id.
      */
-    @NonNull
-    public static Integer getResourceId(ResourceType type, String name) {
+    public static int getResourceId(ResourceType type, String name) {
         Map<String, Integer> map = sRevRMap.get(type);
         Integer value = null;
         if (map != null) {
@@ -562,7 +566,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         }
 
         return value == null ? sDynamicIds.getId(type, name) : value;
-
     }
 
     /**

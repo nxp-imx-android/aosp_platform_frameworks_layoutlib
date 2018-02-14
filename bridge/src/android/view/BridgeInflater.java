@@ -31,10 +31,8 @@ import com.android.layoutlib.bridge.android.support.DrawerLayoutUtil;
 import com.android.layoutlib.bridge.android.support.RecyclerViewUtil;
 import com.android.layoutlib.bridge.impl.ParserFactory;
 import com.android.layoutlib.bridge.util.ReflectionUtils;
-import com.android.resources.ResourceType;
 import com.android.tools.layoutlib.annotations.NotNull;
 import com.android.tools.layoutlib.annotations.Nullable;
-import com.android.util.Pair;
 
 import org.xmlpull.v1.XmlPullParser;
 
@@ -334,18 +332,13 @@ public final class BridgeInflater extends LayoutInflater {
 
             ResourceValue value = null;
 
-            @SuppressWarnings("deprecation")
-            Pair<ResourceType, String> layoutInfo = Bridge.resolveResourceId(resource);
-            if (layoutInfo != null) {
-                value = bridgeContext.getRenderResources().getFrameworkResource(
-                        ResourceType.LAYOUT, layoutInfo.getSecond());
-            } else {
+            ResourceReference layoutInfo = Bridge.resolveResourceId(resource);
+            if (layoutInfo == null) {
                 layoutInfo = mLayoutlibCallback.resolveResourceId(resource);
 
-                if (layoutInfo != null) {
-                    value = bridgeContext.getRenderResources().getProjectResource(
-                            ResourceType.LAYOUT, layoutInfo.getSecond());
-                }
+            }
+            if (layoutInfo != null) {
+                value = bridgeContext.getRenderResources().getResolvedResource(layoutInfo);
             }
 
             if (value != null) {
@@ -441,8 +434,7 @@ public final class BridgeInflater extends LayoutInflater {
                     resourceId = Bridge.getResourceId(resValue.getResourceType(),
                             resValue.getName());
                 } else {
-                    resourceId = mLayoutlibCallback.getResourceId(resValue.getResourceType(),
-                            resValue.getName());
+                    resourceId = mLayoutlibCallback.getOrGenerateResourceId(resValue.asReference());
                 }
             }
             if (resourceId == null) {
@@ -568,7 +560,7 @@ public final class BridgeInflater extends LayoutInflater {
     @NonNull
     private Map<View, String> getDrawerLayoutMap() {
         if (mOpenDrawerLayouts == null) {
-            mOpenDrawerLayouts = new HashMap<View, String>(4);
+            mOpenDrawerLayouts = new HashMap<>(4);
         }
         return mOpenDrawerLayouts;
     }

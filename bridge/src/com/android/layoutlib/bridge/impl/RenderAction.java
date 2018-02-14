@@ -20,12 +20,10 @@ import com.android.ide.common.rendering.api.HardwareConfig;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.RenderParams;
 import com.android.ide.common.rendering.api.RenderResources;
-import com.android.ide.common.rendering.api.RenderResources.FrameworkResourceIdProvider;
 import com.android.ide.common.rendering.api.Result;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.resources.Density;
-import com.android.resources.ResourceType;
 import com.android.resources.ScreenOrientation;
 import com.android.resources.ScreenRound;
 import com.android.resources.ScreenSize;
@@ -62,7 +60,7 @@ import static com.android.ide.common.rendering.api.Result.Status.SUCCESS;
  * @param <T> the {@link RenderParams} implementation
  *
  */
-public abstract class RenderAction<T extends RenderParams> extends FrameworkResourceIdProvider {
+public abstract class RenderAction<T extends RenderParams> {
 
     /**
      * The current context being rendered. This is set through {@link #acquire(long)} and
@@ -255,7 +253,6 @@ public abstract class RenderAction<T extends RenderParams> extends FrameworkReso
 
         LayoutLog currentLog = mParams.getLog();
         Bridge.setLog(currentLog);
-        mContext.getRenderResources().setFrameworkResourceIdProvider(this);
         mContext.getRenderResources().setLogger(currentLog);
     }
 
@@ -286,7 +283,6 @@ public abstract class RenderAction<T extends RenderParams> extends FrameworkReso
 
         Bridge.setLog(null);
         if (mContext != null) {
-            mContext.getRenderResources().setFrameworkResourceIdProvider(null);
             mContext.getRenderResources().setLogger(null);
         }
         ParserFactory.setParserFactory(null);
@@ -412,13 +408,5 @@ public abstract class RenderAction<T extends RenderParams> extends FrameworkReso
         // TODO: fill in more config info.
 
         return config;
-    }
-
-
-    // --- FrameworkResourceIdProvider methods
-
-    @Override
-    public Integer getId(ResourceType resType, String resName) {
-        return Bridge.getResourceId(resType, resName);
     }
 }

@@ -96,7 +96,7 @@ public class LayoutPullParser extends KXmlParser implements ILayoutPullParser{
                         continue;
                     }
                     if (map == null) {
-                        map = new HashMap<String, String>(4);
+                        map = new HashMap<>(4);
                     }
                     map.put(attribute, getAttributeValue(i));
                 }
@@ -107,12 +107,4 @@ public class LayoutPullParser extends KXmlParser implements ILayoutPullParser{
 
         return null;
     }
-
-    @Override
-    @Deprecated
-    public ILayoutPullParser getParser(String layoutName) {
-        // Studio returns null.
-        return null;
-    }
-
 }

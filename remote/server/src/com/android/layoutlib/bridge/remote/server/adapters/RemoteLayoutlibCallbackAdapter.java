@@ -25,12 +25,7 @@ import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams.Key;
 import com.android.layout.remote.api.RemoteLayoutlibCallback;
-import com.android.layout.remote.api.RemoteLayoutlibCallback.RemoteResolveResult;
-import com.android.layoutlib.bridge.MockView;
-import com.android.resources.ResourceType;
 import com.android.tools.layoutlib.annotations.NotNull;
-import com.android.tools.layoutlib.annotations.Nullable;
-import com.android.util.Pair;
 
 import org.xmlpull.v1.XmlPullParser;
 
@@ -170,17 +165,7 @@ public class RemoteLayoutlibCallbackAdapter extends LayoutlibCallback {
     }
 
     @Override
-    public Pair<ResourceType, String> resolveResourceId(int id) {
-        try {
-            RemoteResolveResult result = mDelegate.resolveResourceId(id);
-            return result != null ? result.asPair() : null;
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public String resolveResourceId(int[] id) {
+    public ResourceReference resolveResourceId(int id) {
         try {
             return mDelegate.resolveResourceId(id);
         } catch (RemoteException e) {
@@ -189,17 +174,12 @@ public class RemoteLayoutlibCallbackAdapter extends LayoutlibCallback {
     }
 
     @Override
-    public Integer getResourceId(ResourceType type, String name) {
+    public int getOrGenerateResourceId(ResourceReference resource) {
         try {
-            return mDelegate.getResourceId(type, name);
+            return mDelegate.getOrGenerateResourceId(resource);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public ILayoutPullParser getParser(String layoutName) {
-        return null;
     }
 
     @Override
