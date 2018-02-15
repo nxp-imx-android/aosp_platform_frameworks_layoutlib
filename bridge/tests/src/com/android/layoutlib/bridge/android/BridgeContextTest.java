@@ -76,6 +76,7 @@ public class BridgeContextTest extends RenderTestBase {
 
         } finally {
             RenderActionTestUtil.setBridgeContext(oldContext);
+            context.disposeResources();
         }
 
         // This message is expected when asking for an invalid defStyleAttr
@@ -116,6 +117,7 @@ public class BridgeContextTest extends RenderTestBase {
                     new int[]{attr.clickable}, attr.editTextStyle, 0);
         } finally {
             RenderActionTestUtil.setBridgeContext(oldContext);
+            context.disposeResources();
         }
 
 

@@ -809,12 +809,6 @@ public class BridgeContext extends Context {
                         }
                         defaultPropMap.put("style", new Property(defStyleName, item.getValue()));
                     }
-                } else if (defStyleRes == 0) {
-                    Bridge.getLog().error(LayoutLog.TAG_RESOURCES_RESOLVE_THEME_ATTR,
-                            String.format(
-                                    "Failed to find style '%s' in current theme",
-                                    defStyleAttribute.getFirst()),
-                            null);
                 }
             }
         }
