@@ -20,6 +20,7 @@ import com.android.ide.common.rendering.api.SessionParams;
 import com.android.layoutlib.bridge.impl.RenderAction;
 import com.android.layoutlib.bridge.impl.RenderActionTestUtil;
 import com.android.layoutlib.bridge.intensive.RenderTestBase;
+import com.android.layoutlib.bridge.intensive.setup.ConfigGenerator;
 import com.android.layoutlib.bridge.intensive.setup.LayoutLibTestCallback;
 import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser;
 
@@ -75,10 +76,50 @@ public class BridgeContextTest extends RenderTestBase {
 
         } finally {
             RenderActionTestUtil.setBridgeContext(oldContext);
+            context.disposeResources();
         }
 
         // This message is expected when asking for an invalid defStyleAttr
         sRenderMessages.removeIf(msg ->
                 msg.startsWith("Failed to find the style corresponding to the id"));
+    }
+
+    @Test
+    public void checkNoErrorWhenUsingDefaults() throws ClassNotFoundException {
+        // Setup
+        // Create the layout pull parser for our resources (empty.xml can not be part of the test
+        // app as it won't compile).
+        LayoutPullParser parser = LayoutPullParser.createFromPath("/empty.xml");
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material", false)
+                .build();
+        DisplayMetrics metrics = new DisplayMetrics();
+        Configuration configuration = RenderAction.getConfiguration(params);
+        BridgeContext context = new BridgeContext(params.getProjectKey(), metrics, params.getResources(),
+                params.getAssets(), params.getLayoutlibCallback(), configuration,
+                params.getTargetSdkVersion(), params.isRtlSupported());
+
+        context.initResources();
+        BridgeContext oldContext = RenderActionTestUtil.setBridgeContext(context);
+        try {
+            Context themeContext = new ContextThemeWrapper(context, style.Theme_Material);
+            // First we try to get the style from the ?attr/editTextStyle fallback value.
+            // We pass an invalid value to defStyleRes
+            themeContext.obtainStyledAttributes(null,
+                    new int[]{attr.clickable}, 0, style.Widget_EditText);
+            themeContext.obtainStyledAttributes(null,
+                    new int[]{attr.clickable}, attr.editTextStyle, 0);
+        } finally {
+            RenderActionTestUtil.setBridgeContext(oldContext);
+            context.disposeResources();
+        }
+
+
     }
 }
