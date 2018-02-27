@@ -526,14 +526,6 @@ public class IWindowManagerImpl implements IWindowManager {
     }
 
     @Override
-    public void enableSurfaceTrace(ParcelFileDescriptor fd) throws RemoteException {
-    }
-
-    @Override
-    public void disableSurfaceTrace() throws RemoteException {
-    }
-
-    @Override
     public Region getCurrentImeTouchRegion() throws RemoteException {
         return null;
     }
