@@ -513,7 +513,8 @@ public final class ImageDecoder implements AutoCloseable {
      *
      *  @param allocator Type of allocator to use.
      */
-    public void setAllocator(@Allocator int allocator) {
+    public ImageDecoder setAllocator(@Allocator int allocator) {
+        return this;
     }
 
     /**
@@ -528,7 +529,8 @@ public final class ImageDecoder implements AutoCloseable {
      *  {@link #decodeDrawable}; attempting to decode an unpremultiplied
      *  {@link Drawable} will throw an {@link java.lang.IllegalStateException}.
      */
-    public void setRequireUnpremultiplied(boolean requireUnpremultiplied) {
+    public ImageDecoder setRequireUnpremultiplied(boolean requireUnpremultiplied) {
+        return this;
     }
 
     /**
@@ -544,7 +546,8 @@ public final class ImageDecoder implements AutoCloseable {
      *  {@link Canvas} will be recorded immediately and then applied to each
      *  frame.</p>
      */
-    public void setPostProcessor(@Nullable PostProcessor p) {
+    public ImageDecoder setPostProcessor(@Nullable PostProcessor p) {
+        return this;
     }
 
     /**
@@ -553,7 +556,8 @@ public final class ImageDecoder implements AutoCloseable {
      *  Will be called if there is an error in the input. Without one, a
      *  partial {@link Bitmap} will be created.
      */
-    public void setOnPartialImageListener(@Nullable OnPartialImageListener l) {
+    public ImageDecoder setOnPartialImageListener(@Nullable OnPartialImageListener l) {
+        return this;
     }
 
     /**
@@ -568,7 +572,8 @@ public final class ImageDecoder implements AutoCloseable {
      *  {@link BitmapRegionDecoder#decodeRegion}. This supports all formats,
      *  but merely crops the output.</p>
      */
-    public void setCrop(@Nullable Rect subset) {
+    public ImageDecoder setCrop(@Nullable Rect subset) {
+        return this;
     }
 
     /**
@@ -579,8 +584,9 @@ public final class ImageDecoder implements AutoCloseable {
      *
      *  @hide
      */
-    public void setOutPaddingRect(@NonNull Rect outPadding) {
+    public ImageDecoder setOutPaddingRect(@NonNull Rect outPadding) {
         mOutPaddingRect = outPadding;
+        return this;
     }
 
     /**
@@ -599,7 +605,8 @@ public final class ImageDecoder implements AutoCloseable {
      *  order to modify. Attempting to decode a mutable {@link Drawable} will
      *  throw an {@link java.lang.IllegalStateException}.</p>
      */
-    public void setMutable(boolean mutable) {
+    public ImageDecoder setMutable(boolean mutable) {
+        return this;
     }
 
     /**
@@ -610,7 +617,8 @@ public final class ImageDecoder implements AutoCloseable {
      *  an opaque {@link Bitmap}, this may result in a {@link Bitmap.Config}
      *  with no alpha information.
      */
-    public void setPreferRamOverQuality(boolean preferRamOverQuality) {
+    public ImageDecoder setPreferRamOverQuality(boolean preferRamOverQuality) {
+        return this;
     }
 
     /**
@@ -625,7 +633,8 @@ public final class ImageDecoder implements AutoCloseable {
      *  {@link #decodeBitmap} throwing an
      *  {@link java.lang.IllegalStateException}.</p>
      */
-    public void setAsAlphaMask(boolean asAlphaMask) {
+    public ImageDecoder setAsAlphaMask(boolean asAlphaMask) {
+        return this;
     }
 
     @Override
