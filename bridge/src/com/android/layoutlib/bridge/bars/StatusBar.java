@@ -17,6 +17,7 @@
 package com.android.layoutlib.bridge.bars;
 
 import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
@@ -101,8 +102,11 @@ public class StatusBar extends CustomBar {
 
             if (stream != null) {
                 try {
-                    BridgeXmlBlockParser parser = new BridgeXmlBlockParser(
-                            ParserFactory.create(stream, null), (BridgeContext) mContext, true);
+                    BridgeXmlBlockParser parser =
+                            new BridgeXmlBlockParser(
+                                    ParserFactory.create(stream, null),
+                                    (BridgeContext) mContext,
+                                    ResourceNamespace.ANDROID);
                     imageView.setImageDrawable(
                             Drawable.createFromXml(mContext.getResources(), parser));
                 } catch (XmlPullParserException e) {

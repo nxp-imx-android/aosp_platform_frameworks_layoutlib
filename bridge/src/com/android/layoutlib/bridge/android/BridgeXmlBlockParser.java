@@ -18,6 +18,7 @@ package com.android.layoutlib.bridge.android;
 
 
 import com.android.ide.common.rendering.api.ILayoutPullParser;
+import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.layoutlib.bridge.impl.ParserFactory;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -40,10 +41,10 @@ import java.io.Reader;
  */
 public class BridgeXmlBlockParser implements XmlResourceParser {
 
-    private final XmlPullParser mParser;
-    private final AttributeSet mAttrib;
-    private final BridgeContext mContext;
-    private final boolean mPlatformFile;
+    @NonNull private final XmlPullParser mParser;
+    @NonNull private final AttributeSet mAttrib;
+    @Nullable private final BridgeContext mContext;
+    @NonNull private final ResourceNamespace mFileResourceNamespace;
 
     private boolean mStarted = false;
     private int mEventType = START_DOCUMENT;
@@ -52,22 +53,24 @@ public class BridgeXmlBlockParser implements XmlResourceParser {
 
     /**
      * Builds a {@link BridgeXmlBlockParser}.
-     * @param parser The XmlPullParser to get the content from.
+     * @param parser XmlPullParser to get the content from.
      * @param context the Context.
-     * @param platformFile Indicates whether the the file is a platform file or not.
+     * @param fileNamespace namespace of the file being parsed.
      */
-    public BridgeXmlBlockParser(@NonNull XmlPullParser parser, @Nullable BridgeContext context,
-            boolean platformFile) {
+    public BridgeXmlBlockParser(
+            @NonNull XmlPullParser parser,
+            @Nullable BridgeContext context,
+            @NonNull ResourceNamespace fileNamespace) {
         if (ParserFactory.LOG_PARSER) {
             System.out.println("CRTE " + parser.toString());
         }
 
         mParser = parser;
         mContext = context;
-        mPlatformFile = platformFile;
+        mFileResourceNamespace = fileNamespace;
 
         if (mContext != null) {
-            mAttrib = new BridgeXmlPullAttributes(parser, context, mPlatformFile);
+            mAttrib = new BridgeXmlPullAttributes(parser, context, mFileResourceNamespace);
             mContext.pushParser(this);
             mPopped = false;
         }
@@ -80,8 +83,9 @@ public class BridgeXmlBlockParser implements XmlResourceParser {
         return mParser;
     }
 
-    public boolean isPlatformFile() {
-        return mPlatformFile;
+    @NonNull
+    public ResourceNamespace getFileResourceNamespace() {
+        return mFileResourceNamespace;
     }
 
     public Object getViewCookie() {
@@ -309,10 +313,6 @@ public class BridgeXmlBlockParser implements XmlResourceParser {
         if (ev == END_TAG && mParser.getDepth() == 1) {
             // done with parser remove it from the context stack.
             ensurePopped();
-
-            if (ParserFactory.LOG_PARSER) {
-                System.out.println("");
-            }
         }
 
         mEventType = ev;

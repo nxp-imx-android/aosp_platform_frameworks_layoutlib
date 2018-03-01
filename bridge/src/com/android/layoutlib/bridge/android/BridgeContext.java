@@ -442,8 +442,8 @@ public class BridgeContext extends Context {
             }
 
             if (parser != null) {
-                BridgeXmlBlockParser blockParser = new BridgeXmlBlockParser(parser,
-                        this, layout.isFramework());
+                BridgeXmlBlockParser blockParser =
+                        new BridgeXmlBlockParser(parser, this, layout.getNamespace());
                 try {
                     pushParser(blockParser);
                     return Pair.of(
@@ -476,8 +476,8 @@ public class BridgeContext extends Context {
                     // set the layout ref to have correct view cookies
                     mBridgeInflater.setResourceReference(layout);
 
-                    BridgeXmlBlockParser blockParser = new BridgeXmlBlockParser(parser,
-                            this, layout.isFramework());
+                    BridgeXmlBlockParser blockParser =
+                            new BridgeXmlBlockParser(parser,this, layout.getNamespace());
                     try {
                         pushParser(blockParser);
                         return Pair.of(
@@ -689,54 +689,37 @@ public class BridgeContext extends Context {
             int defStyleAttr, int defStyleRes) {
 
         PropertiesMap defaultPropMap = null;
-        boolean isPlatformFile = true;
 
-        Resolver implicitNamespacesResolver = mLayoutlibCallback.getImplicitNamespaces();
-        ResourceNamespace.Resolver resolver = implicitNamespacesResolver;
+        ResourceNamespace currentFileNamespace;
+        ResourceNamespace.Resolver resolver;
 
         // Hint: for XmlPullParser, attach source //DEVICE_SRC/dalvik/libcore/xml/src/java
         if (set instanceof BridgeXmlBlockParser) {
             BridgeXmlBlockParser parser;
             parser = (BridgeXmlBlockParser)set;
 
-            isPlatformFile = parser.isPlatformFile();
-
             Object key = parser.getViewCookie();
             if (key != null) {
                 defaultPropMap = mDefaultPropMaps.computeIfAbsent(key, k -> new PropertiesMap());
             }
 
-            resolver = new Resolver() {
-                @Override
-                public String prefixToUri(String namespacePrefix) {
-                    String result = parser.getNamespace(namespacePrefix);
-                    if (result == null) {
-                        result = implicitNamespacesResolver.prefixToUri(namespacePrefix);
-                    }
-
-                    return result;
-                }
-
-                @Override
-                public String uriToPrefix(String namespaceUri) {
-                    // This is needed when creating new XML snippets, we don't need to support that.
-                    throw new UnsupportedOperationException();
-                }
-            };
+            currentFileNamespace = parser.getFileResourceNamespace();
+            resolver = new XmlPullParserResolver(parser, mLayoutlibCallback.getImplicitNamespaces());
         } else if (set instanceof BridgeLayoutParamsMapAttributes) {
-            // this is only for temp layout params generated dynamically, so this is never
-            // platform content.
-            isPlatformFile = false;
-        } else if (set != null) { // null parser is ok
+            // This is for temp layout params generated dynamically in MockView. The set contains
+            // hardcoded values and we don't need to worry about resolving them.
+            currentFileNamespace = ResourceNamespace.RES_AUTO;
+            resolver = Resolver.EMPTY_RESOLVER;
+        } else if (set != null) {
             // really this should not be happening since its instantiated in Bridge
             Bridge.getLog().error(LayoutLog.TAG_BROKEN,
                     "Parser is not a BridgeXmlBlockParser!", null);
             return null;
+        } else {
+            // `set` is null, so there will be no values to resolve.
+            currentFileNamespace = ResourceNamespace.RES_AUTO;
+            resolver = Resolver.EMPTY_RESOLVER;
         }
-
-        // TODO(namespaces): We need to figure out how to keep track of the namespace of the current
-        // layout file.
-        ResourceNamespace currentFileNamespace = ResourceNamespace.fromBoolean(isPlatformFile);
 
         List<AttributeHolder> attributeList = searchAttrs(attrs);
 
@@ -749,8 +732,7 @@ public class BridgeContext extends Context {
             String customStyle = set.getAttributeValue(null, "style");
             if (customStyle != null) {
                 ResourceValue resolved = mRenderResources.resolveResValue(
-                        createDummyResourceValue(
-                                "style", customStyle, currentFileNamespace, resolver));
+                        new UnresolvedResourceValue(customStyle, currentFileNamespace, resolver));
 
                 if (resolved instanceof StyleResourceValue) {
                     customStyleValues = (StyleResourceValue) resolved;
@@ -951,8 +933,8 @@ public class BridgeContext extends Context {
                             attrName, attributeHolder.getNamespace(),
                             attributeHolder.getResourceId(),
                             mRenderResources.resolveResValue(
-                                    createDummyResourceValue(
-                                            attrName, value, currentFileNamespace, resolver)));
+                                    new UnresolvedResourceValue(
+                                            value, currentFileNamespace, resolver)));
                 }
             }
         }
@@ -960,24 +942,6 @@ public class BridgeContext extends Context {
         ta.sealArray();
 
         return ta;
-    }
-
-    @NonNull
-    private static ResourceValue createDummyResourceValue(
-            @NonNull String name,
-            @NonNull String value,
-            @NonNull ResourceNamespace currentFileNamespace,
-            @NonNull Resolver namespaceResolver) {
-        // `resolveResValue` will return the `dummy` value if `value` cannot be resolved to
-        // anything. The null type is then recognized in BridgeTypedArray#getResourceId.
-        ResourceValue dummy =
-                new ResourceValue(
-                        currentFileNamespace,
-                        null,
-                        name,
-                        value);
-        dummy.setNamespaceResolver(namespaceResolver);
-        return dummy;
     }
 
     @Override

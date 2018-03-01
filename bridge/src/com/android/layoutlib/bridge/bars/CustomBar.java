@@ -18,6 +18,7 @@ package com.android.layoutlib.bridge.bars;
 
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.RenderResources;
+import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.StyleResourceValue;
 import com.android.layoutlib.bridge.Bridge;
@@ -84,7 +85,9 @@ abstract class CustomBar extends LinearLayout {
         try {
             parser = ParserFactory.create(getClass().getResourceAsStream(layoutPath), name);
 
-            BridgeXmlBlockParser bridgeParser = new BridgeXmlBlockParser(parser, context, false);
+            // TODO(namespaces): does the namespace matter here?
+            BridgeXmlBlockParser bridgeParser =
+                    new BridgeXmlBlockParser(parser, context, ResourceNamespace.TODO);
 
             try {
                 inflater.inflate(bridgeParser, this, true);

@@ -18,6 +18,7 @@ package com.android.layoutlib.bridge.impl;
 
 import com.android.ide.common.rendering.api.AdapterBinding;
 import com.android.ide.common.rendering.api.HardwareConfig;
+import com.android.ide.common.rendering.api.ILayoutPullParser;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.RenderResources;
@@ -179,7 +180,8 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         mInflater = new BridgeInflater(context, params.getLayoutlibCallback());
         context.setBridgeInflater(mInflater);
 
-        mBlockParser = new BridgeXmlBlockParser(params.getLayoutDescription(), context, false);
+        ILayoutPullParser layoutParser = params.getLayoutDescription();
+        mBlockParser = new BridgeXmlBlockParser(layoutParser, context, layoutParser.getLayoutNamespace());
 
         return SUCCESS.createResult();
     }
