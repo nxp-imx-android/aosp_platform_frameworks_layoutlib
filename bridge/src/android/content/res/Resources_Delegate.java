@@ -930,13 +930,23 @@ public class Resources_Delegate {
         // even though we know the XML file to load directly, we still need to resolve the
         // id so that we can know if it's a platform or project resource.
         // (mPlatformResouceFlag will get the result and will be used later).
-        getResourceValue(resources, id, mPlatformResourceFlag);
+        Pair<String, ResourceValue> result =
+                getResourceValue(resources, id, mPlatformResourceFlag);
+
+        ResourceNamespace layoutNamespace;
+        if (result != null && result.getSecond() != null) {
+            layoutNamespace = result.getSecond().getNamespace();
+        } else {
+            // We need to pick something, even though the resource system never heard about a layout
+            // with this numeric id.
+            layoutNamespace = ResourceNamespace.RES_AUTO;
+        }
 
         File f = new File(file);
         try {
             XmlPullParser parser = ParserFactory.create(f);
 
-            return new BridgeXmlBlockParser(parser, getContext(resources), mPlatformResourceFlag[0]);
+            return new BridgeXmlBlockParser(parser, getContext(resources), layoutNamespace);
         } catch (XmlPullParserException e) {
             NotFoundException newE = new NotFoundException();
             newE.initCause(e);

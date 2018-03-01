@@ -28,6 +28,7 @@ import com.android.ide.common.rendering.api.StyleResourceValue;
 import com.android.internal.util.XmlUtils;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.BridgeContext;
+import com.android.layoutlib.bridge.android.UnresolvedResourceValue;
 import com.android.layoutlib.bridge.impl.ResourceHelper;
 import com.android.resources.ResourceType;
 import com.android.resources.ResourceUrl;
@@ -572,7 +573,7 @@ public final class BridgeTypedArray extends TypedArray {
         // If the attribute was a reference to a resource, and not a declaration of an id (@+id),
         // then the xml attribute value was "resolved" which leads us to a ResourceValue with a
         // valid type, name, namespace and a potentially null value.
-        if (resValue.getResourceType() != null) {
+        if (!(resValue instanceof UnresolvedResourceValue)) {
             // if this is a framework id
             if (resValue.isFramework()) {
                 // look for idName in the android R classes
@@ -592,9 +593,8 @@ public final class BridgeTypedArray extends TypedArray {
         value = value.trim();
 
 
-        // `resValue` has type null which should not be legal, but for now that's how layoutlib
-        // marks unresolvable values. We extract the interesting bits and get rid of this broken
-        // object. The namespace and resolver come from where the XML attribute was defined.
+        // `resValue` failed to be resolved. We extract the interesting bits and get rid of this
+        // broken object. The namespace and resolver come from where the XML attribute was defined.
         ResourceNamespace contextNamespace = resValue.getNamespace();
         Resolver namespaceResolver = resValue.getNamespaceResolver();
         resValue = null;
