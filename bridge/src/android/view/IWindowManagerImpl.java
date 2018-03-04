@@ -387,6 +387,10 @@ public class IWindowManagerImpl implements IWindowManager {
     }
 
     @Override
+    public void setNavBarVirtualKeyHapticFeedbackEnabled(boolean enabled) {
+    }
+
+    @Override
     public boolean stopViewServer() throws RemoteException {
         // TODO Auto-generated method stub
         return false;
