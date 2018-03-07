@@ -187,7 +187,7 @@ public class BridgeIInputMethodManager implements IInputMethodManager {
     }
 
     @Override
-    public boolean switchToLastInputMethod(IBinder arg0) throws RemoteException {
+    public boolean switchToPreviousInputMethod(IBinder arg0) throws RemoteException {
         // TODO Auto-generated method stub
         return false;
     }
