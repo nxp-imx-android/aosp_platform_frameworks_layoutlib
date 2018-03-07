@@ -25,7 +25,6 @@ import com.android.internal.util.XmlUtils;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
-import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.ninepatch.NinePatch;
 import com.android.ninepatch.NinePatchChunk;
 import com.android.resources.Density;
@@ -38,13 +37,11 @@ import android.annotation.Nullable;
 import android.content.res.ColorStateList;
 import android.content.res.ComplexColor;
 import android.content.res.ComplexColor_Accessor;
-import android.content.res.FontResourcesParser;
 import android.content.res.GradientColor;
 import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap_Delegate;
-import android.graphics.Color;
 import android.graphics.NinePatch_Delegate;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -54,7 +51,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
-import android.text.FontConfig;
 import android.util.TypedValue;
 
 import java.io.File;
@@ -278,7 +274,9 @@ public final class ResourceHelper {
             }
         }
 
-        return new BridgeXmlBlockParser(parser, context, value.isFramework());
+        return parser == null
+                ? null
+                : new BridgeXmlBlockParser(parser, context, value.getNamespace());
     }
 
     /**

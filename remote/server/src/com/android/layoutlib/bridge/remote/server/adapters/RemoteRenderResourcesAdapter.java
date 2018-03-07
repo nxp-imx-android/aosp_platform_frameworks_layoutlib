@@ -36,11 +36,6 @@ public class RemoteRenderResourcesAdapter extends RenderResources {
     }
 
     @Override
-    public void setFrameworkResourceIdProvider(FrameworkResourceIdProvider provider) {
-        // Ignored for remote operations.
-    }
-
-    @Override
     public void setLogger(LayoutLog logger) {
         // Ignored for remote operations.
     }
@@ -160,17 +155,6 @@ public class RemoteRenderResourcesAdapter extends RenderResources {
         }
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public ResourceValue resolveValue(ResourceType type, String name, String value,
-            boolean isFrameworkValue) {
-        try {
-            return mDelegate.resolveValue(type, name, value, isFrameworkValue);
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
     public ResourceValue resolveResValue(ResourceValue value) {
         try {
@@ -188,5 +172,4 @@ public class RemoteRenderResourcesAdapter extends RenderResources {
             throw new RuntimeException(e);
         }
     }
-
 }

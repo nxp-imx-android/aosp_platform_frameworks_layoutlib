@@ -61,11 +61,10 @@ public abstract class BridgeActionBar {
         }
         else {
             if (layoutName.isFramework()) {
-                layoutId = context.getFrameworkResourceValue(layoutName.getResourceType(),
+                layoutId = context.getFrameworkResourceId(layoutName.getResourceType(),
                         layoutName.getName(), 0);
             } else {
-                layoutId = context.getProjectResourceValue(layoutName.getResourceType(),
-                        layoutName.getName(), 0);
+                layoutId = context.getProjectResourceId(layoutName.asReference(), 0);
 
             }
         }

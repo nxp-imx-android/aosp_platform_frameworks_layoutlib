@@ -18,6 +18,7 @@ package android.graphics;
 
 import com.android.SdkConstants;
 import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
@@ -280,8 +281,10 @@ public final class Typeface_Delegate {
             }
 
             if (parser != null) {
+                // TODO(namespaces): The aapt namespace should not matter for parsing font files?
                 BridgeXmlBlockParser blockParser =
-                        new BridgeXmlBlockParser(parser, context, isFramework);
+                        new BridgeXmlBlockParser(
+                                parser, context, ResourceNamespace.fromBoolean(isFramework));
                 try {
                     FontResourcesParser.FamilyResourceEntry entry =
                             FontResourcesParser.parse(blockParser, context.getResources());

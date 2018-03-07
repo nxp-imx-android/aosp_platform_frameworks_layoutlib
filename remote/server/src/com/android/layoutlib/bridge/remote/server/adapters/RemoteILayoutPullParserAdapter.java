@@ -36,11 +36,4 @@ public class RemoteILayoutPullParserAdapter extends RemoteXmlPullParserAdapter
             throw new RuntimeException(e);
         }
     }
-
-    @Override
-    public ILayoutPullParser getParser(String layoutName) {
-        throw new UnsupportedOperationException();
-    }
-
-
 }

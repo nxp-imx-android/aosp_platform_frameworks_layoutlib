@@ -18,6 +18,7 @@ package com.android.layoutlib.bridge.intensive;
 
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceNamespace;
+import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
@@ -35,7 +36,6 @@ import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser;
 import com.android.resources.Density;
 import com.android.resources.Navigation;
 import com.android.resources.ResourceType;
-import com.android.resources.ResourceUrl;
 
 import org.junit.After;
 import org.junit.Test;
@@ -607,9 +607,9 @@ public class RenderTests extends RenderTestBase {
         assertEquals("android", resources.getResourcePackageName(android.R.style.ButtonBar));
         assertEquals("ButtonBar", resources.getResourceEntryName(android.R.style.ButtonBar));
         assertEquals("style", resources.getResourceTypeName(android.R.style.ButtonBar));
-        int id = Resources_Delegate.getLayoutlibCallback(resources).getResourceId(
-                ResourceType.STRING,
-                "app_name");
+        Integer id = Resources_Delegate.getLayoutlibCallback(resources).getOrGenerateResourceId(
+                new ResourceReference(ResourceNamespace.RES_AUTO, ResourceType.STRING, "app_name"));
+        assertNotNull(id);
         assertEquals("com.android.layoutlib.test.myapplication:string/app_name",
                 resources.getResourceName(id));
         assertEquals("com.android.layoutlib.test.myapplication",
@@ -644,9 +644,14 @@ public class RenderTests extends RenderTestBase {
         Resources resources = Resources_Delegate.initSystem(context, assetManager, metrics,
                 configuration, params.getLayoutlibCallback());
 
-        int id = Resources_Delegate.getLayoutlibCallback(resources).getResourceId(
-                ResourceType.ARRAY,
-                "string_array");
+        Integer id =
+                Resources_Delegate.getLayoutlibCallback(resources)
+                        .getOrGenerateResourceId(
+                                new ResourceReference(
+                                        ResourceNamespace.RES_AUTO,
+                                        ResourceType.ARRAY,
+                                        "string_array"));
+        assertNotNull(id);
         String[] strings = resources.getStringArray(id);
         assertArrayEquals(
                 new String[]{"mystring", "Hello world!", "candidates", "Unknown", "?EC"},
@@ -874,11 +879,16 @@ public class RenderTests extends RenderTestBase {
                 params.getTargetSdkVersion(), params.isRtlSupported());
         Resources resources = Resources_Delegate.initSystem(context, assetManager, metrics,
                 configuration, params.getLayoutlibCallback());
-        int id = Resources_Delegate.getLayoutlibCallback(resources).getResourceId(
-                ResourceType.STRING,
-                "app_name");
-        assertEquals(id, resources.getIdentifier("string/app_name", null, null));
-        assertEquals(id, resources.getIdentifier("app_name", "string", null));
+        Integer id =
+                Resources_Delegate.getLayoutlibCallback(resources)
+                        .getOrGenerateResourceId(
+                                new ResourceReference(
+                                        ResourceNamespace.RES_AUTO,
+                                        ResourceType.STRING,
+                                        "app_name"));
+        assertNotNull(id);
+        assertEquals(id.intValue(), resources.getIdentifier("string/app_name", null, null));
+        assertEquals(id.intValue(), resources.getIdentifier("app_name", "string", null));
         assertEquals(0, resources.getIdentifier("string/does_not_exist", null, null));
         assertEquals(R.string.accept, resources.getIdentifier("android:string/accept", null,
                 null));
@@ -1193,5 +1203,40 @@ public class RenderTests extends RenderTestBase {
                 .build();
 
         renderAndVerify(params, "rtl_ltr.png", -1);
+    }
+
+    @Test
+    public void testViewStub() throws Exception {
+        //
+        final String layout =
+                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "              android:layout_width=\"match_parent\"\n" +
+                        "              android:layout_height=\"match_parent\"\n" +
+                        "              android:orientation=\"vertical\">\n" + "\n" +
+                        "      <ViewStub\n" +
+                        "        xmlns:tools=\"http://schemas.android.com/tools\"\n" +
+                        "        android:layout_width=\"match_parent\"\n" +
+                        "        android:layout_height=\"match_parent\"\n" +
+                        "        android:layout=\"@layout/four_corners\"\n" +
+                        "        tools:visibility=\"visible\" />" +
+                        "</LinearLayout>";
+
+        // Create the layout pull parser.
+        LayoutPullParser parser = LayoutPullParser.createFromString(layout);
+
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
+        params.setForceNoDecor();
+
+        renderAndVerify(params, "view_stub.png", -1);
     }
 }
