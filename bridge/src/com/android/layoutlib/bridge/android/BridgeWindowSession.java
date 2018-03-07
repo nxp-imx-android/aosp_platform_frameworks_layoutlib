@@ -33,201 +33,40 @@ import android.view.SurfaceControl;
 import android.view.SurfaceView;
 import android.view.WindowManager.LayoutParams;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
 /**
  * Implementation of {@link IWindowSession} so that mSession is not null in
  * the {@link SurfaceView}.
  */
-public final class BridgeWindowSession implements IWindowSession {
-
-    @Override
-    public int add(IWindow arg0, int seq, LayoutParams arg1, int arg2, Rect arg3, Rect arg4,
-            InputChannel outInputchannel)
-            throws RemoteException {
-        // pass for now.
-        return 0;
-    }
-
-    @Override
-    public int addToDisplay(IWindow arg0, int seq, LayoutParams arg1, int arg2, int displayId,
-            Rect arg3, Rect arg4, Rect arg5, DisplayCutout.ParcelableWrapper displayCutout,
-            InputChannel outInputchannel) throws RemoteException {
-        // pass for now.
-        return 0;
-    }
-
-    @Override
-    public int addWithoutInputChannel(IWindow arg0, int seq, LayoutParams arg1, int arg2,
-                                      Rect arg3, Rect arg4)
-            throws RemoteException {
-        // pass for now.
-        return 0;
-    }
-
-    @Override
-    public int addToDisplayWithoutInputChannel(IWindow arg0, int seq, LayoutParams arg1, int arg2,
-                                               int displayId, Rect arg3, Rect arg4)
-            throws RemoteException {
-        // pass for now.
-        return 0;
-    }
-
-    @Override
-    public void finishDrawing(IWindow arg0) throws RemoteException {
-        // pass for now.
-    }
-
-    @Override
-    public boolean getInTouchMode() throws RemoteException {
-        // pass for now.
-        return false;
-    }
-
-    @Override
-    public boolean performHapticFeedback(IWindow window, int effectId, boolean always) {
-        // pass for now.
-        return false;
-    }
-
-    @Override
-    public int relayout(IWindow iWindow, int i, LayoutParams layoutParams, int i2,
-            int i3, int i4, int i5, Rect rect, Rect rect2, Rect rect3, Rect rect4, Rect rect5,
-            Rect rect6, Rect rect7, DisplayCutout.ParcelableWrapper displayCutout,
-            MergedConfiguration mergedConfig, Surface surface)
-            throws RemoteException {
-        // pass for now.
-        return 0;
-    }
-
-    @Override
-    public boolean outOfMemory(IWindow window) throws RemoteException {
-        return false;
-    }
-
-    @Override
-    public void getDisplayFrame(IWindow window, Rect outDisplayFrame) {
-        // pass for now.
-    }
-
-    @Override
-    public void remove(IWindow arg0) throws RemoteException {
-        // pass for now.
-    }
-
-    @Override
-    public void setInTouchMode(boolean arg0) throws RemoteException {
-        // pass for now.
-    }
-
-    @Override
-    public void setTransparentRegion(IWindow arg0, Region arg1) throws RemoteException {
-        // pass for now.
-    }
-
-    @Override
-    public void setInsets(IWindow window, int touchable, Rect contentInsets,
-            Rect visibleInsets, Region touchableRegion) {
-        // pass for now.
-    }
-
-    @Override
-    public IBinder performDrag(IWindow window, int flags, SurfaceControl surface,
-            int touchSource, float touchX, float touchY, float thumbCenterX, float thumbCenterY,
-            ClipData data)
-            throws RemoteException {
-        // pass for now
-        return null;
-    }
-
-    @Override
-    public boolean startMovingTask(IWindow window, float startX, float startY)
-            throws RemoteException {
-        // pass for now
-        return false;
-    }
-
-    @Override
-    public void reportDropResult(IWindow window, boolean consumed) throws RemoteException {
-        // pass for now
-    }
-
-    @Override
-    public void cancelDragAndDrop(IBinder dragToken) throws RemoteException {
-        // pass for now
-    }
-
-    @Override
-    public void dragRecipientEntered(IWindow window) throws RemoteException {
-        // pass for now
-    }
-
-    @Override
-    public void dragRecipientExited(IWindow window) throws RemoteException {
-        // pass for now
-    }
-
-    @Override
-    public void setWallpaperPosition(IBinder window, float x, float y,
-        float xStep, float yStep) {
-        // pass for now.
-    }
-
-    @Override
-    public void wallpaperOffsetsComplete(IBinder window) {
-        // pass for now.
-    }
-
-    @Override
-    public void setWallpaperDisplayOffset(IBinder windowToken, int x, int y) {
-        // pass for now.
-    }
-
-    @Override
-    public Bundle sendWallpaperCommand(IBinder window, String action, int x, int y,
-            int z, Bundle extras, boolean sync) {
-        // pass for now.
-        return null;
-    }
-
-    @Override
-    public void wallpaperCommandComplete(IBinder window, Bundle result) {
-        // pass for now.
-    }
-
-    @Override
-    public IBinder asBinder() {
-        // pass for now.
-        return null;
-    }
-
-    @Override
-    public void onRectangleOnScreenRequested(IBinder window, Rect rectangle) {
-        // pass for now.
-    }
-
-    @Override
-    public IWindowId getWindowId(IBinder window) throws RemoteException {
-        // pass for now.
-        return null;
-    }
-
-    @Override
-    public void pokeDrawLock(IBinder window) {
-        // pass for now.
-    }
-
-    @Override
-    public void prepareToReplaceWindows(IBinder appToken, boolean childrenOnly) {
-        // pass for now.
-    }
-
-    @Override
-    public void updatePointerIcon(IWindow window) {
-        // pass for now.
-    }
-
-    @Override
-    public void updateTapExcludeRegion(IWindow window, int regionId, int left, int top, int width,
-            int height) {
-        // pass for now.
+public final class BridgeWindowSession {
+    public static IWindowSession create() {
+        return (IWindowSession) Proxy.newProxyInstance(BridgeWindowSession.class.getClassLoader(),
+                new Class[]{IWindowSession.class}, new InvocationHandler() {
+            public Object invoke(Object proxy, Method m, Object[] args) {
+                final Class<?> returnType = m.getReturnType();
+                if (returnType == boolean.class) {
+                    return false;
+                } else if (returnType == int.class) {
+                    return 0;
+                } else if (returnType == long.class) {
+                    return 0L;
+                } else if (returnType == short.class) {
+                    return 0;
+                } else if (returnType == char.class) {
+                    return 0;
+                } else if (returnType == byte.class) {
+                    return 0;
+                } else if (returnType == float.class) {
+                    return 0f;
+                } else if (returnType == double.class) {
+                    return 0.0;
+                } else {
+                    return null;
+                }
+            }
+        });
     }
 }
