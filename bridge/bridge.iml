@@ -66,11 +66,11 @@
     <orderEntry type="module-library" scope="TEST">
       <library name="guava">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/com/google/guava/guava/15.0/guava-15.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/com/google/guava/guava/23.5-jre/guava-23.5-jre.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/com/google/guava/guava/15.0/guava-15.0-sources.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/com/google/guava/guava/23.5-jre/guava-23.5-jre-sources.jar!/" />
         </SOURCES>
       </library>
     </orderEntry>
