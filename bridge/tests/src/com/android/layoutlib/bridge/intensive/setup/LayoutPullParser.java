@@ -17,6 +17,7 @@
 package com.android.layoutlib.bridge.intensive.setup;
 
 import com.android.ide.common.rendering.api.ILayoutPullParser;
+import com.android.ide.common.rendering.api.ResourceNamespace;
 
 import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -41,6 +42,9 @@ import static com.android.SdkConstants.SPINNER;
 import static com.android.SdkConstants.TOOLS_URI;
 
 public class LayoutPullParser extends KXmlParser implements ILayoutPullParser{
+
+    private ResourceNamespace mLayoutNamespace = ResourceNamespace.RES_AUTO;
+
     @NonNull
     public static LayoutPullParser createFromFile(@NonNull File layoutFile)
             throws FileNotFoundException {
@@ -96,7 +100,7 @@ public class LayoutPullParser extends KXmlParser implements ILayoutPullParser{
                         continue;
                     }
                     if (map == null) {
-                        map = new HashMap<String, String>(4);
+                        map = new HashMap<>(4);
                     }
                     map.put(attribute, getAttributeValue(i));
                 }
@@ -109,10 +113,12 @@ public class LayoutPullParser extends KXmlParser implements ILayoutPullParser{
     }
 
     @Override
-    @Deprecated
-    public ILayoutPullParser getParser(String layoutName) {
-        // Studio returns null.
-        return null;
+    @NonNull
+    public ResourceNamespace getLayoutNamespace() {
+        return mLayoutNamespace;
     }
 
+    public void setLayoutNamespace(@NonNull ResourceNamespace layoutNamespace) {
+        mLayoutNamespace = layoutNamespace;
+    }
 }

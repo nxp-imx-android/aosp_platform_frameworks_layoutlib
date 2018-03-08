@@ -33,7 +33,7 @@ public class AttachInfo_Accessor {
         WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         ViewRootImpl root = new ViewRootImpl(context, display);
-        AttachInfo info = new AttachInfo(new BridgeWindowSession(), new BridgeWindow(),
+        AttachInfo info = new AttachInfo(BridgeWindowSession.create(), new BridgeWindow(),
                 display, root, new Handler(), null, context);
         info.mHasWindowFocus = true;
         info.mWindowVisibility = View.VISIBLE;

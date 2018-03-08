@@ -419,8 +419,9 @@ public class RenderTestBase {
                 }
 
                 @Override
-                public void fidelityWarning(String tag, String message, Throwable throwable,
-                        Object viewCookie, Object data) {
+                public void fidelityWarning(@Nullable String tag, String message,
+                        Throwable throwable, Object cookie, Object data) {
+
                     System.out.println("FidelityWarning " + tag + ": " + message);
                     if (throwable != null) {
                         throwable.printStackTrace();

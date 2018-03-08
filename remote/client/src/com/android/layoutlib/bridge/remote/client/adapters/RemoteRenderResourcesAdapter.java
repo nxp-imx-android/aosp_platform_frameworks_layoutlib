@@ -97,12 +97,6 @@ public class RemoteRenderResourcesAdapter implements RemoteRenderResources {
     }
 
     @Override
-    public ResourceValue resolveValue(ResourceType type, String name, String value,
-            boolean isFrameworkValue) {
-        return mDelegate.resolveValue(type, name, value, isFrameworkValue);
-    }
-
-    @Override
     public StyleResourceValue getParent(StyleResourceValue style) {
         return mDelegate.getParent(style);
     }

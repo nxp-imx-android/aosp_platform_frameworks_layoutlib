@@ -19,6 +19,8 @@ package com.android.layoutlib.bridge.bars;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.RenderResources;
+import com.android.ide.common.rendering.api.ResourceNamespace;
+import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.StyleResourceValue;
@@ -68,8 +70,12 @@ public class AppCompatActionBar extends BridgeActionBar {
      */
     public AppCompatActionBar(@NonNull BridgeContext context, @NonNull SessionParams params) {
         super(context, params);
-        int contentRootId = context.getProjectResourceValue(ResourceType.ID,
-                "action_bar_activity_content", 0);
+        // TODO(namespaces): the callback should provide the namespace in which this resource exists
+        int contentRootId = context.getProjectResourceId(
+                new ResourceReference(
+                        ResourceNamespace.TODO,
+                        ResourceType.ID,
+                        "action_bar_activity_content"), 0);
         View contentView = getDecorContent().findViewById(contentRootId);
         if (contentView != null) {
             assert contentView instanceof FrameLayout;
@@ -199,10 +205,11 @@ public class AppCompatActionBar extends BridgeActionBar {
         if (name.startsWith(ANDROID_NS_NAME_PREFIX)) {
             // Framework menu.
             name = name.substring(ANDROID_NS_NAME_PREFIX.length());
-            id = mBridgeContext.getFrameworkResourceValue(MENU, name, -1);
+            id = mBridgeContext.getFrameworkResourceId(MENU, name, -1);
         } else {
             // Project menu.
-            id = mBridgeContext.getProjectResourceValue(MENU, name, -1);
+            id = mBridgeContext.getProjectResourceId(
+                    new ResourceReference(ResourceNamespace.TODO, MENU, name), -1);
         }
         if (id < 1) {
             return;

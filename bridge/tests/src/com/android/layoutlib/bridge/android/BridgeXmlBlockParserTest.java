@@ -16,6 +16,7 @@
 
 package com.android.layoutlib.bridge.android;
 
+import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.layoutlib.bridge.impl.ParserFactory;
 
 import org.junit.AfterClass;
@@ -44,7 +45,7 @@ public class BridgeXmlBlockParserTest {
                 getClass().getResourceAsStream("/com/android/layoutlib/testdata/layout1.xml"),
                         "layout1.xml");
 
-        parser = new BridgeXmlBlockParser(parser, null, false /* platformResourceFlag */);
+        parser = new BridgeXmlBlockParser(parser, null, ResourceNamespace.RES_AUTO);
 
         assertEquals(XmlPullParser.START_DOCUMENT, parser.next());
 

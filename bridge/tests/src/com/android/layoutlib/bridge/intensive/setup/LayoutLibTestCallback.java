@@ -25,15 +25,12 @@ import com.android.ide.common.rendering.api.ParserFactory;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams.Key;
-import com.android.ide.common.resources.IntArrayWrapper;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.resources.ResourceType;
-import com.android.util.Pair;
 import com.android.utils.ILogger;
 
 import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -47,17 +44,14 @@ import java.util.Map;
 
 import com.google.android.collect.Maps;
 
-import static org.junit.Assert.fail;
+import static com.android.ide.common.rendering.api.ResourceNamespace.RES_AUTO;
 
-@SuppressWarnings("deprecation") // For Pair
 public class LayoutLibTestCallback extends LayoutlibCallback {
 
-    private static final String PROJECT_CLASSES_LOCATION = "/testApp/MyApplication/build/intermediates/classes/debug/";
     private static final String PACKAGE_NAME = "com.android.layoutlib.test.myapplication";
 
-    private final Map<Integer, Pair<ResourceType, String>> mProjectResources = Maps.newHashMap();
-    private final Map<IntArrayWrapper, String> mStyleableValueToNameMap = Maps.newHashMap();
-    private final Map<ResourceType, Map<String, Integer>> mResources = Maps.newHashMap();
+    private final Map<Integer, ResourceReference> mProjectResources = Maps.newHashMap();
+    private final Map<ResourceReference, Integer> mResources = Maps.newHashMap();
     private final ILogger mLog;
     private final ActionBarCallback mActionBarCallback = new ActionBarCallback();
     private final ClassLoader mModuleClassLoader;
@@ -75,27 +69,22 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
             final ResourceType resType = ResourceType.getEnum(resClass.getSimpleName());
 
             if (resType != null) {
-                final Map<String, Integer> resName2Id = Maps.newHashMap();
-                mResources.put(resType, resName2Id);
-
                 for (Field field : resClass.getDeclaredFields()) {
                     final int modifiers = field.getModifiers();
                     if (Modifier.isStatic(modifiers)) { // May not be final in library projects
                         final Class<?> type = field.getType();
                         try {
-                            if (type.isArray() && type.getComponentType() == int.class) {
-                                mStyleableValueToNameMap.put(
-                                        new IntArrayWrapper((int[]) field.get(null)),
-                                        field.getName());
-                            } else if (type == int.class) {
+                            if (type == int.class) {
                                 final Integer value = (Integer) field.get(null);
-                                mProjectResources.put(value, Pair.of(resType, field.getName()));
-                                resName2Id.put(field.getName(), value);
-                            } else {
+                                ResourceReference reference =
+                                        new ResourceReference(RES_AUTO, resType, field.getName());
+                                mProjectResources.put(value, reference);
+                                mResources.put(reference, value);
+                            } else if (!(type.isArray() && type.getComponentType() == int.class)) {
                                 mLog.error(null, "Unknown field type in R class: %1$s", type);
                             }
-                        } catch (IllegalAccessException ignored) {
-                            mLog.error(ignored, "Malformed R class: %1$s", PACKAGE_NAME + ".R");
+                        } catch (IllegalAccessException e) {
+                            mLog.error(e, "Malformed R class: %1$s", PACKAGE_NAME + ".R");
                         }
                     }
                 }
@@ -105,7 +94,7 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
 
 
     @Override
-    public Object loadView(String name, Class[] constructorSignature, Object[] constructorArgs)
+    public Object loadView(@NonNull String name, @NonNull Class[] constructorSignature, Object[] constructorArgs)
             throws Exception {
         Class<?> viewClass = mModuleClassLoader.loadClass(name);
         Constructor<?> viewConstructor = viewClass.getConstructor(constructorSignature);
@@ -113,6 +102,7 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
         return viewConstructor.newInstance(constructorArgs);
     }
 
+    @NonNull
     @Override
     public String getNamespace() {
         return String.format(SdkConstants.NS_CUSTOM_RESOURCES_S,
@@ -120,32 +110,18 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     }
 
     @Override
-    public Pair<ResourceType, String> resolveResourceId(int id) {
+    public ResourceReference resolveResourceId(int id) {
         return mProjectResources.get(id);
     }
 
     @Override
-    public String resolveResourceId(int[] id) {
-        return mStyleableValueToNameMap.get(new IntArrayWrapper(id));
+    public int getOrGenerateResourceId(@NonNull ResourceReference resource) {
+        Integer id = mResources.get(resource);
+        return id != null ? id : 0;
     }
 
     @Override
-    public Integer getResourceId(ResourceType type, String name) {
-        Map<String, Integer> resName2Id = mResources.get(type);
-        if (resName2Id == null) {
-            return null;
-        }
-        return resName2Id.get(name);
-    }
-
-    @Override
-    public ILayoutPullParser getParser(String layoutName) {
-        fail("This method shouldn't be called by this version of LayoutLib.");
-        return null;
-    }
-
-    @Override
-    public ILayoutPullParser getParser(ResourceValue layoutResource) {
+    public ILayoutPullParser getParser(@NonNull ResourceValue layoutResource) {
         try {
             return LayoutPullParser.createFromFile(new File(layoutResource.getValue()));
         } catch (FileNotFoundException e) {
@@ -183,14 +159,14 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
         return new ParserFactory() {
             @NonNull
             @Override
-            public XmlPullParser createParser(@Nullable String debugName)
-                    throws XmlPullParserException {
+            public XmlPullParser createParser(@Nullable String debugName) {
                 return new KXmlParser();
             }
         };
     }
 
     @Override
+    @SuppressWarnings("unchecked") // The Key<T> API is based on unchecked casts.
     public <T> T getFlag(Key<T> key) {
         if (key.equals(RenderParamsFlags.FLAG_KEY_APPLICATION_PACKAGE)) {
             return (T) PACKAGE_NAME;
