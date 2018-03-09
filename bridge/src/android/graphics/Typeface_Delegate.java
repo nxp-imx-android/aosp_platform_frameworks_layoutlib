@@ -55,6 +55,8 @@ import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
 
+import libcore.util.NativeAllocationRegistry_Delegate;
+
 import static android.graphics.FontFamily_Delegate.getFontLocation;
 
 /**
@@ -76,7 +78,7 @@ public final class Typeface_Delegate {
     // ---- delegate manager ----
     private static final DelegateManager<Typeface_Delegate> sManager =
             new DelegateManager<>(Typeface_Delegate.class);
-
+    private static long sFinalizer = -1;
 
     // ---- delegate data ----
     private static long sDefaultTypeface;
@@ -197,8 +199,14 @@ public final class Typeface_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static void nativeUnref(long native_instance) {
-        sManager.removeJavaReferenceFor(native_instance);
+    /*package*/ static long nativeGetReleaseFunc() {
+        synchronized (ColorFilter_Delegate.class) {
+            if (sFinalizer == -1) {
+                sFinalizer = NativeAllocationRegistry_Delegate.createFinalizer(
+                        sManager::removeJavaReferenceFor);
+            }
+        }
+        return sFinalizer;
     }
 
     @LayoutlibDelegate
