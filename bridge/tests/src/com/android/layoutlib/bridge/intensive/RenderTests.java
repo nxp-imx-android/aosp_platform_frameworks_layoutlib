@@ -535,8 +535,8 @@ public class RenderTests extends RenderTestBase {
                 .setCallback(layoutLibCallback)
                 .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
                 .setRenderingMode(RenderingMode.V_SCROLL)
+                .disableDecoration()
                 .build();
-        params.setForceNoDecor();
         params.setExtendedViewInfoMode(true);
 
         // Do an only-measure pass
@@ -568,8 +568,8 @@ public class RenderTests extends RenderTestBase {
                     .setCallback(layoutLibCallback)
                     .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
                     .setRenderingMode(RenderingMode.V_SCROLL)
+                    .disableDecoration()
                     .build();
-        params.setForceNoDecor();
         params.setExtendedViewInfoMode(true);
 
         result = renderAndVerify(params, "scrolled.png");
@@ -1141,8 +1141,8 @@ public class RenderTests extends RenderTestBase {
                 .setCallback(layoutLibCallback)
                 .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
                 .setRenderingMode(RenderingMode.V_SCROLL)
+                .disableDecoration()
                 .build();
-        params.setForceNoDecor();
 
         RenderResult result = RenderTestBase.render(sBridge, params, -1);
         BufferedImage image = result.getImage();
@@ -1200,6 +1200,7 @@ public class RenderTests extends RenderTestBase {
                 .setCallback(layoutLibCallback)
                 .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
                 .setRenderingMode(RenderingMode.V_SCROLL)
+                .disableDecoration()
                 .build();
 
         renderAndVerify(params, "rtl_ltr.png", -1);
@@ -1234,8 +1235,8 @@ public class RenderTests extends RenderTestBase {
                 .setCallback(layoutLibCallback)
                 .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
                 .setRenderingMode(RenderingMode.V_SCROLL)
+                .disableDecoration()
                 .build();
-        params.setForceNoDecor();
 
         renderAndVerify(params, "view_stub.png", -1);
     }
