@@ -84,7 +84,7 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testActivity() throws ClassNotFoundException, FileNotFoundException {
-        renderAndVerify("activity.xml", "activity.png");
+        renderAndVerify("activity.xml", "activity.png", true);
     }
 
     @Test
@@ -152,7 +152,7 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testAllWidgets() throws ClassNotFoundException, FileNotFoundException {
-        renderAndVerify("allwidgets.xml", "allwidgets.png");
+        renderAndVerify("allwidgets.xml", "allwidgets.png", true);
 
         // We expect fidelity warnings for Path.isConvex. Fail for anything else.
         sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
@@ -160,7 +160,7 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testArrayCheck() throws ClassNotFoundException, FileNotFoundException {
-        renderAndVerify("array_check.xml", "array_check.png");
+        renderAndVerify("array_check.xml", "array_check.png", false);
 
         // We expect fidelity warnings for Path.isConvex. Fail for anything else.
         sRenderMessages.removeIf(
@@ -169,10 +169,11 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testAllWidgetsTablet() throws ClassNotFoundException, FileNotFoundException {
-        renderAndVerify("allwidgets.xml", "allwidgets_tab.png", ConfigGenerator.NEXUS_7_2012);
+        renderAndVerify("allwidgets.xml", "allwidgets_tab.png", ConfigGenerator.NEXUS_7_2012, true);
 
         // We expect fidelity warnings for Path.isConvex. Fail for anything else.
         sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
+        sRenderMessages.removeIf(message -> message.equals("Font$Builder.nAddAxis is not supported."));
     }
 
     @Test
@@ -375,6 +376,7 @@ public class RenderTests extends RenderTestBase {
                 .setParser(parser)
                 .setCallback(layoutLibCallback)
                 .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .disableDecoration()
                 .setRenderingMode(RenderingMode.V_SCROLL)
                 .build();
 
@@ -761,7 +763,7 @@ public class RenderTests extends RenderTestBase {
     @Test
     public void testFonts() throws ClassNotFoundException, FileNotFoundException {
         // TODO: styles seem to be broken in TextView
-        renderAndVerify("fonts_test.xml", "font_test.png");
+        renderAndVerify("fonts_test.xml", "font_test.png", false);
         sRenderMessages.removeIf(
                 message -> message.equals("Font$Builder.nAddAxis is not supported."));
     }
@@ -974,6 +976,7 @@ public class RenderTests extends RenderTestBase {
                 .setParser(parser)
                 .setConfigGenerator(ConfigGenerator.NEXUS_5)
                 .setCallback(layoutLibCallback)
+                .disableDecoration()
                 .build();
 
         renderAndVerify(params, "shadows_test_no_shadow.png");
@@ -981,7 +984,7 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testRectangleShadow() throws Exception {
-        renderAndVerify("shadows_test.xml", "shadows_test.png");
+        renderAndVerify("shadows_test.xml", "shadows_test.png", false);
     }
 
     @Test
@@ -995,6 +998,7 @@ public class RenderTests extends RenderTestBase {
                 .setParser(parser)
                 .setConfigGenerator(ConfigGenerator.NEXUS_5)
                 .setCallback(layoutLibCallback)
+                .disableDecoration()
                 .build();
 
         renderAndVerify(params, "shadows_test_high_quality.png");
@@ -1423,7 +1427,7 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testTranslation() throws ClassNotFoundException, FileNotFoundException {
-        RenderResult res = renderAndVerify("translate_test.xml", "translate_test.png");
+        RenderResult res = renderAndVerify("translate_test.xml", "translate_test.png", false);
         ViewInfo rootInfo = res.getRootViews().get(0);
         ViewInfo buttonInfo = rootInfo.getChildren().get(0);
         assertEquals(100, buttonInfo.getLeft());
@@ -1465,7 +1469,7 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testTypedArrays() throws ClassNotFoundException, FileNotFoundException {
-        renderAndVerify("typed_array.xml", "typed_arrays.png");
+        renderAndVerify("typed_array.xml", "typed_arrays.png", false);
     }
 
     /**
