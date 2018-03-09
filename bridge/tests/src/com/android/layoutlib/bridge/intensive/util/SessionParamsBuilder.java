@@ -57,6 +57,7 @@ public class SessionParamsBuilder {
     private LayoutLog mLayoutLog;
     private Map<SessionParams.Key, Object> mFlags = new HashMap<>();
     private AssetRepository mAssetRepository = null;
+    private boolean mDecor = true;
 
     @NonNull
     public SessionParamsBuilder setParser(@NonNull LayoutPullParser layoutParser) {
@@ -146,6 +147,12 @@ public class SessionParamsBuilder {
     }
 
     @NonNull
+    public SessionParamsBuilder disableDecoration() {
+        mDecor = false;
+        return this;
+    }
+
+    @NonNull
     public SessionParams build() {
         assert mFrameworkResources != null;
         assert mProjectResources != null;
@@ -169,6 +176,10 @@ public class SessionParamsBuilder {
 
         mFlags.forEach(params::setFlag);
         params.setAssetRepository(mAssetRepository);
+
+        if (!mDecor) {
+            params.setForceNoDecor();
+        }
 
         return params;
     }
