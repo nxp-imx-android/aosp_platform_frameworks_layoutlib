@@ -557,4 +557,8 @@ public class IWindowManagerImpl implements IWindowManager {
     public boolean isWindowTraceEnabled() throws RemoteException {
         return false;
     }
+
+    @Override
+    public void requestUserActivityNotification() throws RemoteException {
+    }
 }
