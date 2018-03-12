@@ -23,6 +23,7 @@ import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams.Key;
 
+import java.nio.file.Path;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
