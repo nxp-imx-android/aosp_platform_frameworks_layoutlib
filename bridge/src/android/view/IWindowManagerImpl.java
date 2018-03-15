@@ -561,4 +561,8 @@ public class IWindowManagerImpl implements IWindowManager {
     @Override
     public void requestUserActivityNotification() throws RemoteException {
     }
+
+    @Override
+    public void dontOverrideDisplayInfo(int displayId) throws RemoteException {
+    }
 }
