@@ -28,6 +28,7 @@ import com.android.layout.remote.api.RemoteLayoutlibCallback;
 import com.android.layout.remote.api.RemoteParserFactory;
 import com.android.layout.remote.api.RemoteXmlPullParser;
 import com.android.tools.layoutlib.annotations.NotNull;
+import com.android.tools.layoutlib.annotations.Nullable;
 
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -107,11 +108,6 @@ public class RemoteLayoutlibCallbackAdapter implements RemoteLayoutlibCallback {
     }
 
     @Override
-    public Object loadClass(String name, Class[] constructorSignature, Object[] constructorArgs) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
     public <T> T getFlag(Key<T> key) {
         return mDelegate.getFlag(key);
     }
@@ -127,8 +123,19 @@ public class RemoteLayoutlibCallbackAdapter implements RemoteLayoutlibCallback {
 
     @Nullable
     @Override
-    public Class<?> findClass(String name) {
-        throw new UnsupportedOperationException("Not implemented yet");
+    public Path findClassPath(String name) {
+        try {
+            Class<?> clazz = mDelegate.findClass(name);
+            URL url = clazz.getProtectionDomain().getCodeSource().getLocation();
+            if (url != null) {
+                return Paths.get(url.toURI());
+            }
+        } catch (ClassNotFoundException ignore) {
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
     }
 
     @Override
