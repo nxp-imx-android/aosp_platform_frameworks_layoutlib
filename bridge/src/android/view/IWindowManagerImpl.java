@@ -387,6 +387,11 @@ public class IWindowManagerImpl implements IWindowManager {
     }
 
     @Override
+    public void setShelfHeight(boolean visible, int shelfHeight) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
     public void setNavBarVirtualKeyHapticFeedbackEnabled(boolean enabled) {
     }
 
