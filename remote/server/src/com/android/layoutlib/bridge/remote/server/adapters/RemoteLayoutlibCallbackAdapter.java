@@ -25,7 +25,9 @@ import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams.Key;
 import com.android.layout.remote.api.RemoteLayoutlibCallback;
+import com.android.layoutlib.bridge.MockView;
 import com.android.tools.layoutlib.annotations.NotNull;
+import com.android.tools.layoutlib.annotations.Nullable;
 
 import org.xmlpull.v1.XmlPullParser;
 
