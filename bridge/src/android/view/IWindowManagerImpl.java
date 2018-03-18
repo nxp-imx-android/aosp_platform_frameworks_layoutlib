@@ -346,7 +346,7 @@ public class IWindowManagerImpl implements IWindowManager {
     }
 
     @Override
-    public void setScreenCaptureDisabled(int userId, boolean disabled) {
+    public void refreshScreenCaptureDisabled(int userId) {
         // TODO Auto-generated method stub
     }
 
