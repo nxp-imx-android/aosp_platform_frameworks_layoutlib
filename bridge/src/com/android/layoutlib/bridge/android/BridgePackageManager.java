@@ -433,6 +433,11 @@ public class BridgePackageManager extends PackageManager {
     }
 
     @Override
+    public ResolveInfo resolveServiceAsUser(Intent intent, int flags, int userId) {
+        return null;
+    }
+
+    @Override
     public List<ResolveInfo> queryIntentServices(Intent intent, int flags) {
         return null;
     }
