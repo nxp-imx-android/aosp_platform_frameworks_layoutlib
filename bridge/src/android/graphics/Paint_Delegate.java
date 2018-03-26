@@ -1034,7 +1034,7 @@ public class Paint_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static void nGetCharArrayBounds(long nativePaint, char[] text, int index,
+    public static void nGetCharArrayBounds(long nativePaint, char[] text, int index,
             int count, int bidiFlags, Rect bounds) {
 
         // get the delegate from the native int.

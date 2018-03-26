@@ -23,6 +23,7 @@ import android.annotation.NonNull;
 import android.graphics.BidiRenderer;
 import android.graphics.Paint;
 import android.graphics.Paint_Delegate;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.text.StaticLayout_Delegate.Builder;
 import android.text.StaticLayout_Delegate.Run;
@@ -127,6 +128,12 @@ public class MeasuredParagraph_Delegate {
     /*package*/ static int nGetMemoryUsage(long nativePtr) {
         // Ignore as it is not used for the layoutlib implementation
         return 0;
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static void nGetBounds(long nativePtr, char[] buf, long paintPtr, int start,
+            int end, int bidiFlag, Rect rect) {
+        Paint_Delegate.nGetCharArrayBounds(paintPtr, buf, start, end - start, bidiFlag, rect);
     }
 
     private static float measureText(long nativePaint, char[] text, int index, int count,
