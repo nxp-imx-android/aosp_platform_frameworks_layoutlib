@@ -41,7 +41,7 @@ import static com.android.layoutlib.bridge.util.ReflectionUtils.invoke;
 public class RecyclerViewUtil {
     public static final String[] CN_RECYCLER_VIEW = {
             "android.support.v7.widget.RecyclerView",
-            "androidx.widget.RecyclerView"
+            "androidx.recyclerview.widget.RecyclerView"
     };
 
     private static final Class<?>[] LLM_CONSTRUCTOR_SIGNATURE = new Class<?>[]{Context.class};
