@@ -60,7 +60,7 @@ public class AppCompatActionBar extends BridgeActionBar {
     private static final String[] WINDOW_ACTION_BAR_CLASS_NAMES = {
             "android.support.v7.internal.app.WindowDecorActionBar",
             "android.support.v7.app.WindowDecorActionBar",     // This is used on v23.1.1 and later.
-            "androidx.app.WindowDecorActionBar"                // User from v27
+            "androidx.appcompat.app.WindowDecorActionBar"      // User from v28
     };
 
     private Class<?> mWindowActionBarClass;
