@@ -508,7 +508,7 @@ public class BaseCanvas_Delegate {
     /*package*/ static void nDrawTextRun(long nativeCanvas, char[] text,
             int start, int count, int contextStart, int contextCount,
             float x, float y, boolean isRtl, long paint,
-            long nativeMeasuredText, int measuredTextOffset) {
+            long nativeMeasuredText) {
         drawText(nativeCanvas, text, start, count, x, y, isRtl ? Paint.BIDI_RTL : Paint.BIDI_LTR, paint);
     }
 
