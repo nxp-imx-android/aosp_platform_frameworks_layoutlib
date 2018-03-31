@@ -61,6 +61,9 @@ import static com.android.layoutlib.bridge.android.BridgeContext.getBaseContext;
  */
 public final class BridgeInflater extends LayoutInflater {
 
+    private static final String[] DEFAULT_APPCOMPAT_INFLATER_NAMES = {
+            "android.support.v7.app.AppCompatViewInflater",
+            "androidx.appcompat.app.AppCompatViewInflater"};
     private final LayoutlibCallback mLayoutlibCallback;
 
     private boolean mIsInMerge = false;
@@ -199,9 +202,11 @@ public final class BridgeInflater extends LayoutInflater {
         } else if (bc.isAppCompatTheme()) {
             // Older versions of AppCompat do not define the viewInflaterClass so try to get it
             // manually
-            try {
-                return layoutlibCallback.findClass("android.support.v7.app.AppCompatViewInflater");
-            } catch (ClassNotFoundException ignore) {
+            for (String defaultInflaterName : DEFAULT_APPCOMPAT_INFLATER_NAMES) {
+                try {
+                    return layoutlibCallback.findClass(defaultInflaterName);
+                } catch (ClassNotFoundException ignore) {
+                }
             }
         }
 
