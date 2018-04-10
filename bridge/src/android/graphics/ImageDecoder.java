@@ -513,9 +513,7 @@ public final class ImageDecoder implements AutoCloseable {
      *
      *  @param allocator Type of allocator to use.
      */
-    public ImageDecoder setAllocator(@Allocator int allocator) {
-        return this;
-    }
+    public void setAllocator(@Allocator int allocator) { }
 
     /**
      *  Specify whether the {@link Bitmap} should have unpremultiplied pixels.
@@ -546,9 +544,7 @@ public final class ImageDecoder implements AutoCloseable {
      *  {@link Canvas} will be recorded immediately and then applied to each
      *  frame.</p>
      */
-    public ImageDecoder setPostProcessor(@Nullable PostProcessor p) {
-        return this;
-    }
+    public void setPostProcessor(@Nullable PostProcessor p) { }
 
     /**
      *  Set (replace) the {@link OnPartialImageListener} on this object.
@@ -556,9 +552,7 @@ public final class ImageDecoder implements AutoCloseable {
      *  Will be called if there is an error in the input. Without one, a
      *  partial {@link Bitmap} will be created.
      */
-    public ImageDecoder setOnPartialImageListener(@Nullable OnPartialImageListener l) {
-        return this;
-    }
+    public void setOnPartialImageListener(@Nullable OnPartialImageListener l) { }
 
     /**
      *  Crop the output to {@code subset} of the (possibly) scaled image.
@@ -572,9 +566,7 @@ public final class ImageDecoder implements AutoCloseable {
      *  {@link BitmapRegionDecoder#decodeRegion}. This supports all formats,
      *  but merely crops the output.</p>
      */
-    public ImageDecoder setCrop(@Nullable Rect subset) {
-        return this;
-    }
+    public void setCrop(@Nullable Rect subset) { }
 
     /**
      *  Set a Rect for retrieving nine patch padding.
@@ -584,9 +576,8 @@ public final class ImageDecoder implements AutoCloseable {
      *
      *  @hide
      */
-    public ImageDecoder setOutPaddingRect(@NonNull Rect outPadding) {
+    public void setOutPaddingRect(@NonNull Rect outPadding) {
         mOutPaddingRect = outPadding;
-        return this;
     }
 
     /**
