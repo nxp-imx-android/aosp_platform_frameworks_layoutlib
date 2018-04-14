@@ -131,9 +131,8 @@ public class MeasuredParagraph_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static void nGetBounds(long nativePtr, char[] buf, long paintPtr, int start,
-            int end, int bidiFlag, Rect rect) {
-        Paint_Delegate.nGetCharArrayBounds(paintPtr, buf, start, end - start, bidiFlag, rect);
+    /*package*/ static void nGetBounds(long nativePtr, char[] buf, int start, int end, Rect rect) {
+        // Ignore as it is not used for the layoutlib implementation
     }
 
     private static float measureText(long nativePaint, char[] text, int index, int count,
