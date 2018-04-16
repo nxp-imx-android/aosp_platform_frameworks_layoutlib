@@ -463,9 +463,7 @@ public final class Typeface_Delegate {
                 return font;
             }
 
-            FontVariant ffd2Variant = ffd2.getVariant();
             Font font2 = ffd2.getFont(weight, isItalic);
-            assert ffd2Variant != FontVariant.NONE && ffd2Variant != ffdVariant && font2 != null;
             // Add the font with the matching variant to the list.
             return variant == ffd.getVariant() ? font : font2;
         }
