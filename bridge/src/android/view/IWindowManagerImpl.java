@@ -483,10 +483,6 @@ public class IWindowManagerImpl implements IWindowManager {
     }
 
     @Override
-    public void setDockedStackResizing(boolean resizing) throws RemoteException {
-    }
-
-    @Override
     public void endProlongedAnimations() {
     }
 
