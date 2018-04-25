@@ -931,19 +931,32 @@ public final class BridgeTypedArray extends TypedArray {
             int result = 0;
             boolean found = false;
 
-            // split the value in case this is a mix of several flags.
-            String[] keywords = mResourceData[index].getValue().split("\\|");
-            for (String keyword : keywords) {
-                Integer i = map.get(keyword.trim());
-                if (i != null) {
-                    result |= i;
-                    found = true;
+            String value = mResourceData[index].getValue();
+            if (!value.isEmpty()) {
+                // Check if the value string is already representing an integer and return it if so.
+                // Resources coming from res.apk in an AAR may have flags and enums in integer form.
+                char c = value.charAt(0);
+                if (Character.isDigit(c) || c == '-' || c == '+') {
+                    try {
+                        return convertValueToInt(value, 0);
+                    } catch (NumberFormatException e) {
+                        // Ignore and continue.
+                    }
                 }
-                // TODO: We should act smartly and log a warning for incorrect keywords. However,
-                // this method is currently called even if the resourceValue is not an enum.
-            }
-            if (found) {
-                return result;
+                // split the value in case this is a mix of several flags.
+                String[] keywords = value.split("\\|");
+                for (String keyword : keywords) {
+                    Integer i = map.get(keyword.trim());
+                    if (i != null) {
+                        result |= i;
+                        found = true;
+                    }
+                    // TODO: We should act smartly and log a warning for incorrect keywords. However,
+                    // this method is currently called even if the resourceValue is not an enum.
+                }
+                if (found) {
+                    return result;
+                }
             }
         }
 
