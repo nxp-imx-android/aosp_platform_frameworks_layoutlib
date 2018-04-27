@@ -79,6 +79,7 @@ public final class Bitmap_Delegate {
     private boolean mHasMipMap = false;      // TODO: check the default.
     private boolean mIsPremultiplied = true;
     private int mGenerationId = 0;
+    private boolean mIsMutable;
 
 
     // ---- Public Helper methods ----
@@ -139,6 +140,7 @@ public final class Bitmap_Delegate {
             }
         }
         Bitmap_Delegate delegate = new Bitmap_Delegate(image, Config.ARGB_8888);
+        delegate.mIsMutable = createFlags.contains(BitmapCreateFlags.MUTABLE);
 
         return createBitmap(delegate, createFlags, density.getDpiValue());
     }
@@ -172,6 +174,7 @@ public final class Bitmap_Delegate {
             Density density) throws IOException {
         // create a delegate with the content of the stream.
         Bitmap_Delegate delegate = new Bitmap_Delegate(ImageIO.read(input), Config.ARGB_8888);
+        delegate.mIsMutable = createFlags.contains(BitmapCreateFlags.MUTABLE);
 
         return createBitmap(delegate, createFlags, density.getDpiValue());
     }
@@ -204,6 +207,7 @@ public final class Bitmap_Delegate {
             Density density) {
         // create a delegate with the given image.
         Bitmap_Delegate delegate = new Bitmap_Delegate(image, Config.ARGB_8888);
+        delegate.mIsMutable = createFlags.contains(BitmapCreateFlags.MUTABLE);
 
         return createBitmap(delegate, createFlags, density.getDpiValue());
     }
@@ -261,6 +265,7 @@ public final class Bitmap_Delegate {
 
         // create a delegate with the content of the stream.
         Bitmap_Delegate delegate = new Bitmap_Delegate(image, Config.nativeToConfig(nativeConfig));
+        delegate.mIsMutable = isMutable;
 
         return createBitmap(delegate, getPremultipliedBitmapCreateFlags(isMutable),
                             Bitmap.getDefaultDensity());
@@ -290,6 +295,7 @@ public final class Bitmap_Delegate {
 
         // create a delegate with the content of the stream.
         Bitmap_Delegate delegate = new Bitmap_Delegate(image, Config.nativeToConfig(nativeConfig));
+        delegate.mIsMutable = isMutable;
 
         return createBitmap(delegate, getPremultipliedBitmapCreateFlags(isMutable),
                 Bitmap.getDefaultDensity());
@@ -509,6 +515,7 @@ public final class Bitmap_Delegate {
 
         // create the delegate. The actual Bitmap config is only an alpha channel
         Bitmap_Delegate delegate = new Bitmap_Delegate(image, Config.ALPHA_8);
+        delegate.mIsMutable = true;
 
         // the density doesn't matter, it's set by the Java method.
         return createBitmap(delegate, EnumSet.of(BitmapCreateFlags.MUTABLE),
@@ -633,6 +640,7 @@ public final class Bitmap_Delegate {
 
         // create a delegate with the content of the stream.
         Bitmap_Delegate delegate = new Bitmap_Delegate(image, srcBmpDelegate.getConfig());
+        delegate.mIsMutable = srcBmpDelegate.mIsMutable;
 
         return createBitmap(delegate, EnumSet.of(BitmapCreateFlags.NONE),
                 Bitmap.getDefaultDensity());
@@ -679,6 +687,24 @@ public final class Bitmap_Delegate {
         return false;
     }
 
+    @LayoutlibDelegate
+    /*package*/ static void nativeSetImmutable(long nativePtr) {
+        Bitmap_Delegate bmpDelegate = sManager.getDelegate(nativePtr);
+        if (bmpDelegate == null) {
+            return;
+        }
+        bmpDelegate.mIsMutable = false;
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static boolean nativeIsImmutable(long nativePtr) {
+        Bitmap_Delegate bmpDelegate = sManager.getDelegate(nativePtr);
+        if (bmpDelegate == null) {
+            return false;
+        }
+        return !bmpDelegate.mIsMutable;
+    }
+
     // ---- Private delegate/helper methods ----
 
     private Bitmap_Delegate(BufferedImage image, Config config) {
@@ -693,7 +719,6 @@ public final class Bitmap_Delegate {
 
         int width = delegate.mImage.getWidth();
         int height = delegate.mImage.getHeight();
-        boolean isMutable = createFlags.contains(BitmapCreateFlags.MUTABLE);
         boolean isPremultiplied = createFlags.contains(BitmapCreateFlags.PREMULTIPLIED);
 
         // and create/return a new Bitmap with it
