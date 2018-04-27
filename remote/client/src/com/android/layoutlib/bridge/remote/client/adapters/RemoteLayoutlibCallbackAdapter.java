@@ -139,9 +139,18 @@ public class RemoteLayoutlibCallbackAdapter implements RemoteLayoutlibCallback {
     }
 
     @Override
-    public RemoteXmlPullParser getXmlFileParser(String fileName) {
+    public RemoteXmlPullParser getXmlParserForPsiFile(String fileName) {
         try {
-            return RemoteXmlPullParserAdapter.create(mDelegate.getXmlFileParser(fileName));
+            return RemoteXmlPullParserAdapter.create(mDelegate.getXmlParserForPsiFile(fileName));
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public RemoteXmlPullParser getXmlParserForFile(String fileName) {
+        try {
+            return RemoteXmlPullParserAdapter.create(mDelegate.getXmlParserForFile(fileName));
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }

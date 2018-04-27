@@ -60,5 +60,15 @@ public interface RemoteLayoutlibCallback extends Remote {
 
     Path findClassPath(String name) throws RemoteException;
 
-    RemoteXmlPullParser getXmlFileParser(String fileName) throws RemoteException;
+    /**
+     * @deprecated Use {@link #getXmlParserForPsiFile}.
+     */
+    @Deprecated
+    default RemoteXmlPullParser getXmlFileParser(String fileName) throws RemoteException {
+        return getXmlParserForPsiFile(fileName);
+    }
+
+    RemoteXmlPullParser getXmlParserForPsiFile(String fileName) throws RemoteException;
+
+    RemoteXmlPullParser getXmlParserForFile(String fileName) throws RemoteException;
 }

@@ -18,6 +18,7 @@ package android.content.res;
 
 import com.android.SdkConstants;
 import com.android.ide.common.rendering.api.ArrayResourceValue;
+import com.android.ide.common.rendering.api.AssetRepository;
 import com.android.ide.common.rendering.api.DensityBasedResourceValue;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
@@ -59,14 +60,13 @@ import android.util.TypedValue;
 import android.view.DisplayAdjustments;
 import android.view.ViewGroup.LayoutParams;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.WeakHashMap;
 
+import static android.content.res.AssetManager.ACCESS_STREAMING;
 import static com.android.SdkConstants.ANDROID_PKG;
 import static com.android.SdkConstants.PREFIX_RESOURCE_REF;
 
@@ -230,8 +230,9 @@ public class Resources_Delegate {
             } catch (NumberFormatException e) {
                 // Check if the value passed is a file. If it is, mostly likely, user is referencing
                 // a color state list from a place where they should reference only a pure color.
+                AssetRepository repository = getAssetRepository(resources);
                 String message;
-                if (new File(resourceValue.getValue()).isFile()) {
+                if (repository.isFileResource(resourceValue.getValue())) {
                     String resource = (resourceValue.isFramework() ? "@android:" : "@") + "color/"
                             + resourceValue.getName();
                     message = "Hexadecimal color expected, found Color State List for " + resource;
@@ -476,12 +477,9 @@ public class Resources_Delegate {
                 return ResourceHelper.getXmlBlockParser(getContext(resources), value);
             } catch (XmlPullParserException e) {
                 Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                        "Failed to configure parser for " + value.getValue(), e, null /*data*/);
+                        "Failed to parse " + value.getValue(), e, null /*data*/);
                 // we'll return null below.
-            } catch (FileNotFoundException e) {
-                // this shouldn't happen since we check above.
             }
-
         }
 
         // id was not found or not resolved. Throw a NotFoundException.
@@ -502,12 +500,9 @@ public class Resources_Delegate {
                 return ResourceHelper.getXmlBlockParser(getContext(resources), value);
             } catch (XmlPullParserException e) {
                 Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                        "Failed to configure parser for " + value.getValue(), e, null /*data*/);
+                        "Failed to parse " + value.getValue(), e, null /*data*/);
                 // we'll return null below.
-            } catch (FileNotFoundException e) {
-                // this shouldn't happen since we check above.
             }
-
         }
 
         // id was not found or not resolved. Throw a NotFoundException.
@@ -904,10 +899,8 @@ public class Resources_Delegate {
                 return ResourceHelper.getXmlBlockParser(getContext(resources), value);
             } catch (XmlPullParserException e) {
                 Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                        "Failed to configure parser for " + value.getValue(), e, null /*data*/);
+                        "Failed to parse " + value.getValue(), e, null /*data*/);
                 // we'll return null below.
-            } catch (FileNotFoundException e) {
-                // this shouldn't happen since we check above.
             }
         }
 
@@ -930,8 +923,7 @@ public class Resources_Delegate {
         // even though we know the XML file to load directly, we still need to resolve the
         // id so that we can know if it's a platform or project resource.
         // (mPlatformResouceFlag will get the result and will be used later).
-        Pair<String, ResourceValue> result =
-                getResourceValue(resources, id, mPlatformResourceFlag);
+        Pair<String, ResourceValue> result = getResourceValue(resources, id, mPlatformResourceFlag);
 
         ResourceNamespace layoutNamespace;
         if (result != null && result.getSecond() != null) {
@@ -942,16 +934,10 @@ public class Resources_Delegate {
             layoutNamespace = ResourceNamespace.RES_AUTO;
         }
 
-        File f = new File(file);
         try {
-            XmlPullParser parser = ParserFactory.create(f);
-
+            XmlPullParser parser = ParserFactory.create(file);
             return new BridgeXmlBlockParser(parser, getContext(resources), layoutNamespace);
         } catch (XmlPullParserException e) {
-            NotFoundException newE = new NotFoundException();
-            newE.initCause(e);
-            throw newE;
-        } catch (FileNotFoundException e) {
             NotFoundException newE = new NotFoundException();
             newE.initCause(e);
             throw newE;
@@ -964,25 +950,8 @@ public class Resources_Delegate {
 
         if (value != null) {
             String path = value.getSecond().getValue();
-
             if (path != null) {
-                // check this is a file
-                File f = new File(path);
-                if (f.isFile()) {
-                    try {
-                        // if it's a nine-patch return a custom input stream so that
-                        // other methods (mainly bitmap factory) can detect it's a 9-patch
-                        // and actually load it as a 9-patch instead of a normal bitmap
-                        if (path.toLowerCase().endsWith(NinePatch.EXTENSION_9PATCH)) {
-                            return new NinePatchInputStream(f);
-                        }
-                        return new FileInputStream(f);
-                    } catch (FileNotFoundException e) {
-                        NotFoundException newE = new NotFoundException();
-                        newE.initCause(e);
-                        throw newE;
-                    }
-                }
+                return openRawResource(resources, path);
             }
         }
 
@@ -994,35 +963,36 @@ public class Resources_Delegate {
     }
 
     @LayoutlibDelegate
-    static InputStream openRawResource(Resources resources, int id, TypedValue value) throws
-            NotFoundException {
+    static InputStream openRawResource(Resources resources, int id, TypedValue value)
+            throws NotFoundException {
         getValue(resources, id, value, true);
 
         String path = value.string.toString();
+        return openRawResource(resources, path);
+    }
 
-        File f = new File(path);
-        if (f.isFile()) {
-            try {
-                // if it's a nine-patch return a custom input stream so that
-                // other methods (mainly bitmap factory) can detect it's a 9-patch
-                // and actually load it as a 9-patch instead of a normal bitmap
-                if (path.toLowerCase().endsWith(NinePatch.EXTENSION_9PATCH)) {
-                    return new NinePatchInputStream(f);
-                }
-                return new FileInputStream(f);
-            } catch (FileNotFoundException e) {
-                NotFoundException exception = new NotFoundException();
-                exception.initCause(e);
-                throw exception;
+    private static InputStream openRawResource(Resources resources, String path)
+            throws NotFoundException {
+        AssetRepository repository = getAssetRepository(resources);
+        try {
+            InputStream stream = repository.openNonAsset(0, path, ACCESS_STREAMING);
+            // If it's a nine-patch return a custom input stream so that
+            // other methods (mainly bitmap factory) can detect it's a 9-patch
+            // and actually load it as a 9-patch instead of a normal bitmap.
+            if (path.toLowerCase().endsWith(NinePatch.EXTENSION_9PATCH)) {
+                return new NinePatchInputStream(stream);
             }
+            return stream;
+        } catch (IOException e) {
+            NotFoundException exception = new NotFoundException();
+            exception.initCause(e);
+            throw exception;
         }
-
-        throw new NotFoundException();
     }
 
     @LayoutlibDelegate
-    static AssetFileDescriptor openRawResourceFd(Resources resources, int id) throws
-            NotFoundException {
+    static AssetFileDescriptor openRawResourceFd(Resources resources, int id)
+            throws NotFoundException {
         throw new UnsupportedOperationException();
     }
 
@@ -1128,5 +1098,11 @@ public class Resources_Delegate {
             radix = 8;
         }
         return Integer.parseInt(v, radix);
+    }
+
+    private static AssetRepository getAssetRepository(Resources resources) {
+        BridgeContext context = getContext(resources);
+        BridgeAssetManager assetManager = context.getAssets();
+        return assetManager.getAssetRepository();
     }
 }

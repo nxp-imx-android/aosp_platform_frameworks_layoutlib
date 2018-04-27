@@ -23,6 +23,7 @@ import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
 import com.android.ide.common.rendering.api.ViewInfo;
+import com.android.ide.common.rendering.api.XmlParserFactory;
 import com.android.internal.R;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
@@ -41,9 +42,9 @@ import org.junit.After;
 import org.junit.Test;
 import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.res.AssetManager;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
@@ -776,9 +777,22 @@ public class RenderTests extends RenderTestBase {
         // Setup
         // Create the layout pull parser for our resources (empty.xml can not be part of the test
         // app as it won't compile).
-        ParserFactory.setParserFactory(new com.android.ide.common.rendering.api.ParserFactory() {
+        ParserFactory.setParserFactory(new XmlParserFactory() {
             @Override
-            public XmlPullParser createParser(String debugName) throws XmlPullParserException {
+            @Nullable
+            public XmlPullParser createXmlParserForPsiFile(@NonNull String fileName) {
+                return null;
+            }
+
+            @Override
+            @Nullable
+            public XmlPullParser createXmlParserForFile(@NonNull String fileName) {
+                return null;
+            }
+
+            @Override
+            @NonNull
+            public XmlPullParser createXmlParser() {
                 return new KXmlParser();
             }
         });

@@ -104,7 +104,7 @@ public class StatusBar extends CustomBar {
                 try {
                     BridgeXmlBlockParser parser =
                             new BridgeXmlBlockParser(
-                                    ParserFactory.create(stream, null),
+                                    ParserFactory.create(stream, iconName),
                                     (BridgeContext) mContext,
                                     ResourceNamespace.ANDROID);
                     imageView.setImageDrawable(
