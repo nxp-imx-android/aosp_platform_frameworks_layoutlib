@@ -127,7 +127,6 @@ public class FontFamily_Delegate {
     // ---- delegate manager ----
     private static final DelegateManager<FontFamily_Delegate> sManager =
             new DelegateManager<FontFamily_Delegate>(FontFamily_Delegate.class);
-    private static long sBuilderFinalizer = -1;
     private static long sFamilyFinalizer = -1;
 
     // ---- delegate helper data ----
@@ -457,13 +456,9 @@ public class FontFamily_Delegate {
 
     @LayoutlibDelegate
     /*package*/ static long nGetBuilderReleaseFunc() {
-        synchronized (ColorFilter_Delegate.class) {
-            if (sBuilderFinalizer == -1) {
-                sBuilderFinalizer = NativeAllocationRegistry_Delegate.createFinalizer(
-                        sManager::removeJavaReferenceFor);
-            }
-        }
-        return sBuilderFinalizer;
+        // Layoutlib uses the same reference for the builder and the font family,
+        // so it should not release that reference at the builder stage.
+        return -1;
     }
 
     // ---- private helper methods ----
