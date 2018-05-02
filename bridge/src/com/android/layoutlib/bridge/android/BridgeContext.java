@@ -465,39 +465,34 @@ public class BridgeContext extends Context {
         }
 
         if (resValue != null) {
-
-            File xml = new File(resValue.getValue());
-            if (xml.isFile()) {
-                // we need to create a pull parser around the layout XML file, and then
-                // give that to our XmlBlockParser
-                try {
-                    XmlPullParser parser = ParserFactory.create(xml, true);
-
-                    // set the layout ref to have correct view cookies
+            String path = resValue.getValue();
+            // We need to create a pull parser around the layout XML file, and then
+            // give that to our XmlBlockParser.
+            try {
+                XmlPullParser parser = ParserFactory.create(path, true);
+                if (parser != null) {
+                    // Set the layout ref to have correct view cookies.
                     mBridgeInflater.setResourceReference(layout);
 
                     BridgeXmlBlockParser blockParser =
-                            new BridgeXmlBlockParser(parser,this, layout.getNamespace());
+                            new BridgeXmlBlockParser(parser, this, layout.getNamespace());
                     try {
                         pushParser(blockParser);
-                        return Pair.of(
-                                mBridgeInflater.inflate(blockParser, parent, attachToRoot),
+                        return Pair.of(mBridgeInflater.inflate(blockParser, parent, attachToRoot),
                                 Boolean.FALSE);
                     } finally {
                         popParser();
                     }
-                } catch (XmlPullParserException e) {
+                } else {
                     Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                            "Failed to configure parser for " + xml, e, null /*data*/);
-                    // we'll return null below.
-                } catch (FileNotFoundException e) {
-                    // this shouldn't happen since we check above.
-                } finally {
-                    mBridgeInflater.setResourceReference(null);
+                            String.format("File %s is missing!", path), null);
                 }
-            } else {
+            } catch (XmlPullParserException e) {
                 Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                        String.format("File %s is missing!", xml), null);
+                        "Failed to parse file " + path, e, null /*data*/);
+                // We'll return null below.
+            } finally {
+                mBridgeInflater.setResourceReference(null);
             }
         } else {
             Bridge.getLog().error(LayoutLog.TAG_BROKEN,

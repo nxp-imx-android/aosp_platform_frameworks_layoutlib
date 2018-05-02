@@ -347,21 +347,22 @@ public final class BridgeInflater extends LayoutInflater {
             }
 
             if (value != null) {
-                File f = new File(value.getValue());
-                if (f.isFile()) {
-                    try {
-                        XmlPullParser parser = ParserFactory.create(f, true);
-
-                        BridgeXmlBlockParser bridgeParser = new BridgeXmlBlockParser(
-                                parser, bridgeContext, value.getNamespace());
-
-                        return inflate(bridgeParser, root);
-                    } catch (Exception e) {
-                        Bridge.getLog().error(LayoutLog.TAG_RESOURCES_READ,
-                                "Failed to parse file " + f.getAbsolutePath(), e, null);
-
+                String path = value.getValue();
+                try {
+                    XmlPullParser parser = ParserFactory.create(path, true);
+                    if (parser == null) {
                         return null;
                     }
+
+                    BridgeXmlBlockParser bridgeParser = new BridgeXmlBlockParser(
+                            parser, bridgeContext, value.getNamespace());
+
+                    return inflate(bridgeParser, root);
+                } catch (Exception e) {
+                    Bridge.getLog().error(LayoutLog.TAG_RESOURCES_READ,
+                            "Failed to parse file " + path, e, null);
+
+                    return null;
                 }
             }
         }
