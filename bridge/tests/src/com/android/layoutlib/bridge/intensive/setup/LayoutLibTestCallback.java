@@ -172,6 +172,7 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
             ByteStreams.copy(fileStream, byteOutputStream);
             KXmlParser parser = new KXmlParser();
             parser.setInput(new ByteArrayInputStream(byteOutputStream.toByteArray()), null);
+            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
             return parser;
         } catch (IOException | XmlPullParserException e) {
             return null;

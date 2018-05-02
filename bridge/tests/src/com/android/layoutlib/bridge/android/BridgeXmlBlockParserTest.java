@@ -155,7 +155,7 @@ public class BridgeXmlBlockParserTest {
         @Override
         @NonNull
         public XmlPullParser createXmlParser() {
-            throw new UnsupportedOperationException();
+            return new KXmlParser();
         }
     }
 }
