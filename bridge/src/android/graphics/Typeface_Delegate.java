@@ -24,7 +24,6 @@ import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.layoutlib.bridge.impl.DelegateManager;
-import com.android.layoutlib.bridge.impl.ParserFactory;
 import com.android.layoutlib.bridge.impl.RenderAction;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
@@ -40,8 +39,6 @@ import android.text.FontConfig;
 import android.util.ArrayMap;
 
 import java.awt.Font;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
@@ -272,20 +269,9 @@ public final class Typeface_Delegate {
                     RenderParamsFlags.FLAG_KEY_XML_FILE_PARSER_SUPPORT);
             XmlPullParser parser = null;
             if (psiParserSupport != null && psiParserSupport) {
-                parser = context.getLayoutlibCallback().getXmlFileParser(path);
+                parser = context.getLayoutlibCallback().createXmlParserForPsiFile(path);
             } else {
-                File f = new File(path);
-                if (f.isFile()) {
-                    try {
-                        parser = ParserFactory.create(f);
-                    } catch (XmlPullParserException | FileNotFoundException e) {
-                        // this is an error and not warning since the file existence is checked
-                        // before
-                        // attempting to parse it.
-                        Bridge.getLog().error(null, "Failed to parse file " + path, e,
-                                null /*data*/);
-                    }
-                }
+                parser = context.getLayoutlibCallback().createXmlParserForFile(path);
             }
 
             if (parser != null) {

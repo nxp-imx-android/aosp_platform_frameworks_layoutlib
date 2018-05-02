@@ -60,7 +60,6 @@ import libcore.util.NativeAllocationRegistry_Delegate;
  */
 public final class Bitmap_Delegate {
 
-
     public enum BitmapCreateFlags {
         NONE, PREMULTIPLIED, MUTABLE
     }
@@ -97,17 +96,17 @@ public final class Bitmap_Delegate {
     }
 
     /**
-     * Creates and returns a {@link Bitmap} initialized with the given file content.
+     * Creates and returns a {@link Bitmap} initialized with the given stream content.
      *
-     * @param input the file from which to read the bitmap content
+     * @param input the stream from which to read the bitmap content
      * @param isMutable whether the bitmap is mutable
      * @param density the density associated with the bitmap
      *
      * @see Bitmap#isMutable()
      * @see Bitmap#getDensity()
      */
-    public static Bitmap createBitmap(File input, boolean isMutable, Density density)
-            throws IOException {
+    public static Bitmap createBitmap(@Nullable InputStream input, boolean isMutable,
+            Density density) throws IOException {
         return createBitmap(input, getPremultipliedBitmapCreateFlags(isMutable), density);
     }
 
@@ -121,11 +120,11 @@ public final class Bitmap_Delegate {
      * @see Bitmap#isMutable()
      * @see Bitmap#getDensity()
      */
-    private static Bitmap createBitmap(File input, Set<BitmapCreateFlags> createFlags,
+    static Bitmap createBitmap(@Nullable InputStream input, Set<BitmapCreateFlags> createFlags,
             Density density) throws IOException {
         // create a delegate with the content of the file.
-        BufferedImage image = ImageIO.read(input);
-        if (image == null && input.exists()) {
+        BufferedImage image = input == null ? null : ImageIO.read(input);
+        if (image == null) {
             // There was a problem decoding the image, or the decoder isn't registered. Webp maybe.
             // Replace with a broken image icon.
             BridgeContext currentContext = RenderAction.getCurrentContext();
@@ -140,40 +139,6 @@ public final class Bitmap_Delegate {
             }
         }
         Bitmap_Delegate delegate = new Bitmap_Delegate(image, Config.ARGB_8888);
-        delegate.mIsMutable = createFlags.contains(BitmapCreateFlags.MUTABLE);
-
-        return createBitmap(delegate, createFlags, density.getDpiValue());
-    }
-
-    /**
-     * Creates and returns a {@link Bitmap} initialized with the given stream content.
-     *
-     * @param input the stream from which to read the bitmap content
-     * @param isMutable whether the bitmap is mutable
-     * @param density the density associated with the bitmap
-     *
-     * @see Bitmap#isMutable()
-     * @see Bitmap#getDensity()
-     */
-    public static Bitmap createBitmap(InputStream input, boolean isMutable, Density density)
-            throws IOException {
-        return createBitmap(input, getPremultipliedBitmapCreateFlags(isMutable), density);
-    }
-
-    /**
-     * Creates and returns a {@link Bitmap} initialized with the given stream content.
-     *
-     * @param input the stream from which to read the bitmap content
-     * @param density the density associated with the bitmap
-     *
-     * @see Bitmap#isPremultiplied()
-     * @see Bitmap#isMutable()
-     * @see Bitmap#getDensity()
-     */
-    public static Bitmap createBitmap(InputStream input, Set<BitmapCreateFlags> createFlags,
-            Density density) throws IOException {
-        // create a delegate with the content of the stream.
-        Bitmap_Delegate delegate = new Bitmap_Delegate(ImageIO.read(input), Config.ARGB_8888);
         delegate.mIsMutable = createFlags.contains(BitmapCreateFlags.MUTABLE);
 
         return createBitmap(delegate, createFlags, density.getDpiValue());
