@@ -233,7 +233,7 @@ public abstract class RenderAction<T extends RenderParams> {
      */
     private void setUp() {
         // setup the ParserFactory
-        ParserFactory.setParserFactory(mParams.getLayoutlibCallback().getParserFactory());
+        ParserFactory.setParserFactory(mParams.getLayoutlibCallback());
 
         // make sure the Resources object references the context (and other objects) for this
         // scene

@@ -17,8 +17,10 @@
 package com.android.layoutlib.bridge.impl;
 
 import com.android.SdkConstants;
+import com.android.ide.common.rendering.api.AssetRepository;
 import com.android.ide.common.rendering.api.DensityBasedResourceValue;
 import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.RenderResources;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.internal.util.XmlUtils;
@@ -34,6 +36,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.content.res.BridgeAssetManager;
 import android.content.res.ColorStateList;
 import android.content.res.ComplexColor;
 import android.content.res.ComplexColor_Accessor;
@@ -53,14 +56,14 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.util.TypedValue;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static android.content.res.AssetManager.ACCESS_STREAMING;
 
 /**
  * Helper class to provide various conversion method used in handling android resources.
@@ -252,8 +255,7 @@ public final class ResourceHelper {
      */
     @Nullable
     public static BridgeXmlBlockParser getXmlBlockParser(@NonNull BridgeContext context,
-            @NonNull ResourceValue value)
-            throws FileNotFoundException, XmlPullParserException {
+            @NonNull ResourceValue value) throws XmlPullParserException {
         String stringValue = value.getValue();
         if (RenderResources.REFERENCE_NULL.equals(stringValue)) {
             return null;
@@ -261,17 +263,15 @@ public final class ResourceHelper {
 
         XmlPullParser parser = null;
 
+        LayoutlibCallback layoutlibCallback = context.getLayoutlibCallback();
         // Framework values never need a PSI parser. They do not change and the do not contain
         // aapt:attr attributes.
         if (!value.isFramework()) {
-            parser = context.getLayoutlibCallback().getParser(value);
+            parser = layoutlibCallback.getParser(value);
         }
 
         if (parser == null) {
-            File xmlFile = new File(stringValue);
-            if (xmlFile.isFile()) {
-                parser = ParserFactory.create(xmlFile);
-            }
+            parser = ParserFactory.create(stringValue);
         }
 
         return parser == null
@@ -312,16 +312,12 @@ public final class ResourceHelper {
         }
 
         if (lowerCaseValue.endsWith(NinePatch.EXTENSION_9PATCH)) {
-            File file = new File(stringValue);
-            if (file.isFile()) {
-                try {
-                    return getNinePatchDrawable(new FileInputStream(file), density,
-                            value.isFramework(), stringValue, context);
-                } catch (IOException e) {
-                    // failed to read the file, we'll return null below.
-                    Bridge.getLog().error(LayoutLog.TAG_RESOURCES_READ,
-                            "Failed lot load " + file.getAbsolutePath(), e, null /*data*/);
-                }
+            try {
+                return getNinePatchDrawable(density, value.isFramework(), stringValue, context);
+            } catch (IOException e) {
+                // failed to read the file, we'll return null below.
+                Bridge.getLog().error(LayoutLog.TAG_RESOURCES_READ,
+                        "Failed to load " + stringValue, e, null /*data*/);
             }
 
             return null;
@@ -345,15 +341,22 @@ public final class ResourceHelper {
 
             return null;
         } else {
-            File bmpFile = new File(stringValue);
-            if (bmpFile.isFile()) {
+            AssetRepository repository = getAssetRepository(context);
+            if (repository.isFileResource(stringValue)) {
                 try {
                     Bitmap bitmap = Bridge.getCachedBitmap(stringValue,
                             value.isFramework() ? null : context.getProjectKey());
 
                     if (bitmap == null) {
+                        InputStream stream;
+                        try {
+                            stream = repository.openNonAsset(0, stringValue, ACCESS_STREAMING);
+
+                        } catch (FileNotFoundException e) {
+                            stream = null;
+                        }
                         bitmap =
-                                Bitmap_Delegate.createBitmap(bmpFile, false /*isMutable*/, density);
+                                Bitmap_Delegate.createBitmap(stream, false /*isMutable*/, density);
                         Bridge.setCachedBitmap(stringValue, bitmap,
                                 value.isFramework() ? null : context.getProjectKey());
                     }
@@ -362,12 +365,17 @@ public final class ResourceHelper {
                 } catch (IOException e) {
                     // we'll return null below
                     Bridge.getLog().error(LayoutLog.TAG_RESOURCES_READ,
-                            "Failed lot load " + bmpFile.getAbsolutePath(), e, null /*data*/);
+                            "Failed to load " + stringValue, e, null /*data*/);
                 }
             }
         }
 
         return null;
+    }
+
+    private static AssetRepository getAssetRepository(@NonNull BridgeContext context) {
+        BridgeAssetManager assetManager = context.getAssets();
+        return assetManager.getAssetRepository();
     }
 
     /**
@@ -402,24 +410,29 @@ public final class ResourceHelper {
         return getFont(value.getValue(), context, theme, value.isFramework());
     }
 
-    private static Drawable getNinePatchDrawable(InputStream inputStream, Density density,
-            boolean isFramework, String cacheKey, BridgeContext context) throws IOException {
+    private static Drawable getNinePatchDrawable(Density density, boolean isFramework,
+            String path, BridgeContext context) throws IOException {
         // see if we still have both the chunk and the bitmap in the caches
-        NinePatchChunk chunk = Bridge.getCached9Patch(cacheKey,
+        NinePatchChunk chunk = Bridge.getCached9Patch(path,
                 isFramework ? null : context.getProjectKey());
-        Bitmap bitmap = Bridge.getCachedBitmap(cacheKey,
+        Bitmap bitmap = Bridge.getCachedBitmap(path,
                 isFramework ? null : context.getProjectKey());
 
         // if either chunk or bitmap is null, then we reload the 9-patch file.
         if (chunk == null || bitmap == null) {
             try {
-                NinePatch ninePatch = NinePatch.load(inputStream, true /*is9Patch*/,
+                AssetRepository repository = getAssetRepository(context);
+                if (!repository.isFileResource(path)) {
+                    return null;
+                }
+                InputStream stream = repository.openNonAsset(0, path, ACCESS_STREAMING);
+                NinePatch ninePatch = NinePatch.load(stream, true /*is9Patch*/,
                         false /* convert */);
                 if (ninePatch != null) {
                     if (chunk == null) {
                         chunk = ninePatch.getChunk();
 
-                        Bridge.setCached9Patch(cacheKey, chunk,
+                        Bridge.setCached9Patch(path, chunk,
                                 isFramework ? null : context.getProjectKey());
                     }
 
@@ -428,7 +441,7 @@ public final class ResourceHelper {
                                 false /*isMutable*/,
                                 density);
 
-                        Bridge.setCachedBitmap(cacheKey, bitmap,
+                        Bridge.setCachedBitmap(path, bitmap,
                                 isFramework ? null : context.getProjectKey());
                     }
                 }

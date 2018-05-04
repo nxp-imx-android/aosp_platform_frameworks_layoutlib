@@ -17,6 +17,7 @@
 package com.android.layoutlib.bridge.android;
 
 import com.android.ide.common.rendering.api.ResourceNamespace;
+import com.android.ide.common.rendering.api.XmlParserFactory;
 import com.android.layoutlib.bridge.impl.ParserFactory;
 
 import org.junit.AfterClass;
@@ -28,6 +29,12 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -40,7 +47,6 @@ public class BridgeXmlBlockParserTest {
 
     @Test
     public void testXmlBlockParser() throws Exception {
-
         XmlPullParser parser = ParserFactory.create(
                 getClass().getResourceAsStream("/com/android/layoutlib/testdata/layout1.xml"),
                         "layout1.xml");
@@ -126,12 +132,29 @@ public class BridgeXmlBlockParserTest {
         ParserFactory.setParserFactory(null);
     }
 
-    private static class ParserFactoryImpl
-            extends com.android.ide.common.rendering.api.ParserFactory {
-
-        @NonNull
+    private static class ParserFactoryImpl implements XmlParserFactory {
         @Override
-        public XmlPullParser createParser(String displayName) throws XmlPullParserException {
+        @Nullable
+        public XmlPullParser createXmlParserForPsiFile(@NonNull String fileName) {
+            return createXmlParserForFile(fileName);
+        }
+
+        @Override
+        @Nullable
+        public XmlPullParser createXmlParserForFile(@NonNull String fileName) {
+            try {
+                InputStream stream = new BufferedInputStream(new FileInputStream(fileName));
+                XmlPullParser parser = new KXmlParser();
+                parser.setInput(stream, null);
+                return parser;
+            } catch (FileNotFoundException | XmlPullParserException e) {
+                return null;
+            }
+        }
+
+        @Override
+        @NonNull
+        public XmlPullParser createXmlParser() {
             return new KXmlParser();
         }
     }
