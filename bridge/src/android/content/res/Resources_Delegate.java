@@ -976,6 +976,9 @@ public class Resources_Delegate {
         AssetRepository repository = getAssetRepository(resources);
         try {
             InputStream stream = repository.openNonAsset(0, path, ACCESS_STREAMING);
+            if (stream == null) {
+                throw new NotFoundException(path);
+            }
             // If it's a nine-patch return a custom input stream so that
             // other methods (mainly bitmap factory) can detect it's a 9-patch
             // and actually load it as a 9-patch instead of a normal bitmap.
