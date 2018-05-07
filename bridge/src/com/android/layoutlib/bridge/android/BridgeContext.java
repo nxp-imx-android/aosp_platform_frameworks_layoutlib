@@ -120,22 +120,24 @@ public class BridgeContext extends Context {
     private static final Map<String, ResourceValue> FRAMEWORK_REPLACE_VALUES = new HashMap<>(3);
 
     static {
-        FRAMEWORK_PATCHED_VALUES.put("animateFirstView", new ResourceValue(
-                ResourceType.BOOL, "animateFirstView", "false", false));
+        FRAMEWORK_PATCHED_VALUES.put("animateFirstView",
+                new ResourceValue(ResourceNamespace.ANDROID, ResourceType.BOOL,
+                        "animateFirstView", "false"));
         FRAMEWORK_PATCHED_VALUES.put("animateLayoutChanges",
-                new ResourceValue(ResourceType.BOOL, "animateLayoutChanges", "false", false));
+                new ResourceValue(ResourceNamespace.ANDROID, ResourceType.BOOL,
+                        "animateLayoutChanges", "false"));
 
 
         FRAMEWORK_REPLACE_VALUES.put("textEditSuggestionItemLayout",
-                new ResourceValue(ResourceType.LAYOUT, "textEditSuggestionItemLayout",
-                        "text_edit_suggestion_item", true));
+                new ResourceValue(ResourceNamespace.ANDROID, ResourceType.LAYOUT,
+                        "textEditSuggestionItemLayout", "text_edit_suggestion_item"));
         FRAMEWORK_REPLACE_VALUES.put("textEditSuggestionContainerLayout",
-                new ResourceValue(ResourceType.LAYOUT, "textEditSuggestionContainerLayout",
-                        "text_edit_suggestion_container", true));
+                new ResourceValue(ResourceNamespace.ANDROID, ResourceType.LAYOUT,
+                        "textEditSuggestionContainerLayout", "text_edit_suggestion_container"));
         FRAMEWORK_REPLACE_VALUES.put("textEditSuggestionHighlightStyle",
-                new ResourceValue(ResourceType.STYLE, "textEditSuggestionHighlightStyle",
-                        "TextAppearance.Holo.SuggestionHighlight", true));
-
+                new ResourceValue(ResourceNamespace.ANDROID, ResourceType.STYLE,
+                        "textEditSuggestionHighlightStyle",
+                        "TextAppearance.Holo.SuggestionHighlight"));
     }
 
     /** The map adds cookies to each view so that IDE can link xml tags to views. */
