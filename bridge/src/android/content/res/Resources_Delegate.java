@@ -687,10 +687,7 @@ public class Resources_Delegate {
     static String getResourceName(Resources resources, int resid) throws NotFoundException {
         ResourceReference resourceInfo = getResourceInfo(resources, resid);
         if (resourceInfo != null) {
-            String packageName = resourceInfo.getNamespace().getPackageName();
-            if (packageName == null) {
-                packageName = SdkConstants.APP_PREFIX;
-            }
+            String packageName = getPackageName(resourceInfo, resources);
             return packageName + ':' + resourceInfo.getResourceType().getName() + '/' +
                     resourceInfo.getName();
         }
@@ -702,11 +699,21 @@ public class Resources_Delegate {
     static String getResourcePackageName(Resources resources, int resid) throws NotFoundException {
         ResourceReference resourceInfo = getResourceInfo(resources, resid);
         if (resourceInfo != null) {
-            String packageName = resourceInfo.getNamespace().getPackageName();
-            return packageName == null ? SdkConstants.APP_PREFIX : packageName;
+            return getPackageName(resourceInfo, resources);
         }
         throwException(resid, null);
         return null;
+    }
+
+    private static String getPackageName(ResourceReference resourceInfo, Resources resources) {
+        String packageName = resourceInfo.getNamespace().getPackageName();
+        if (packageName == null) {
+            packageName = getContext(resources).getPackageName();
+            if (packageName == null) {
+                packageName = SdkConstants.APP_PREFIX;
+            }
+        }
+        return packageName;
     }
 
     @LayoutlibDelegate
