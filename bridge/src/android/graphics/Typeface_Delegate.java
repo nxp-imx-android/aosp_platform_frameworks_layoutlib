@@ -197,7 +197,7 @@ public final class Typeface_Delegate {
 
     @LayoutlibDelegate
     /*package*/ static long nativeGetReleaseFunc() {
-        synchronized (ColorFilter_Delegate.class) {
+        synchronized (Typeface_Delegate.class) {
             if (sFinalizer == -1) {
                 sFinalizer = NativeAllocationRegistry_Delegate.createFinalizer(
                         sManager::removeJavaReferenceFor);
