@@ -237,6 +237,7 @@ public final class CreateInfo implements ICreateInfo {
         "libcore.io.MemoryMappedFile#close",
         "libcore.io.MemoryMappedFile#bigEndianIterator",
         "libcore.util.NativeAllocationRegistry#applyFreeFunction",
+        "libcore.util.NativeAllocationRegistry#registerNativeAllocation",
     };
 
     /**
