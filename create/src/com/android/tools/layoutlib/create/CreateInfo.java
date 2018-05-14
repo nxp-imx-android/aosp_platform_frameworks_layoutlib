@@ -337,7 +337,9 @@ public final class CreateInfo implements ICreateInfo {
     private final static String[] EXCLUDED_CLASSES =
         new String[] {
             "android.preference.PreferenceActivity",
+            "java.**",
             "org.kxml2.io.KXmlParser",
+            "sun.**",
         };
 
     /**
