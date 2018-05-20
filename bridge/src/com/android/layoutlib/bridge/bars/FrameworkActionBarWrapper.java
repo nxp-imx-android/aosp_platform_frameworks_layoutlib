@@ -136,7 +136,7 @@ public abstract class FrameworkActionBarWrapper {
             } else {
                 // Project menu.
                 id = mContext.getProjectResourceId(
-                        new ResourceReference(ResourceNamespace.TODO, MENU, name), -1);
+                        new ResourceReference(ResourceNamespace.TODO(), MENU, name), -1);
             }
             if (id > -1) {
                 inflater.inflate(id, menuBuilder);

@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.layoutlib.bridge.android;
 
 import com.android.ide.common.rendering.api.ResourceNamespace;
-import com.android.ide.common.rendering.api.ResourceValue;
+import com.android.ide.common.rendering.api.ResourceValueImpl;
 import com.android.resources.ResourceType;
 
 import android.annotation.NonNull;
@@ -26,7 +25,7 @@ import android.annotation.NonNull;
  * Special subclass that layoutlib uses to start the resolution process and recognize if the
  * resolution failed.
  */
-public class UnresolvedResourceValue extends ResourceValue {
+public class UnresolvedResourceValue extends ResourceValueImpl {
     public UnresolvedResourceValue(
             @NonNull String value,
             @NonNull ResourceNamespace namespace,
