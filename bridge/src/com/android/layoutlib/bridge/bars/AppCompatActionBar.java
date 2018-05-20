@@ -73,7 +73,7 @@ public class AppCompatActionBar extends BridgeActionBar {
         // TODO(namespaces): the callback should provide the namespace in which this resource exists
         int contentRootId = context.getProjectResourceId(
                 new ResourceReference(
-                        ResourceNamespace.TODO,
+                        ResourceNamespace.TODO(),
                         ResourceType.ID,
                         "action_bar_activity_content"), 0);
         View contentView = getDecorContent().findViewById(contentRootId);
@@ -209,7 +209,7 @@ public class AppCompatActionBar extends BridgeActionBar {
         } else {
             // Project menu.
             id = mBridgeContext.getProjectResourceId(
-                    new ResourceReference(ResourceNamespace.TODO, MENU, name), -1);
+                    new ResourceReference(ResourceNamespace.TODO(), MENU, name), -1);
         }
         if (id < 1) {
             return;

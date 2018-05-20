@@ -20,6 +20,7 @@ import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
+import com.android.ide.common.rendering.api.ResourceValueImpl;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
 import com.android.ide.common.rendering.api.ViewInfo;
@@ -820,7 +821,7 @@ public class RenderTests extends RenderTestBase {
 
         try {
             ColorStateList stateList = ResourceHelper.getColorStateList(
-                    new ResourceValue(
+                    new ResourceValueImpl(
                             ResourceNamespace.RES_AUTO,
                             ResourceType.COLOR,
                             "test_list",
@@ -842,7 +843,7 @@ public class RenderTests extends RenderTestBase {
             Resources.Theme theme = mContext.getResources().newTheme();
             theme.applyStyle(R.style.ThemeOverlay_Material_Light, true);
             stateList = ResourceHelper.getColorStateList(
-                    new ResourceValue(
+                    new ResourceValueImpl(
                             ResourceNamespace.RES_AUTO,
                             ResourceType.COLOR,
                             "test_list",

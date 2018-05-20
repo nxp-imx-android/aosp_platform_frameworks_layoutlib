@@ -26,6 +26,7 @@ import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceNamespace.Resolver;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
+import com.android.ide.common.rendering.api.ResourceValueImpl;
 import com.android.ide.common.rendering.api.StyleResourceValue;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.BridgeConstants;
@@ -121,21 +122,21 @@ public class BridgeContext extends Context {
 
     static {
         FRAMEWORK_PATCHED_VALUES.put("animateFirstView",
-                new ResourceValue(ResourceNamespace.ANDROID, ResourceType.BOOL,
+                new ResourceValueImpl(ResourceNamespace.ANDROID, ResourceType.BOOL,
                         "animateFirstView", "false"));
         FRAMEWORK_PATCHED_VALUES.put("animateLayoutChanges",
-                new ResourceValue(ResourceNamespace.ANDROID, ResourceType.BOOL,
+                new ResourceValueImpl(ResourceNamespace.ANDROID, ResourceType.BOOL,
                         "animateLayoutChanges", "false"));
 
 
         FRAMEWORK_REPLACE_VALUES.put("textEditSuggestionItemLayout",
-                new ResourceValue(ResourceNamespace.ANDROID, ResourceType.LAYOUT,
+                new ResourceValueImpl(ResourceNamespace.ANDROID, ResourceType.LAYOUT,
                         "textEditSuggestionItemLayout", "text_edit_suggestion_item"));
         FRAMEWORK_REPLACE_VALUES.put("textEditSuggestionContainerLayout",
-                new ResourceValue(ResourceNamespace.ANDROID, ResourceType.LAYOUT,
+                new ResourceValueImpl(ResourceNamespace.ANDROID, ResourceType.LAYOUT,
                         "textEditSuggestionContainerLayout", "text_edit_suggestion_container"));
         FRAMEWORK_REPLACE_VALUES.put("textEditSuggestionHighlightStyle",
-                new ResourceValue(ResourceNamespace.ANDROID, ResourceType.STYLE,
+                new ResourceValueImpl(ResourceNamespace.ANDROID, ResourceType.STYLE,
                         "textEditSuggestionHighlightStyle",
                         "TextAppearance.Holo.SuggestionHighlight"));
     }

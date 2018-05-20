@@ -164,7 +164,7 @@ public class SessionParamsBuilder {
         ResourceResolver resourceResolver = ResourceResolver.create(
                 ImmutableMap.of(
                         ResourceNamespace.ANDROID, mFrameworkResources.getConfiguredResources(config),
-                        ResourceNamespace.TODO, mProjectResources.getConfiguredResources(config)),
+                        ResourceNamespace.TODO(), mProjectResources.getConfiguredResources(config)),
                 new ResourceReference(
                         ResourceNamespace.fromBoolean(!isProjectTheme),
                         ResourceType.STYLE,

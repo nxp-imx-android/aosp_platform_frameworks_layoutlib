@@ -87,7 +87,7 @@ abstract class CustomBar extends LinearLayout {
 
             // TODO(namespaces): does the namespace matter here?
             BridgeXmlBlockParser bridgeParser =
-                    new BridgeXmlBlockParser(parser, context, ResourceNamespace.TODO);
+                    new BridgeXmlBlockParser(parser, context, ResourceNamespace.TODO());
 
             try {
                 inflater.inflate(bridgeParser, this, true);
@@ -258,7 +258,7 @@ abstract class CustomBar extends LinearLayout {
     }
 
     private static int getColor(RenderResources renderResources, String attr) {
-        // From ?attr/foo to @color/bar. This is most likely an ItemResourceValue.
+        // From ?attr/foo to @color/bar. This is most likely an StyleItemResourceValue.
         ResourceValue resource = renderResources.findItemInTheme(attr, true);
         // Form @color/bar to the #AARRGGBB
         resource = renderResources.resolveResValue(resource);
