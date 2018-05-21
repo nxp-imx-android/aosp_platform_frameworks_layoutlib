@@ -18,11 +18,12 @@ package com.android.layoutlib.bridge.android;
 
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceValue;
+import com.android.resources.ResourceType;
 
 import android.annotation.NonNull;
 
 /**
- * Special subclass that layoutlib uses to start the resolution process and recognizes if the
+ * Special subclass that layoutlib uses to start the resolution process and recognize if the
  * resolution failed.
  */
 public class UnresolvedResourceValue extends ResourceValue {
@@ -30,7 +31,7 @@ public class UnresolvedResourceValue extends ResourceValue {
             @NonNull String value,
             @NonNull ResourceNamespace namespace,
             @NonNull ResourceNamespace.Resolver namespaceResolver) {
-        super(namespace, null, "layoutlib", value);
+        super(namespace, ResourceType.STRING, "layoutlib", value);
         setNamespaceResolver(namespaceResolver);
     }
 }
