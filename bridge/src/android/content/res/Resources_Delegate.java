@@ -28,6 +28,7 @@ import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceNamespace.Resolver;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
+import com.android.ide.common.rendering.api.ResourceValueImpl;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.BridgeConstants;
 import com.android.layoutlib.bridge.android.BridgeContext;
@@ -156,7 +157,7 @@ public class Resources_Delegate {
             ResourceValue value = renderResources.getResolvedResource(resourceInfo);
             if (value == null) {
                 // Unable to resolve the attribute, just leave the unresolved value.
-                value = new ResourceValue(resourceInfo.getNamespace(),
+                value = new ResourceValueImpl(resourceInfo.getNamespace(),
                         resourceInfo.getResourceType(), attributeName, attributeName);
             }
             return Pair.of(attributeName, value);
