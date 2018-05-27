@@ -63,7 +63,6 @@ import android.view.ViewGroup.LayoutParams;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.WeakHashMap;
 
@@ -309,12 +308,13 @@ public class Resources_Delegate {
         if (resValue == null) {
             // Error already logged by getArrayResourceValue.
             return new CharSequence[0];
-        } else if (!(resValue instanceof ArrayResourceValue)) {
-            return new CharSequence[]{
-                    resolveReference(resources, resValue.getValue(), resValue.isFramework())};
         }
-        ArrayResourceValue arv = ((ArrayResourceValue) resValue);
-        return fillValues(resources, arv, new CharSequence[arv.getElementCount()]);
+        if (resValue instanceof ArrayResourceValue) {
+            ArrayResourceValue arrayValue = (ArrayResourceValue) resValue;
+            return resolveValues(resources, arrayValue);
+        }
+        RenderResources renderResources = getContext(resources).getRenderResources();
+        return new CharSequence[] { renderResources.resolveResValue(resValue).getValue() };
     }
 
     @LayoutlibDelegate
@@ -323,28 +323,28 @@ public class Resources_Delegate {
         if (resValue == null) {
             // Error already logged by getArrayResourceValue.
             return new String[0];
-        } else if (!(resValue instanceof ArrayResourceValue)) {
-            return new String[]{
-                    resolveReference(resources, resValue.getValue(), resValue.isFramework())};
         }
-        ArrayResourceValue arv = ((ArrayResourceValue) resValue);
-        return fillValues(resources, arv, new String[arv.getElementCount()]);
+        if (resValue instanceof ArrayResourceValue) {
+            ArrayResourceValue arv = (ArrayResourceValue) resValue;
+            return resolveValues(resources, arv);
+        }
+        return new String[] { resolveReference(resources, resValue) };
     }
 
     /**
-     * Resolve each element in resValue and copy them to {@code values}. The values copied are
-     * always Strings. The ideal signature for the method should be &lt;T super String&gt;, but java
-     * generics don't support it.
+     * Resolves each element in resValue and returns an array of resolved values. The returned array
+     * may contain nulls.
      */
-    static <T extends CharSequence> T[] fillValues(Resources resources, ArrayResourceValue resValue,
-            T[] values) {
-        int i = 0;
-        for (Iterator<String> iterator = resValue.iterator(); iterator.hasNext(); i++) {
-            @SuppressWarnings("unchecked")
-            T s = (T) resolveReference(resources, iterator.next(), resValue.isFramework());
-            values[i] = s;
+    @NonNull
+    static String[] resolveValues(@NonNull Resources resources,
+            @NonNull ArrayResourceValue resValue) {
+        String[] result = new String[resValue.getElementCount()];
+        for (int i = 0; i < resValue.getElementCount(); i++) {
+            String value = resValue.getElement(i);
+            result[i] = resolveReference(resources, value,
+                    resValue.getNamespace(), resValue.getNamespaceResolver());
         }
-        return values;
+        return result;
     }
 
     @LayoutlibDelegate
@@ -353,39 +353,57 @@ public class Resources_Delegate {
         if (rv == null) {
             // Error already logged by getArrayResourceValue.
             return new int[0];
-        } else if (!(rv instanceof ArrayResourceValue)) {
-            // This is an older IDE that can only give us the first element of the array.
-            String firstValue = resolveReference(resources, rv.getValue(), rv.isFramework());
+        }
+        if (rv instanceof ArrayResourceValue) {
+            ArrayResourceValue resValue = (ArrayResourceValue) rv;
+            int n = resValue.getElementCount();
+            int[] values = new int[n];
+            for (int i = 0; i < n; i++) {
+                String element = resolveReference(resources, resValue.getElement(i),
+                        resValue.getNamespace(), resValue.getNamespaceResolver());
+                if (element != null) {
+                    try {
+                        if (element.startsWith("#")) {
+                            // This integer represents a color (starts with #).
+                            values[i] = Color.parseColor(element);
+                        } else {
+                            values[i] = getInt(element);
+                        }
+                    } catch (NumberFormatException e) {
+                        Bridge.getLog().error(LayoutLog.TAG_RESOURCES_FORMAT,
+                                "Integer resource array contains non-integer value: \"" + element +
+                                        "\"", null);
+                    } catch (IllegalArgumentException e) {
+                        Bridge.getLog().error(LayoutLog.TAG_RESOURCES_FORMAT,
+                                "Integer resource array contains wrong color format: \"" + element +
+                                        "\"", null);
+                    }
+                } else {
+                    Bridge.getLog().error(LayoutLog.TAG_RESOURCES_FORMAT,
+                            "Integer resource array contains non-integer value: \"" +
+                                    resValue.getElement(i) + "\"", null);
+                }
+            }
+            return values;
+        }
+
+        // This is an older IDE that can only give us the first element of the array.
+        String firstValue = resolveReference(resources, rv);
+        if (firstValue != null) {
             try {
                 return new int[]{getInt(firstValue)};
             } catch (NumberFormatException e) {
                 Bridge.getLog().error(LayoutLog.TAG_RESOURCES_FORMAT,
-                        "Integer resource array contains non-integer value: " +
-                                firstValue, null);
+                        "Integer resource array contains non-integer value: \"" + firstValue + "\"",
+                        null);
                 return new int[1];
             }
+        } else {
+            Bridge.getLog().error(LayoutLog.TAG_RESOURCES_FORMAT,
+                    "Integer resource array contains non-integer value: \"" +
+                            rv.getValue() + "\"", null);
+            return new int[1];
         }
-        ArrayResourceValue resValue = ((ArrayResourceValue) rv);
-        int[] values = new int[resValue.getElementCount()];
-        int i = 0;
-        for (Iterator<String> iterator = resValue.iterator(); iterator.hasNext(); i++) {
-            String element = resolveReference(resources, iterator.next(), resValue.isFramework());
-            try {
-                if (element.startsWith("#")) {
-                    // This integer represents a color (starts with #)
-                    values[i] = Color.parseColor(element);
-                } else {
-                    values[i] = getInt(element);
-                }
-            } catch (NumberFormatException e) {
-                Bridge.getLog().error(LayoutLog.TAG_RESOURCES_FORMAT,
-                        "Integer resource array contains non-integer value: " + element, null);
-            } catch (IllegalArgumentException e2) {
-                Bridge.getLog().error(LayoutLog.TAG_RESOURCES_FORMAT,
-                        "Integer resource array contains wrong color format: " + element, null);
-            }
-        }
-        return values;
     }
 
     /**
@@ -435,20 +453,32 @@ public class Resources_Delegate {
         return null;
     }
 
-    @NonNull
-    private static String resolveReference(Resources resources, @NonNull String ref,
-            boolean forceFrameworkOnly) {
-        if (ref.startsWith(PREFIX_RESOURCE_REF) || ref.startsWith
-                (SdkConstants.PREFIX_THEME_REF)) {
-            ResourceValue rv =
-                    getContext(resources).getRenderResources().findResValue(ref, forceFrameworkOnly);
-            rv = getContext(resources).getRenderResources().resolveResValue(rv);
-            if (rv != null) {
-                return rv.getValue();
+    @Nullable
+    private static String resolveReference(@NonNull Resources resources, @Nullable String value,
+            @NonNull ResourceNamespace contextNamespace,
+            @NonNull ResourceNamespace.Resolver resolver) {
+        if (value != null) {
+            ResourceUrl url = ResourceUrl.parse(value);
+            if (url != null) {
+                ResourceReference reference = url.resolve(contextNamespace, resolver);
+                if (reference != null) {
+                    RenderResources renderResources = getContext(resources).getRenderResources();
+                    ResourceValue rv = renderResources.getResolvedResource(reference);
+                    if (rv != null) {
+                        return rv.getValue();
+                    }
+                }
             }
         }
-        // Not a reference.
-        return ref;
+        return value;
+    }
+
+    @Nullable
+    private static String resolveReference(@NonNull Resources resources,
+            @NonNull ResourceValue value) {
+        RenderResources renderResources = getContext(resources).getRenderResources();
+        ResourceValue resolvedValue = renderResources.resolveResValue(value);
+        return resolvedValue == null ? null : resolvedValue.getValue();
     }
 
     @LayoutlibDelegate

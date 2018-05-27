@@ -38,16 +38,23 @@ public interface RemoteRenderResources extends Remote {
 
     List<StyleResourceValue> getAllThemes() throws RemoteException;
 
-
+    /** @deprecated Use {@link #getStyle(ResourceReference)}. */
+    @Deprecated
     StyleResourceValue getTheme(String name, boolean frameworkTheme) throws RemoteException;
-
 
     boolean themeIsParentOf(StyleResourceValue parentTheme, StyleResourceValue childTheme)
             throws RemoteException;
 
+    @Nullable
+    ResourceValue getResolvedResource(@NonNull ResourceReference reference) throws RemoteException;
+
+    /** @deprecated Use {@link #getResolvedResource(ResourceReference)}. */
+    @Deprecated
     ResourceValue getFrameworkResource(ResourceType resourceType, String resourceName)
             throws RemoteException;
 
+    /** @deprecated Use {@link #getResolvedResource(ResourceReference)}. */
+    @Deprecated
     ResourceValue getProjectResource(ResourceType resourceType, String resourceName)
             throws RemoteException;
 
@@ -61,6 +68,11 @@ public interface RemoteRenderResources extends Remote {
 
     StyleResourceValue getParent(StyleResourceValue style) throws RemoteException;
 
+    @Nullable
+    StyleResourceValue getStyle(@NonNull ResourceReference reference) throws RemoteException;
+
+    /** @deprecated Use {@link #getStyle(ResourceReference)}. */
+    @Deprecated
     StyleResourceValue getStyle(String styleName, boolean isFramework) throws RemoteException;
 
     ResourceValue dereference(ResourceValue resourceValue) throws RemoteException;
