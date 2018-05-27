@@ -171,8 +171,9 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         BridgeContext context = getContext();
 
         // use default of true in case it's not found to use alpha by default
-        mIsAlphaChannelImage = ResourceHelper.getBooleanThemeValue(params.getResources(),
-                "windowIsFloating", true, true);
+        mIsAlphaChannelImage =
+                ResourceHelper.getBooleanThemeFrameworkAttrValue(params.getResources(),
+                        "windowIsFloating", true);
 
         mLayoutBuilder = new Layout.Builder(params, context);
 

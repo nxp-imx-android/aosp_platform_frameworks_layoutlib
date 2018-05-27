@@ -117,7 +117,8 @@ public class SupportPreferencesUtil {
     @Nullable
     private static Context getThemedContext(@NonNull BridgeContext bridgeContext) {
         RenderResources resources = bridgeContext.getRenderResources();
-        ResourceValue preferenceTheme = resources.findItemInTheme("preferenceTheme", false);
+        ResourceValue preferenceTheme = resources.findItemInTheme(
+                bridgeContext.createAppCompatAttrReference("preferenceTheme"));
 
         if (preferenceTheme != null) {
             // resolve it, if needed.

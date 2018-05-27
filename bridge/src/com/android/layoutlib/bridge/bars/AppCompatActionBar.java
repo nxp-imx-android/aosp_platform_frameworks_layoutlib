@@ -100,16 +100,15 @@ public class AppCompatActionBar extends BridgeActionBar {
                 actionBarClass = WINDOW_ACTION_BAR_CLASS_NAMES[i];
                 try {
                     callback.findClass(actionBarClass);
-
                     break;
                 } catch (ClassNotFoundException ignore) {
                 }
             }
 
-            mWindowDecorActionBar = callback.loadView(actionBarClass,
-                    constructorParams, constructorArgs);
-            mWindowActionBarClass = mWindowDecorActionBar == null ? null :
-                    mWindowDecorActionBar.getClass();
+            mWindowDecorActionBar =
+                    callback.loadView(actionBarClass, constructorParams, constructorArgs);
+            mWindowActionBarClass =
+                    mWindowDecorActionBar == null ? null : mWindowDecorActionBar.getClass();
             inflateMenus();
             setupActionBar();
         } catch (Exception e) {
@@ -121,8 +120,8 @@ public class AppCompatActionBar extends BridgeActionBar {
     @Override
     protected ResourceValue getLayoutResource(BridgeContext context) {
         // We always assume that the app has requested the action bar.
-        return context.getRenderResources().getProjectResource(ResourceType.LAYOUT,
-                "abc_screen_toolbar");
+        return context.getRenderResources().getResolvedResource(
+                context.createAppCompatResourceReference(ResourceType.LAYOUT,"abc_screen_toolbar"));
     }
 
     @Override
@@ -132,7 +131,8 @@ public class AppCompatActionBar extends BridgeActionBar {
         // https://android.googlesource.com/platform/frameworks/support/+/android-5.1.0_r1/v7/appcompat/src/android/support/v7/app/ActionBarActivityDelegateBase.java
         Context themedContext = context;
         RenderResources resources = context.getRenderResources();
-        ResourceValue actionBarTheme = resources.findItemInTheme("actionBarTheme", false);
+        ResourceValue actionBarTheme =
+                resources.findItemInTheme(context.createAppCompatAttrReference("actionBarTheme"));
         if (actionBarTheme != null) {
             // resolve it, if needed.
             actionBarTheme = resources.resolveResValue(actionBarTheme);

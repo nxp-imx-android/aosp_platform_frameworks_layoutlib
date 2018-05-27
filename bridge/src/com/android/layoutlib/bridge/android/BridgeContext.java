@@ -178,6 +178,7 @@ public class BridgeContext extends Context {
     private IBinder mBinder;
     private PackageManager mPackageManager;
     private Boolean mIsThemeAppCompat;
+    private final ResourceNamespace mAppCompatNamespace;
 
     /**
      * Some applications that target both pre API 17 and post API 17, set the newer attrs to
@@ -238,6 +239,16 @@ public class BridgeContext extends Context {
 
         mWindowManager = new WindowManagerImpl(mMetrics);
         mDisplayManager = new DisplayManager(this);
+
+        if (mLayoutlibCallback.isResourceNamespacingRequired()) {
+            if (mLayoutlibCallback.hasAndroidXAppCompat()) {
+                mAppCompatNamespace = ResourceNamespace.APPCOMPAT;
+            } else {
+                mAppCompatNamespace = ResourceNamespace.APPCOMPAT_LEGACY;
+            }
+        } else {
+            mAppCompatNamespace = ResourceNamespace.RES_AUTO;
+        }
     }
 
     /**
@@ -458,14 +469,7 @@ public class BridgeContext extends Context {
             }
         }
 
-        ResourceValue resValue;
-        if (isPlatformLayout) {
-            resValue = mRenderResources.getFrameworkResource(ResourceType.LAYOUT,
-                    layout.getName());
-        } else {
-            resValue = mRenderResources.getProjectResource(ResourceType.LAYOUT,
-                    layout.getName());
-        }
+        ResourceValue resValue = mRenderResources.getResolvedResource(layout);
 
         if (resValue != null) {
             String path = resValue.getValue();
@@ -620,7 +624,6 @@ public class BridgeContext extends Context {
         return SystemServiceRegistry_Accessor.getSystemServiceName(serviceClass);
     }
 
-
     /**
      * Same as Context#obtainStyledAttributes. We do not override the base method to give the
      * original Context the chance to override the theme when needed.
@@ -637,7 +640,7 @@ public class BridgeContext extends Context {
                 // In some cases, style may not be a dynamic id, so we do a full search.
                 ResourceReference ref = resolveId(resId);
                 if (ref != null) {
-                    style = mRenderResources.getStyle(ref.getName(), ref.isFramework());
+                    style = mRenderResources.getStyle(ref);
                 }
             }
 
@@ -1121,6 +1124,41 @@ public class BridgeContext extends Context {
             context = ((ContextWrapper) context).getBaseContext();
         }
         return context;
+    }
+
+    /**
+     * Returns the Framework attr resource reference with the given name.
+     */
+    @NonNull
+    public static ResourceReference createFrameworkAttrReference(@NonNull String name) {
+        return createFrameworkResourceReference(ResourceType.ATTR, name);
+    }
+
+
+    /**
+     * Returns the Framework resource reference with the given type and name.
+     */
+    @NonNull
+    public static ResourceReference createFrameworkResourceReference(@NonNull ResourceType type,
+            @NonNull String name) {
+        return new ResourceReference(ResourceNamespace.ANDROID, type, name);
+    }
+
+    /**
+     * Returns the AppCompat attr resource reference with the given name.
+     */
+    @NonNull
+    public ResourceReference createAppCompatAttrReference(@NonNull String name) {
+        return createAppCompatResourceReference(ResourceType.ATTR, name);
+    }
+
+    /**
+     * Returns the AppCompat resource reference with the given type and name.
+     */
+    @NonNull
+    public ResourceReference createAppCompatResourceReference(@NonNull ResourceType type,
+            @NonNull String name) {
+        return new ResourceReference(mAppCompatNamespace, type, name);
     }
 
     public IBinder getBinder() {

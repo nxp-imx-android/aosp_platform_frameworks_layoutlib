@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.layoutlib.bridge.impl;
 
 import com.android.SdkConstants;
@@ -22,6 +21,7 @@ import com.android.ide.common.rendering.api.DensityBasedResourceValue;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.RenderResources;
+import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.internal.util.XmlUtils;
 import com.android.layoutlib.bridge.Bridge;
@@ -69,14 +69,14 @@ import static android.content.res.AssetManager.ACCESS_STREAMING;
  * Helper class to provide various conversion method used in handling android resources.
  */
 public final class ResourceHelper {
-
     private final static Pattern sFloatPattern = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)(.*)");
     private final static float[] sFloatOut = new float[1];
 
     private final static TypedValue mValue = new TypedValue();
 
     /**
-     * Returns the color value represented by the given string value
+     * Returns the color value represented by the given string value.
+     *
      * @param value the color value
      * @return the color as an int
      * @throws NumberFormatException if the conversion failed.
@@ -466,19 +466,32 @@ public final class ResourceHelper {
      * Looks for an attribute in the current theme.
      *
      * @param resources the render resources
-     * @param name the name of the attribute
+     * @param attr the attribute reference
      * @param defaultValue the default value.
-     * @param isFrameworkAttr if the attribute is in android namespace
      * @return the value of the attribute or the default one if not found.
      */
-    public static boolean getBooleanThemeValue(@NonNull RenderResources resources, String name,
-            boolean isFrameworkAttr, boolean defaultValue) {
-        ResourceValue value = resources.findItemInTheme(name, isFrameworkAttr);
+    public static boolean getBooleanThemeValue(@NonNull RenderResources resources,
+            @NonNull ResourceReference attr, boolean defaultValue) {
+        ResourceValue value = resources.findItemInTheme(attr);
         value = resources.resolveResValue(value);
         if (value == null) {
             return defaultValue;
         }
         return XmlUtils.convertValueToBoolean(value.getValue(), defaultValue);
+    }
+
+    /**
+     * Looks for a framework attribute in the current theme.
+     *
+     * @param resources the render resources
+     * @param name the name of the attribute
+     * @param defaultValue the default value.
+     * @return the value of the attribute or the default one if not found.
+     */
+    public static boolean getBooleanThemeFrameworkAttrValue(@NonNull RenderResources resources,
+            @NonNull String name, boolean defaultValue) {
+        ResourceReference attrRef = BridgeContext.createFrameworkAttrReference(name);
+        return getBooleanThemeValue(resources, attrRef, defaultValue);
     }
 
     // ------- TypedValue stuff
