@@ -20,6 +20,7 @@ import com.android.SdkConstants;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.MergeCookie;
+import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.layoutlib.bridge.Bridge;
@@ -31,6 +32,7 @@ import com.android.layoutlib.bridge.android.support.DrawerLayoutUtil;
 import com.android.layoutlib.bridge.android.support.RecyclerViewUtil;
 import com.android.layoutlib.bridge.impl.ParserFactory;
 import com.android.layoutlib.bridge.util.ReflectionUtils;
+import com.android.resources.ResourceType;
 import com.android.tools.layoutlib.annotations.NotNull;
 import com.android.tools.layoutlib.annotations.Nullable;
 
@@ -46,7 +48,6 @@ import android.view.View.OnAttachStateChangeListener;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
 
-import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -60,10 +61,23 @@ import static com.android.layoutlib.bridge.android.BridgeContext.getBaseContext;
  * Custom implementation of {@link LayoutInflater} to handle custom views.
  */
 public final class BridgeInflater extends LayoutInflater {
-
-    private static final String[] DEFAULT_APPCOMPAT_INFLATER_NAMES = {
-            "android.support.v7.app.AppCompatViewInflater",
-            "androidx.appcompat.app.AppCompatViewInflater"};
+    private static final String INFLATER_CLASS_ATTR_NAME = "viewInflaterClass";
+    private static final ResourceReference RES_AUTO_INFLATER_CLASS_ATTR =
+            new ResourceReference(
+                    ResourceNamespace.RES_AUTO,
+                    ResourceType.ATTR, INFLATER_CLASS_ATTR_NAME);
+    private static final ResourceReference LEGACY_APPCOMPAT_INFLATER_CLASS_ATTR =
+            new ResourceReference(
+                    ResourceNamespace.fromPackageName("android.support.v7.appcompat"),
+                    ResourceType.ATTR, INFLATER_CLASS_ATTR_NAME);
+    private static final ResourceReference ANDROIDX_APPCOMPAT_INFLATER_CLASS_ATTR =
+            new ResourceReference(
+                    ResourceNamespace.fromPackageName("androidx.appcompat"),
+                    ResourceType.ATTR, INFLATER_CLASS_ATTR_NAME);
+    private static final String LEGACY_DEFAULT_APPCOMPAT_INFLATER_NAME =
+            "android.support.v7.app.AppCompatViewInflater";
+    private static final String ANDROIDX_DEFAULT_APPCOMPAT_INFLATER_NAME =
+            "androidx.appcompat.app.AppCompatViewInflater";
     private final LayoutlibCallback mLayoutlibCallback;
 
     private boolean mIsInMerge = false;
@@ -189,7 +203,19 @@ public final class BridgeInflater extends LayoutInflater {
     @Nullable
     private static Class<?> findCustomInflater(@NotNull BridgeContext bc,
             @NotNull LayoutlibCallback layoutlibCallback) {
-        ResourceValue value = bc.getRenderResources().findItemInTheme("viewInflaterClass", false);
+        ResourceReference attrRef;
+        if (layoutlibCallback.isResourceNamespacingRequired()) {
+            if (layoutlibCallback.hasLegacyAppCompat()) {
+                attrRef = LEGACY_APPCOMPAT_INFLATER_CLASS_ATTR;
+            } else if (layoutlibCallback.hasAndroidXAppCompat()) {
+                attrRef = ANDROIDX_APPCOMPAT_INFLATER_CLASS_ATTR;
+            } else {
+                return null;
+            }
+        } else {
+            attrRef = RES_AUTO_INFLATER_CLASS_ATTR;
+        }
+        ResourceValue value = bc.getRenderResources().findItemInTheme(attrRef);
         String inflaterName = value != null ? value.getValue() : null;
 
         if (inflaterName != null) {
@@ -198,15 +224,17 @@ public final class BridgeInflater extends LayoutInflater {
             } catch (ClassNotFoundException ignore) {
             }
 
-            // viewInflaterClass was defined but we couldn't find the class
+            // viewInflaterClass was defined but we couldn't find the class.
         } else if (bc.isAppCompatTheme()) {
             // Older versions of AppCompat do not define the viewInflaterClass so try to get it
-            // manually
-            for (String defaultInflaterName : DEFAULT_APPCOMPAT_INFLATER_NAMES) {
-                try {
-                    return layoutlibCallback.findClass(defaultInflaterName);
-                } catch (ClassNotFoundException ignore) {
+            // manually.
+            try {
+                if (layoutlibCallback.hasLegacyAppCompat()) {
+                    return layoutlibCallback.findClass(LEGACY_DEFAULT_APPCOMPAT_INFLATER_NAME);
+                } else if (layoutlibCallback.hasAndroidXAppCompat()) {
+                    return layoutlibCallback.findClass(ANDROIDX_DEFAULT_APPCOMPAT_INFLATER_NAME);
                 }
+            } catch (ClassNotFoundException ignore) {
             }
         }
 
