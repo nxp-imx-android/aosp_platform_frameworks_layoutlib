@@ -291,9 +291,8 @@ public final class Bitmap_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static boolean nativeRecycle(long nativeBitmap) {
-        // In our case reycle() is a no-op. We will let the finalizer to dispose the bitmap.
-        return true;
+    /*package*/ static void nativeRecycle(long nativeBitmap) {
+        // In our case recycle() is a no-op. We will let the finalizer to dispose the bitmap.
     }
 
     @LayoutlibDelegate
