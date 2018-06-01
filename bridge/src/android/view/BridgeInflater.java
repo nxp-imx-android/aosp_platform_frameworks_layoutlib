@@ -28,6 +28,7 @@ import com.android.layoutlib.bridge.BridgeConstants;
 import com.android.layoutlib.bridge.MockView;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
+import com.android.layoutlib.bridge.android.UnresolvedResourceValue;
 import com.android.layoutlib.bridge.android.support.DrawerLayoutUtil;
 import com.android.layoutlib.bridge.android.support.RecyclerViewUtil;
 import com.android.layoutlib.bridge.impl.ParserFactory;
@@ -463,7 +464,9 @@ public final class BridgeInflater extends LayoutInflater {
             int attrItemCountValue = attrs.getAttributeIntValue(BridgeConstants.NS_TOOLS_URI,
                     BridgeConstants.ATTR_ITEM_COUNT, -1);
             if (attrListItemValue != null && !attrListItemValue.isEmpty()) {
-                ResourceValue resValue = bc.getRenderResources().findResValue(attrListItemValue, false);
+                ResourceValue resValue = bc.getRenderResources().dereference(
+                        new UnresolvedResourceValue(attrListItemValue, ResourceNamespace.TODO(),
+                                mLayoutlibCallback.getImplicitNamespaces()));
                 if (resValue.isFramework()) {
                     resourceId = Bridge.getResourceId(resValue.getResourceType(),
                             resValue.getName());
