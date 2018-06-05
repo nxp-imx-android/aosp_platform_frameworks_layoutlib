@@ -33,6 +33,7 @@ import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.BridgeConstants;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
+import com.android.layoutlib.bridge.android.UnresolvedResourceValue;
 import com.android.layoutlib.bridge.impl.ParserFactory;
 import com.android.layoutlib.bridge.impl.ResourceHelper;
 import com.android.layoutlib.bridge.util.NinePatchInputStream;
@@ -458,19 +459,10 @@ public class Resources_Delegate {
             @NonNull ResourceNamespace contextNamespace,
             @NonNull ResourceNamespace.Resolver resolver) {
         if (value != null) {
-            ResourceUrl url = ResourceUrl.parse(value);
-            if (url != null) {
-                ResourceReference reference = url.resolve(contextNamespace, resolver);
-                if (reference != null) {
-                    RenderResources renderResources = getContext(resources).getRenderResources();
-                    ResourceValue rv = renderResources.getResolvedResource(reference);
-                    if (rv != null) {
-                        return rv.getValue();
-                    }
-                }
-            }
+            ResourceValue resValue = new UnresolvedResourceValue(value, contextNamespace, resolver);
+            return resolveReference(resources, resValue);
         }
-        return value;
+        return null;
     }
 
     @Nullable
