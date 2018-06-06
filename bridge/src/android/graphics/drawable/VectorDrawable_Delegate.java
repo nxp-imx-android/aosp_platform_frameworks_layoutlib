@@ -32,6 +32,7 @@ import android.graphics.Paint.Cap;
 import android.graphics.Paint.Join;
 import android.graphics.Paint_Delegate;
 import android.graphics.Path;
+import android.graphics.Path.FillType;
 import android.graphics.PathMeasure;
 import android.graphics.Path_Delegate;
 import android.graphics.Rect;
@@ -1144,6 +1145,7 @@ public class VectorDrawable_Delegate {
             mRenderPath.reset();
 
             if (VPath.isClipPath()) {
+                mRenderPath.setFillType(FillType.WINDING);
                 mRenderPath.addPath(path, mFinalPathMatrix);
                 Canvas_Delegate.nClipPath(canvasPtr, mRenderPath.mNativePath, Op
                         .INTERSECT.nativeInt);
