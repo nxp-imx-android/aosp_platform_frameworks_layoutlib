@@ -403,6 +403,10 @@ public class RenderTests extends RenderTestBase {
                         "        android:layout_height=\"wrap_content\"\n" +
                         "        android:layout_width=\"wrap_content\"\n" +
                         "        android:src=\"@drawable/headset\"/>\n" +
+                        "    <ImageView\n" +
+                        "        android:layout_height=\"wrap_content\"\n" +
+                        "        android:layout_width=\"wrap_content\"\n" +
+                        "        android:src=\"@drawable/clipped_even_odd\"/>\n" +
                         "</LinearLayout>");
         // Create LayoutLibCallback.
         LayoutLibTestCallback layoutLibCallback =
