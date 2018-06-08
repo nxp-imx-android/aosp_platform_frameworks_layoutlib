@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.layoutlib.bridge.remote.client.adapters;
 
 import com.android.ide.common.rendering.api.RenderResources;
@@ -61,6 +60,7 @@ public class RemoteRenderResourcesAdapter implements RemoteRenderResources {
         return mDelegate.getAllThemes();
     }
 
+    @Deprecated
     @Override
     public StyleResourceValue getTheme(String name, boolean frameworkTheme) {
         return mDelegate.getTheme(name, frameworkTheme);
@@ -72,10 +72,18 @@ public class RemoteRenderResourcesAdapter implements RemoteRenderResources {
     }
 
     @Override
+    @Nullable
+    public ResourceValue getResolvedResource(@NonNull ResourceReference reference) {
+        return mDelegate.getResolvedResource(reference);
+    }
+
+    @Deprecated
+    @Override
     public ResourceValue getFrameworkResource(ResourceType resourceType, String resourceName) {
         return mDelegate.getFrameworkResource(resourceType, resourceName);
     }
 
+    @Deprecated
     @Override
     public ResourceValue getProjectResource(ResourceType resourceType, String resourceName) {
         return mDelegate.getProjectResource(resourceType, resourceName);
@@ -101,6 +109,13 @@ public class RemoteRenderResourcesAdapter implements RemoteRenderResources {
         return mDelegate.getParent(style);
     }
 
+    @Override
+    @Nullable
+    public StyleResourceValue getStyle(@NonNull ResourceReference reference) {
+        return mDelegate.getStyle(reference);
+    }
+
+    @Deprecated
     @Override
     public StyleResourceValue getStyle(String styleName, boolean isFramework) {
         return mDelegate.getStyle(styleName, isFramework);
