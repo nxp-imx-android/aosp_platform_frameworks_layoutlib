@@ -881,9 +881,9 @@ public class BridgeContext extends Context {
                         }
                     }
                 }
-                // Done calculating the defaultValue
+                // Done calculating the defaultValue.
 
-                // if there's no direct value for this attribute in the XML, we look for default
+                // If there's no direct value for this attribute in the XML, we look for default
                 // values in the widget defStyle, and then in the theme.
                 if (value == null) {
                     if (attributeHolder.getNamespace() == ResourceNamespace.ANDROID) {
@@ -896,7 +896,7 @@ public class BridgeContext extends Context {
                         }
                     }
 
-                    // if we found a value, we make sure this doesn't reference another value.
+                    // If we found a value, we make sure this doesn't reference another value.
                     // So we resolve it.
                     if (defaultValue != null) {
                         // If the value is a reference to another theme attribute that doesn't
@@ -907,13 +907,17 @@ public class BridgeContext extends Context {
                             // fail to resolve when using old themes (they haven't been backported).
                             // Since this is an artifact caused by us using always the latest
                             // code, we check for some of those values and replace them here.
+                            ResourceReference reference = defaultValue.getReference();
                             defaultValue = FRAMEWORK_REPLACE_VALUES.get(attrName);
 
+                            // Only log a warning if the referenced value isn't one of the RTL
+                            // attributes, or the app targets old API.
                             if (defaultValue == null &&
                                     (getApplicationInfo().targetSdkVersion < JELLY_BEAN_MR1 ||
                                     !attrName.equals(RTL_ATTRS.get(val)))) {
-                                // Only log a warning if the referenced value isn't one of the RTL
-                                // attributes, or the app targets old API.
+                                if (reference != null) {
+                                    val = reference.getResourceUrl().toString();
+                                }
                                 Bridge.getLog().warning(LayoutLog.TAG_RESOURCES_RESOLVE_THEME_ATTR,
                                         String.format("Failed to find '%s' in current theme.", val),
                                         val);
