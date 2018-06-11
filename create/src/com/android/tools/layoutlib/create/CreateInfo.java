@@ -72,7 +72,7 @@ public final class CreateInfo implements ICreateInfo {
     }
 
     @Override
-    public Set<String> getExcludedClasses() {
+    public String[] getExcludedClasses() {
         String[] refactoredClasses = getJavaPkgClasses();
         int count = refactoredClasses.length / 2 + EXCLUDED_CLASSES.length;
         Set<String> excludedClasses = new HashSet<>(count);
@@ -80,7 +80,7 @@ public final class CreateInfo implements ICreateInfo {
             excludedClasses.add(refactoredClasses[i]);
         }
         excludedClasses.addAll(Arrays.asList(EXCLUDED_CLASSES));
-        return excludedClasses;
+        return excludedClasses.toArray(new String[0]);
     }
 
     @Override
