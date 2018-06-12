@@ -122,7 +122,7 @@ public class FrameworkActionBar extends BridgeActionBar {
     }
 
     @Override
-    protected void setIcon(String icon) {
+    protected void setIcon(ResourceValue icon) {
         mActionBar.setIcon(icon);
     }
 
