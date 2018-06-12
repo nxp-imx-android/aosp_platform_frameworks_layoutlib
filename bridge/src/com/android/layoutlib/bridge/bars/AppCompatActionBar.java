@@ -163,12 +163,12 @@ public class AppCompatActionBar extends BridgeActionBar {
     }
 
     @Override
-    protected void setIcon(String icon) {
+    protected void setIcon(ResourceValue icon) {
         // Do this only if the action bar doesn't already have an icon.
-        if (icon != null && !icon.isEmpty() && mWindowDecorActionBar != null) {
+        if (icon != null && icon.getValue() != null && mWindowDecorActionBar != null) {
             if (invoke(getMethod(mWindowActionBarClass, "hasIcon"), mWindowDecorActionBar)
                     == Boolean.TRUE) {
-                Drawable iconDrawable = getDrawable(icon, false);
+                Drawable iconDrawable = getDrawable(icon);
                 if (iconDrawable != null) {
                     Method setIcon = getMethod(mWindowActionBarClass, "setIcon", Drawable.class);
                     invoke(setIcon, mWindowDecorActionBar, iconDrawable);
@@ -302,10 +302,9 @@ public class AppCompatActionBar extends BridgeActionBar {
 
     // TODO: this is duplicated from FrameworkActionBarWrapper$WindowActionBarWrapper
     @Nullable
-    private Drawable getDrawable(@NonNull String name, boolean isFramework) {
-        RenderResources res = mBridgeContext.getRenderResources();
-        ResourceValue value = res.findResValue(name, isFramework);
-        value = res.resolveResValue(value);
+    private Drawable getDrawable(@NonNull ResourceValue value) {
+        RenderResources resolver = mBridgeContext.getRenderResources();
+        value = resolver.resolveResValue(value);
         if (value != null) {
             return ResourceHelper.getDrawable(value, mBridgeContext);
         }

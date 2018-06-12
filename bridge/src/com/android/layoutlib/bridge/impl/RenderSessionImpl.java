@@ -717,12 +717,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         if (!hasToolbar(collapsingToolbar)) {
             return;
         }
-        RenderResources res = context.getRenderResources();
         String title = params.getAppLabel();
-        ResourceValue titleValue = res.findResValue(title, false);
-        if (titleValue != null && titleValue.getValue() != null) {
-            title = titleValue.getValue();
-        }
         DesignLibUtil.setTitle(collapsingToolbar, title);
     }
 

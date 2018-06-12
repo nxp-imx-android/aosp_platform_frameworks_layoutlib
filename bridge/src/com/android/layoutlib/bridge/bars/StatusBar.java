@@ -82,7 +82,7 @@ public class StatusBar extends CustomBar {
         loadIcon(1, "stat_sys_wifi_signal_4_fully."
                         + Config.getWifiIconType(simulatedPlatformVersion), density);
         loadIcon(2, "stat_sys_battery_100.png", density);
-        setText(3, Config.getTime(simulatedPlatformVersion), false)
+        setText(3, Config.getTime(simulatedPlatformVersion))
                 .setTextColor(Config.getTimeColor(simulatedPlatformVersion));
     }
 
