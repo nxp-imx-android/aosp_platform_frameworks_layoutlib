@@ -16,6 +16,7 @@
 
 package android.graphics;
 
+import com.android.ide.common.rendering.api.AssetRepository;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.RenderResources;
 import com.android.ide.common.rendering.api.ResourceValue;
@@ -44,6 +45,8 @@ import java.util.Set;
 
 import javax.imageio.ImageIO;
 import libcore.util.NativeAllocationRegistry_Delegate;
+
+import static android.content.res.AssetManager.ACCESS_STREAMING;
 
 /**
  * Delegate implementing the native methods of android.graphics.Bitmap
@@ -129,11 +132,15 @@ public final class Bitmap_Delegate {
             BridgeContext currentContext = RenderAction.getCurrentContext();
             if (currentContext != null) {
                 RenderResources resources = currentContext.getRenderResources();
-                ResourceValue broken = resources.getFrameworkResource(ResourceType.DRAWABLE,
-                        "ic_menu_report_image");
-                File brokenFile = new File(broken.getValue());
-                if (brokenFile.exists()) {
-                    image = ImageIO.read(brokenFile);
+                ResourceValue broken = resources.getResolvedResource(
+                        BridgeContext.createFrameworkResourceReference(
+                                ResourceType.DRAWABLE, "ic_menu_report_image"));
+                AssetRepository assetRepository = currentContext.getAssets().getAssetRepository();
+                try (InputStream stream =
+                        assetRepository.openNonAsset(0, broken.getValue(), ACCESS_STREAMING)) {
+                    if (stream != null) {
+                        image = ImageIO.read(stream);
+                    }
                 }
             }
         }

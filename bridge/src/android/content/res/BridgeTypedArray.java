@@ -728,7 +728,8 @@ public final class BridgeTypedArray extends TypedArray {
         if (resVal instanceof ArrayResourceValue) {
             ArrayResourceValue array = (ArrayResourceValue) resVal;
             int count = array.getElementCount();
-            return count >= 0 ? Resources_Delegate.fillValues(mBridgeResources, array, new CharSequence[count]) :
+            return count >= 0 ?
+                    Resources_Delegate.resolveValues(mBridgeResources, array) :
                     null;
         }
         int id = getResourceId(index, 0);

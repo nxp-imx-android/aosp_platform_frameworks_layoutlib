@@ -28,6 +28,7 @@ import com.android.layoutlib.bridge.BridgeConstants;
 import com.android.layoutlib.bridge.MockView;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
+import com.android.layoutlib.bridge.android.UnresolvedResourceValue;
 import com.android.layoutlib.bridge.android.support.DrawerLayoutUtil;
 import com.android.layoutlib.bridge.android.support.RecyclerViewUtil;
 import com.android.layoutlib.bridge.impl.ParserFactory;
@@ -64,16 +65,14 @@ public final class BridgeInflater extends LayoutInflater {
     private static final String INFLATER_CLASS_ATTR_NAME = "viewInflaterClass";
     private static final ResourceReference RES_AUTO_INFLATER_CLASS_ATTR =
             new ResourceReference(
-                    ResourceNamespace.RES_AUTO,
-                    ResourceType.ATTR, INFLATER_CLASS_ATTR_NAME);
+                    ResourceNamespace.RES_AUTO, ResourceType.ATTR, INFLATER_CLASS_ATTR_NAME);
     private static final ResourceReference LEGACY_APPCOMPAT_INFLATER_CLASS_ATTR =
             new ResourceReference(
-                    ResourceNamespace.fromPackageName("android.support.v7.appcompat"),
-                    ResourceType.ATTR, INFLATER_CLASS_ATTR_NAME);
+                    ResourceNamespace.APPCOMPAT_LEGACY, ResourceType.ATTR,
+                    INFLATER_CLASS_ATTR_NAME);
     private static final ResourceReference ANDROIDX_APPCOMPAT_INFLATER_CLASS_ATTR =
             new ResourceReference(
-                    ResourceNamespace.fromPackageName("androidx.appcompat"),
-                    ResourceType.ATTR, INFLATER_CLASS_ATTR_NAME);
+                    ResourceNamespace.APPCOMPAT, ResourceType.ATTR, INFLATER_CLASS_ATTR_NAME);
     private static final String LEGACY_DEFAULT_APPCOMPAT_INFLATER_NAME =
             "android.support.v7.app.AppCompatViewInflater";
     private static final String ANDROIDX_DEFAULT_APPCOMPAT_INFLATER_NAME =
@@ -463,7 +462,9 @@ public final class BridgeInflater extends LayoutInflater {
             int attrItemCountValue = attrs.getAttributeIntValue(BridgeConstants.NS_TOOLS_URI,
                     BridgeConstants.ATTR_ITEM_COUNT, -1);
             if (attrListItemValue != null && !attrListItemValue.isEmpty()) {
-                ResourceValue resValue = bc.getRenderResources().findResValue(attrListItemValue, false);
+                ResourceValue resValue = bc.getRenderResources().dereference(
+                        new UnresolvedResourceValue(attrListItemValue, ResourceNamespace.TODO(),
+                                mLayoutlibCallback.getImplicitNamespaces()));
                 if (resValue.isFramework()) {
                     resourceId = Bridge.getResourceId(resValue.getResourceType(),
                             resValue.getName());
