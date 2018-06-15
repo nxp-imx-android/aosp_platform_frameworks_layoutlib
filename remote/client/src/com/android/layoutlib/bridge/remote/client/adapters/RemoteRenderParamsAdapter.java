@@ -18,6 +18,7 @@ package com.android.layoutlib.bridge.remote.client.adapters;
 
 import com.android.ide.common.rendering.api.IImageFactory;
 import com.android.ide.common.rendering.api.RenderParams;
+import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.SessionParams.Key;
 import com.android.layout.remote.api.RemoteAssetRepository;
@@ -122,6 +123,11 @@ public class RemoteRenderParamsAdapter implements RemoteRenderParams {
     @Override
     public IImageFactory getImageFactory() {
         return mDelegate.getImageFactory();
+    }
+
+    @Override
+    public ResourceValue getAppIconResource() {
+        return mDelegate.getAppIconResource();
     }
 
     @Override

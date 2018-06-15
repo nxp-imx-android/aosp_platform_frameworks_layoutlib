@@ -40,9 +40,7 @@ public class StaticLayout_Delegate {
             @BreakStrategy int breakStrategy,
             @HyphenationFrequency int hyphenationFrequency,
             boolean isJustified,
-            @Nullable int[] indents,
-            @Nullable int[] leftPaddings,
-            @Nullable int[] rightPaddings) {
+            @Nullable int[] indents) {
         Builder builder = new Builder();
         builder.mBreakStrategy = breakStrategy;
         return sBuilderManager.addNewDelegate(builder);

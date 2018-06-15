@@ -127,19 +127,12 @@ public abstract class BridgeActionBar {
 
     protected abstract void setTitle(CharSequence title);
     protected abstract void setSubtitle(CharSequence subtitle);
-    protected abstract void setIcon(String icon);
+    protected abstract void setIcon(ResourceValue icon);
     protected abstract void setHomeAsUp(boolean homeAsUp);
 
     private void setTitle() {
-        RenderResources res = mBridgeContext.getRenderResources();
-
         String title = mParams.getAppLabel();
-        ResourceValue titleValue = res.findResValue(title, false);
-        if (titleValue != null && titleValue.getValue() != null) {
-            setTitle(titleValue.getValue());
-        } else {
-            setTitle(title);
-        }
+        setTitle(title);
     }
 
     private void setSutTitle() {
@@ -150,7 +143,7 @@ public abstract class BridgeActionBar {
     }
 
     private void setIcon() {
-        String appIcon = mParams.getAppIcon();
+        ResourceValue appIcon = mParams.getAppIconResource();
         if (appIcon != null) {
             setIcon(appIcon);
         }

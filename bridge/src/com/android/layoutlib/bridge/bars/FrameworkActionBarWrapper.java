@@ -108,7 +108,7 @@ public abstract class FrameworkActionBarWrapper {
         mActionBar.setDisplayHomeAsUpEnabled(homeAsUp);
     }
 
-    public void setIcon(String icon) {
+    public void setIcon(ResourceValue icon) {
         // Nothing to do.
     }
 
@@ -291,10 +291,10 @@ public abstract class FrameworkActionBarWrapper {
         }
 
         @Override
-        public void setIcon(String icon) {
+        public void setIcon(ResourceValue icon) {
             // Set the icon only if the action bar doesn't specify an icon.
             if (!mActionBar.hasIcon() && icon != null) {
-                Drawable iconDrawable = getDrawable(icon, false);
+                Drawable iconDrawable = getDrawable(icon);
                 if (iconDrawable != null) {
                     mActionBar.setIcon(iconDrawable);
                 }
@@ -368,15 +368,13 @@ public abstract class FrameworkActionBarWrapper {
         }
 
         @Nullable
-        private Drawable getDrawable(@NonNull String name, boolean isFramework) {
+        private Drawable getDrawable(@NonNull ResourceValue value) {
             RenderResources res = mContext.getRenderResources();
-            ResourceValue value = res.findResValue(name, isFramework);
             value = res.resolveResValue(value);
             if (value != null) {
                 return ResourceHelper.getDrawable(value, mContext);
             }
             return null;
         }
-
     }
 }
