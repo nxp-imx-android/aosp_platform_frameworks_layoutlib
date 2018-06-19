@@ -50,6 +50,7 @@ import com.android.layoutlib.bridge.util.ReflectionUtils;
 import com.android.tools.layoutlib.java.System_Delegate;
 import com.android.util.Pair;
 import com.android.util.PropertiesMap;
+import com.android.util.PropertiesMap.Property;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -86,6 +87,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -1096,7 +1098,41 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
     }
 
     public Map<Object, PropertiesMap> getDefaultProperties() {
+        Map<Object, PropertiesMap> defaultPropMaps = new IdentityHashMap<>();
+        RenderResources resources = getContext().getRenderResources();
+
+        Map<Object, Map<ResourceReference, ResourceValue>> namespacedPropMaps =
+                getDefaultNamespacedProperties();
+        for (Object key: namespacedPropMaps.keySet()) {
+            Map<ResourceReference, ResourceValue> namespacedPropMap = namespacedPropMaps.get(key);
+            PropertiesMap propMap = defaultPropMaps.computeIfAbsent(key,
+                    k -> new PropertiesMap(namespacedPropMap.size()));
+
+            for (ResourceReference ref: namespacedPropMap.keySet()) {
+                ResourceValue resValue = namespacedPropMap.get(ref);
+                propMap.put(ref.getResourceUrl().getQualifiedName(),
+                        new Property(resValue.getValue(),
+                                resources.resolveResValue(resValue).getValue()));
+            }
+        }
+
+        Map<Object, String> defaultStyles = getDefaultStyles();
+        for (Object key: defaultStyles.keySet()) {
+            String style = defaultStyles.get(key);
+            PropertiesMap propMap = defaultPropMaps.computeIfAbsent(key,
+                    k -> new PropertiesMap(1));
+            propMap.put("style", new Property(style, style));
+        }
+
+        return defaultPropMaps;
+    }
+
+    public Map<Object, Map<ResourceReference, ResourceValue>> getDefaultNamespacedProperties() {
         return getContext().getDefaultProperties();
+    }
+
+    public Map<Object, String> getDefaultStyles() {
+        return getContext().getDefaultStyles();
     }
 
     public void setScene(RenderSession session) {
