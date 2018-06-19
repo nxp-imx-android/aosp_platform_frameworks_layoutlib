@@ -1110,7 +1110,9 @@ public class BridgeContext extends Context {
     }
 
     public int getProjectResourceId(ResourceReference resource, int defValue) {
-        if (getRenderResources().getUnresolvedResource(resource) != null) {
+        // When resource is sample data, we don't need to resolve the resource.
+        if (resource.getResourceType() == ResourceType.SAMPLE_DATA ||
+                getRenderResources().getUnresolvedResource(resource) != null) {
             if (mLayoutlibCallback != null) {
                 return mLayoutlibCallback.getOrGenerateResourceId(resource);
             }
