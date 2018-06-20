@@ -481,7 +481,11 @@ public class Resources_Delegate {
             ResourceValue value = v.getSecond();
 
             try {
-                return ResourceHelper.getXmlBlockParser(getContext(resources), value);
+                BridgeXmlBlockParser parser =
+                        ResourceHelper.getXmlBlockParser(getContext(resources), value);
+                if (parser != null) {
+                    return parser;
+                }
             } catch (XmlPullParserException e) {
                 Bridge.getLog().error(LayoutLog.TAG_BROKEN,
                         "Failed to parse " + value.getValue(), e, null /*data*/);
@@ -490,7 +494,7 @@ public class Resources_Delegate {
         }
 
         // id was not found or not resolved. Throw a NotFoundException.
-        throwException(resources, id);
+        throwException(resources, id, "layout");
 
         // this is not used since the method above always throws
         return null;
@@ -1080,14 +1084,24 @@ public class Resources_Delegate {
      * type.
      *
      * @param id the id of the resource
+     * @param expectedType the type of resource that was expected
      *
      * @throws NotFoundException
      */
+    private static void throwException(Resources resources, int id, @Nullable String expectedType)
+            throws NotFoundException {
+        throwException(id, getResourceInfo(resources, id), expectedType);
+    }
+
     private static void throwException(Resources resources, int id) throws NotFoundException {
-        throwException(id, getResourceInfo(resources, id));
+        throwException(resources, id, null);
     }
 
     private static void throwException(int id, @Nullable ResourceReference resourceInfo) {
+        throwException(id, resourceInfo, null);
+    }
+    private static void throwException(int id, @Nullable ResourceReference resourceInfo,
+            @Nullable String expectedType) {
         String message;
         if (resourceInfo != null) {
             message = String.format(
@@ -1097,6 +1111,9 @@ public class Resources_Delegate {
             message = String.format("Could not resolve resource value: 0x%1$X.", id);
         }
 
+        if (expectedType != null) {
+            message += " Or the resolved value was not of type " + expectedType + " as expected.";
+        }
         throw new NotFoundException(message);
     }
 
