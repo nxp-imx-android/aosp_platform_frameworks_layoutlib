@@ -418,6 +418,61 @@ public class RenderTests extends RenderTestBase {
     }
 
     /**
+     * Test a ImageView which has a vector drawable as its src and tint attribute.
+     */
+    @Test
+    public void testVectorDrawableWithTintInImageView() throws ClassNotFoundException {
+        // Create the layout pull parser.
+        LayoutPullParser parser = LayoutPullParser.createFromString(
+                "<ImageView xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "    android:layout_height=\"match_parent\"\n" +
+                        "    android:layout_width=\"match_parent\"\n" +
+                        "    android:src=\"@drawable/vector_drawable_without_tint\"\n" +
+                        "    android:tint=\"#FF00FF00\" />");
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.Light.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
+
+        renderAndVerify(params, "vector_drawable_with_tint_in_image_view.png",
+                TimeUnit.SECONDS.toNanos(2));
+    }
+
+    /**
+     * Test a vector drawable which has tint attribute.
+     */
+    @Test
+    public void testVectorDrawableWithTintInItself() throws ClassNotFoundException {
+        // Create the layout pull parser.
+        LayoutPullParser parser = LayoutPullParser.createFromString(
+                "<ImageView xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "    android:layout_height=\"match_parent\"\n" +
+                        "    android:layout_width=\"match_parent\"\n" +
+                        "    android:src=\"@drawable/vector_drawable_with_tint\" />");
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.Light.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
+
+        renderAndVerify(params, "vector_drawable_with_tint_itself.png",
+                TimeUnit.SECONDS.toNanos(2));
+    }
+
+    /**
      * Test a vector drawable that uses trimStart and trimEnd. It also tests all the primitives
      * for vector drawables (lines, moves and cubic and quadratic curves).
      */
