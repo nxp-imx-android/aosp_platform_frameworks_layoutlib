@@ -99,17 +99,6 @@ public final class Typeface_Delegate {
         return sManager.getDelegate(nativeTypeface);
     }
 
-    /**
-     * Clear the default typefaces when disposing bridge.
-     */
-    public static void resetDefaults() {
-        // Sometimes this is called before the Bridge is initialized. In that case, we don't want to
-        // initialize Typeface because the SDK fonts location hasn't been set.
-        if (FontFamily_Delegate.getFontLocation() != null) {
-            Typeface.sDefaults = null;
-        }
-    }
-
 
     // ---- native methods ----
 

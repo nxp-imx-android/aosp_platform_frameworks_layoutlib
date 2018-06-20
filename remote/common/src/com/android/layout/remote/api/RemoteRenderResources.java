@@ -20,7 +20,8 @@ import com.android.ide.common.rendering.api.RenderResources;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.StyleResourceValue;
-import com.android.resources.ResourceType;
+import com.android.tools.layoutlib.annotations.NotNull;
+import com.android.tools.layoutlib.annotations.Nullable;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -30,52 +31,34 @@ import java.util.List;
  * Remote version of the {@link RenderResources} class
  */
 public interface RemoteRenderResources extends Remote {
-    StyleResourceValue getDefaultTheme() throws RemoteException;
+    RemoteResourceValue<StyleResourceValue> getDefaultTheme() throws RemoteException;
 
-    void applyStyle(StyleResourceValue theme, boolean useAsPrimary) throws RemoteException;
+    void applyStyle(RemoteResourceValue<StyleResourceValue> theme, boolean useAsPrimary) throws RemoteException;
 
     void clearStyles() throws RemoteException;
 
-    List<StyleResourceValue> getAllThemes() throws RemoteException;
+    List<RemoteResourceValue<StyleResourceValue>> getAllThemes() throws RemoteException;
 
-    /** @deprecated Use {@link #getStyle(ResourceReference)}. */
-    @Deprecated
-    StyleResourceValue getTheme(String name, boolean frameworkTheme) throws RemoteException;
-
-    boolean themeIsParentOf(StyleResourceValue parentTheme, StyleResourceValue childTheme)
+    boolean themeIsParentOf(RemoteResourceValue<StyleResourceValue> parentTheme, RemoteResourceValue<StyleResourceValue> childTheme)
             throws RemoteException;
 
     @Nullable
-    ResourceValue getResolvedResource(@NonNull ResourceReference reference) throws RemoteException;
+    RemoteResourceValue<ResourceValue> getResolvedResource(@NotNull ResourceReference reference) throws RemoteException;
 
-    /** @deprecated Use {@link #getResolvedResource(ResourceReference)}. */
-    @Deprecated
-    ResourceValue getFrameworkResource(ResourceType resourceType, String resourceName)
+    RemoteResourceValue<ResourceValue> findItemInTheme(ResourceReference attr) throws RemoteException;
+
+    RemoteResourceValue<ResourceValue> findItemInStyle(RemoteResourceValue<StyleResourceValue> style,
+            ResourceReference attr)
             throws RemoteException;
 
-    /** @deprecated Use {@link #getResolvedResource(ResourceReference)}. */
-    @Deprecated
-    ResourceValue getProjectResource(ResourceType resourceType, String resourceName)
-            throws RemoteException;
+    RemoteResourceValue<ResourceValue> resolveValue(RemoteResourceValue<ResourceValue> value) throws RemoteException;
 
-
-    ResourceValue findItemInTheme(ResourceReference attr) throws RemoteException;
-
-    ResourceValue findItemInStyle(StyleResourceValue style, ResourceReference attr)
-            throws RemoteException;
-
-    ResourceValue resolveValue(ResourceValue value) throws RemoteException;
-
-    StyleResourceValue getParent(StyleResourceValue style) throws RemoteException;
+    RemoteResourceValue<StyleResourceValue> getParent(RemoteResourceValue<StyleResourceValue> style) throws RemoteException;
 
     @Nullable
-    StyleResourceValue getStyle(@NonNull ResourceReference reference) throws RemoteException;
+    RemoteResourceValue<StyleResourceValue> getStyle(@NotNull ResourceReference reference) throws RemoteException;
 
-    /** @deprecated Use {@link #getStyle(ResourceReference)}. */
-    @Deprecated
-    StyleResourceValue getStyle(String styleName, boolean isFramework) throws RemoteException;
+    RemoteResourceValue<ResourceValue> dereference(RemoteResourceValue<ResourceValue> resourceValue) throws RemoteException;
 
-    ResourceValue dereference(ResourceValue resourceValue) throws RemoteException;
-
-    ResourceValue getUnresolvedResource(ResourceReference reference) throws RemoteException;
+    RemoteResourceValue<ResourceValue> getUnresolvedResource(ResourceReference reference) throws RemoteException;
 }

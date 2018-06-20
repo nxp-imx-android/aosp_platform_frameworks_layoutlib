@@ -20,7 +20,6 @@ import com.android.ide.common.rendering.api.ActionBarCallback;
 import com.android.ide.common.rendering.api.AdapterBinding;
 import com.android.ide.common.rendering.api.ILayoutPullParser;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
-import com.android.ide.common.rendering.api.ParserFactory;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams.Key;
@@ -237,23 +236,32 @@ public class RemoteLayoutlibCallbackAdapter extends LayoutlibCallback {
     }
 
     @Override
-    public ParserFactory getParserFactory() {
+    public Class<?> findClass(String name) throws ClassNotFoundException {
+        return mPathClassLoader.loadClass(name);
+    }
+
+    @Override
+    public XmlPullParser createXmlParserForPsiFile(String fileName) {
         try {
-            return new RemoteParserFactoryAdapter(mDelegate.getParserFactory());
+            return new RemoteXmlPullParserAdapter(mDelegate.createXmlParserForPsiFile(fileName));
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Class<?> findClass(String name) throws ClassNotFoundException {
-        return mPathClassLoader.loadClass(name);
+    public XmlPullParser createXmlParserForFile(String fileName) {
+        try {
+            return new RemoteXmlPullParserAdapter(mDelegate.createXmlParserForFile(fileName));
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public XmlPullParser getXmlFileParser(String fileName) {
+    public XmlPullParser createXmlParser() {
         try {
-            return new RemoteXmlPullParserAdapter(mDelegate.getXmlFileParser(fileName));
+            return new RemoteXmlPullParserAdapter(mDelegate.createXmlParser());
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }

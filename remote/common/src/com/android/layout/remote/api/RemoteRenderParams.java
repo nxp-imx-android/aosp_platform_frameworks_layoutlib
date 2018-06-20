@@ -52,10 +52,6 @@ public interface RemoteRenderParams extends Remote {
 
     ResourceValue getAppIconResource() throws RemoteException;
 
-    /** @deprectated Use {@link #getAppIconResource}. */
-    @Deprecated
-    String getAppIcon() throws RemoteException;
-
     String getAppLabel() throws RemoteException;
 
     String getLocale() throws RemoteException;

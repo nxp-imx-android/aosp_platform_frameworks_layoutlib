@@ -131,11 +131,6 @@ public class RemoteRenderParamsAdapter implements RemoteRenderParams {
     }
 
     @Override
-    public String getAppIcon() {
-        return mDelegate.getAppIcon();
-    }
-
-    @Override
     public String getAppLabel() {
         return mDelegate.getAppLabel();
     }

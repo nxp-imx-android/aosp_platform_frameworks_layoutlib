@@ -89,7 +89,7 @@ public class RemoteBridgeImpl implements RemoteBridge {
             @NotNull RemoteRenderParams remoteParams) throws RemoteException {
         params.setAssetRepository(new RemoteAssetRepositoryAdapter(remoteParams.getAssets()));
         params.setActivityName(remoteParams.getActivityName());
-        params.setAppIcon(remoteParams.getAppIcon());
+        params.setAppIcon(remoteParams.getAppIconResource());
         params.setAppLabel(remoteParams.getAppLabel());
         params.setTimeout(remoteParams.getTimeout());
         params.setLocale(remoteParams.getLocale());

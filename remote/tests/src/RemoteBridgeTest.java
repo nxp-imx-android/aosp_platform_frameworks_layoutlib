@@ -63,8 +63,11 @@ public class RemoteBridgeTest extends RenderTestBase {
 
     @Before
     public void setupServer() throws IOException, NotBoundException, InterruptedException {
+        long startTime = System.currentTimeMillis();
         mServerMain = ServerMain.forkAndStartServer(ServerMain.REGISTRY_BASE_PORT, 10);
         mClient = RemoteBridgeClient.getRemoteBridge(mServerMain.getPort());
+        System.out.printf("Server started in %dms\n", System.currentTimeMillis() - startTime);
+        startTime = System.currentTimeMillis();
 
         File data_dir = new File(PLATFORM_DIR, "data");
         File res = new File(data_dir, "res");
@@ -74,6 +77,8 @@ public class RemoteBridgeTest extends RenderTestBase {
 
         mClient.init(ConfigGenerator.loadProperties(buildProp), fontLocation,
                 ConfigGenerator.getEnumMap(attrs), getLayoutLog());
+        System.out.printf("Remote client init took %dms\n",
+                System.currentTimeMillis() - startTime);
     }
 
     @After
