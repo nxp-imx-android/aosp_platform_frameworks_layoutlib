@@ -112,15 +112,6 @@ public class RemoteLayoutlibCallbackAdapter implements RemoteLayoutlibCallback {
         return mDelegate.getFlag(key);
     }
 
-    @Override
-    public RemoteParserFactory getParserFactory() {
-        try {
-            return RemoteParserFactoryAdapter.create(mDelegate.getParserFactory());
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Nullable
     @Override
     public Path findClassPath(String name) {
@@ -138,19 +129,29 @@ public class RemoteLayoutlibCallbackAdapter implements RemoteLayoutlibCallback {
         return null;
     }
 
+
     @Override
-    public RemoteXmlPullParser getXmlParserForPsiFile(String fileName) {
+    public RemoteXmlPullParser createXmlParserForPsiFile(String fileName) {
         try {
-            return RemoteXmlPullParserAdapter.create(mDelegate.getXmlParserForPsiFile(fileName));
+            return RemoteXmlPullParserAdapter.create(mDelegate.createXmlParserForPsiFile(fileName));
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public RemoteXmlPullParser getXmlParserForFile(String fileName) {
+    public RemoteXmlPullParser createXmlParserForFile(String fileName) {
         try {
-            return RemoteXmlPullParserAdapter.create(mDelegate.getXmlParserForFile(fileName));
+            return RemoteXmlPullParserAdapter.create(mDelegate.createXmlParserForFile(fileName));
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public RemoteXmlPullParser createXmlParser() {
+        try {
+            return RemoteXmlPullParserAdapter.create(mDelegate.createXmlParser());
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
