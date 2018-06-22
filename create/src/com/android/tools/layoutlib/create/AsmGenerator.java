@@ -16,6 +16,9 @@
 
 package com.android.tools.layoutlib.create;
 
+import com.android.tools.layoutlib.annotations.NotNull;
+import com.android.tools.layoutlib.create.AsmAnalyzer.Result;
+
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -229,31 +232,12 @@ public class AsmGenerator {
      * Utility that returns the internal ASM class name from a fully qualified binary class
      * name. E.g. it returns android/view/View from android.view.View.
      */
-    String binaryToInternalClassName(String className) {
+    private String binaryToInternalClassName(String className) {
         if (className == null) {
             return null;
         } else {
             return className.replace('.', '/');
         }
-    }
-
-    /** Sets the map of classes to output as-is, except if they have native methods */
-    public void setKeep(Map<String, ClassReader> keep) {
-        mKeep = keep;
-    }
-
-    /** Sets the map of dependencies that must be completely stubbed */
-    public void setDeps(Map<String, ClassReader> deps) {
-        mDeps = deps;
-    }
-
-    /** Sets the map of files to output as-is. */
-    public void setCopyFiles(Map<String, InputStream> copyFiles) {
-        mCopyFiles = copyFiles;
-    }
-
-    public void setRewriteMethodCallClasses(Set<String> rewriteMethodCallClasses) {
-        mReplaceMethodCallsClasses = rewriteMethodCallClasses;
     }
 
     /** Generates the final JAR */
@@ -461,4 +445,16 @@ public class AsmGenerator {
         return buffer.toByteArray();
     }
 
+    /**
+     * Sets the inputs for the generator phase.
+     */
+    public void setAnalysisResult(@NotNull Result analysisResult) {
+        // Map of classes to output as-is, except if they have native methods
+        mKeep = analysisResult.getFound();
+        // Map of dependencies that must be completely stubbed
+        mDeps = analysisResult.getDeps();
+        // Map of files to output as-is.
+        mCopyFiles = analysisResult.getFilesFound();
+        mReplaceMethodCallsClasses = analysisResult.getReplaceMethodCallClasses();
+    }
 }
