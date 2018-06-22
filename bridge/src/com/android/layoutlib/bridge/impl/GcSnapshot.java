@@ -618,10 +618,6 @@ public class GcSnapshot {
                 return;
             }
 
-            int x = 0;
-            int y = 0;
-            int width;
-            int height;
             Rectangle clipBounds = originalGraphics.getClip() != null ? originalGraphics
                     .getClipBounds() : null;
             if (clipBounds != null) {
@@ -629,16 +625,13 @@ public class GcSnapshot {
                     // Clip is 0 so no need to paint anything.
                     return;
                 }
-                // If we have clipBounds available, use them as they will always be
-                // smaller than the full layer size.
-                x = clipBounds.x;
-                y = clipBounds.y;
-                width = clipBounds.width;
-                height = clipBounds.height;
-            } else {
-                width = layer.getImage().getWidth();
-                height = layer.getImage().getHeight();
             }
+
+            // b/63692596:
+            // Don't use the size of clip bound because it may be smaller than original size.
+            // Which makes Vector Drawable pixelized.
+            int width = layer.getImage().getWidth();
+            int height = layer.getImage().getHeight();
 
             // Create a temporary image to which the color filter will be applied.
             BufferedImage image = new BufferedImage(width, height,
@@ -648,25 +641,26 @@ public class GcSnapshot {
             Graphics2D imageGraphics = createCustomGraphics(
                     imageBaseGraphics, paint, compositeOnly,
                     AlphaComposite.SRC_OVER);
+
             // get a Graphics2D object configured with the drawing parameters, but no shader.
             Graphics2D configuredGraphics = createCustomGraphics(originalGraphics, paint,
                     true /*compositeOnly*/, forceMode);
+            configuredGraphics.setTransform(new AffineTransform());
             try {
                 // The main draw operation.
                 // We translate the operation to take into account that the rendering does not
                 // know about the clipping area.
-                imageGraphics.translate(-x, -y);
+                imageGraphics.setTransform(originalGraphics.getTransform());
                 drawable.draw(imageGraphics, paint);
 
                 // Apply the color filter.
                 // Restore the original coordinates system and apply the filter only to the
                 // clipped area.
-                imageGraphics.translate(x, y);
                 filter.applyFilter(imageGraphics, width, height);
 
                 // Draw the tinted image on the main layer using as start point the clipping
                 // upper left coordinates.
-                configuredGraphics.drawImage(image, x, y, null);
+                configuredGraphics.drawImage(image, 0, 0, null);
                 layer.change();
             } finally {
                 // dispose Graphics2D objects
