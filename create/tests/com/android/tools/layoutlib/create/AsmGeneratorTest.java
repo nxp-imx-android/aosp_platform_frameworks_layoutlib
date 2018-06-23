@@ -78,7 +78,7 @@ public class AsmGeneratorTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         if (mTempFile != null) {
             //noinspection ResultOfMethodCallIgnored
             mTempFile.delete();
@@ -102,14 +102,14 @@ public class AsmGeneratorTest {
 
         AsmGenerator agen = new AsmGenerator(mLog, mOsDestJar, ci);
 
-        AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath,
+        AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath, agen,
                 null,                 // derived from
                 new String[] {        // include classes
                     "**"
                 },
-                new String[]{}  /* excluded classes */,
+                Collections.emptySet() /* excluded classes */,
                 new String[]{} /* include files */);
-        agen.setAnalysisResult(aa.analyze());
+        aa.analyze();
         agen.generate();
 
         Set<String> notRenamed = agen.getClassesNotRenamed();
@@ -137,23 +137,23 @@ public class AsmGeneratorTest {
             }
 
             @Override
-            public String[] getExcludedClasses() {
-                return new String[]{"java.lang.JavaClass"};
+            public Set<String> getExcludedClasses() {
+                return Collections.singleton("java.lang.JavaClass");
             }
         };
 
         AsmGenerator agen = new AsmGenerator(mLog, mOsDestJar, ci);
 
-        AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath,
+        AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath, agen,
                 null,                 // derived from
                 new String[] {        // include classes
                     "**"
                 },
-                new String[]{},
+                Collections.emptySet(),
                 new String[] {        /* include files */
                     "mock_android/data/data*"
                 });
-        agen.setAnalysisResult(aa.analyze());
+        aa.analyze();
         agen.generate();
         Map<String, ClassReader> output = new TreeMap<>();
         Map<String, InputStream> filesFound = new TreeMap<>();
@@ -192,14 +192,14 @@ public class AsmGeneratorTest {
 
         AsmGenerator agen = new AsmGenerator(mLog, mOsDestJar, ci);
 
-        AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath,
+        AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath, agen,
                 null,                 // derived from
                 new String[] {        // include classes
                         "**"
                 },
-                new String[]{},
+                Collections.emptySet(),
                 new String[] {});
-        agen.setAnalysisResult(aa.analyze());
+        aa.analyze();
         agen.generate();
         Map<String, ClassReader> output = new TreeMap<>();
         parseZip(mOsDestJar, output, new TreeMap<>());
@@ -217,46 +217,33 @@ public class AsmGeneratorTest {
     public void testClassExclusion() throws IOException, LogAbortException {
         ICreateInfo ci = new CreateInfoAdapter() {
             @Override
-            public String[] getExcludedClasses() {
-                return new String[] {
-                        "mock_android.dummy2.*",
-                        "mock_android.dummy.**",
-                        "mock_android.util.NotNeeded",
-                        "java.lang.JavaClass"
-                };
+            public Set<String> getExcludedClasses() {
+                Set<String> set = new HashSet<>(2);
+                set.add("mock_android.dummy.InnerTest");
+                set.add("java.lang.JavaClass");
+                return set;
             }
         };
 
         AsmGenerator agen = new AsmGenerator(mLog, mOsDestJar, ci);
-        AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath,
+        Set<String> excludedClasses = ci.getExcludedClasses();
+        AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath, agen,
                 null,                 // derived from
                 new String[] {        // include classes
                         "**"
                 },
-                ci.getExcludedClasses(),
+                excludedClasses,
                 new String[] {        /* include files */
                         "mock_android/data/data*"
                 });
-        agen.setAnalysisResult(aa.analyze());
+        aa.analyze();
         agen.generate();
         Map<String, ClassReader> output = new TreeMap<>();
         Map<String, InputStream> filesFound = new TreeMap<>();
         parseZip(mOsDestJar, output, filesFound);
-        // Everything in .dummy.** should be filtered
-        // Only things is .dummy2.* should be filtered
-        assertArrayEquals(new String[] {
-                "mock_android.dummy2.keep.DoNotRemove",
-                "mock_android.util.EmptyArray",
-                "mock_android.view.View",
-                "mock_android.view.ViewGroup",
-                "mock_android.view.ViewGroup$LayoutParams",
-                "mock_android.view.ViewGroup$MarginLayoutParams",
-                "mock_android.widget.LinearLayout",
-                "mock_android.widget.LinearLayout$LayoutParams",
-                "mock_android.widget.TableLayout",
-                "mock_android.widget.TableLayout$LayoutParams"},
-                output.keySet().toArray()
-        );
+        for (String s : output.keySet()) {
+            assertFalse(excludedClasses.contains(s));
+        }
         assertArrayEquals(new String[] {"mock_android/data/dataFile"},
                 filesFound.keySet().toArray());
     }
@@ -274,7 +261,7 @@ public class AsmGeneratorTest {
         };
 
         AsmGenerator agen = new AsmGenerator(mLog, mOsDestJar, ci);
-        AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath,
+        AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath, agen,
                 null,                 // derived from
                 new String[] {        // include classes
                         "**"
@@ -283,7 +270,7 @@ public class AsmGeneratorTest {
                 new String[] {        /* include files */
                         "mock_android/data/data*"
                 });
-        agen.setAnalysisResult(aa.analyze());
+        aa.analyze();
         agen.generate();
         Map<String, ClassReader> output = new TreeMap<>();
         Map<String, InputStream> filesFound = new TreeMap<>();

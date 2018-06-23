@@ -16,8 +16,6 @@
 
 package com.android.tools.layoutlib.create;
 
-import com.android.tools.layoutlib.create.AsmAnalyzer.Result;
-
 import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
@@ -93,9 +91,10 @@ public class Main {
 
         try {
             CreateInfo info = new CreateInfo();
+            Set<String> excludeClasses = info.getExcludedClasses();
             AsmGenerator agen = new AsmGenerator(log, osDestJar, info);
 
-            AsmAnalyzer aa = new AsmAnalyzer(log, osJarPath,
+            AsmAnalyzer aa = new AsmAnalyzer(log, osJarPath, agen,
                     new String[] {                          // derived from
                         "android.view.View",
                         "android.app.Fragment"
@@ -128,12 +127,12 @@ public class Main {
                         "com.android.internal.transition.EpicenterTranslateClipReveal",
                         "com.android.internal.graphics.drawable.AnimationScaleListDrawable",
                     },
-                    info.getExcludedClasses(),
+                    excludeClasses,
                     new String[] {
                         "com/android/i18n/phonenumbers/data/*",
                         "android/icu/impl/data/**"
                     });
-            agen.setAnalysisResult(aa.analyze());
+            aa.analyze();
             agen.generate();
 
             // Throw an error if any class failed to get renamed by the generator
@@ -161,6 +160,8 @@ public class Main {
             return 0;
         } catch (IOException e) {
             log.exception(e, "Failed to load jar");
+        } catch (LogAbortException e) {
+            e.error(log);
         }
 
         return 1;
