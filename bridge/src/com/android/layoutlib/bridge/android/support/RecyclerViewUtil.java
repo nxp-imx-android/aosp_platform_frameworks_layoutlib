@@ -18,7 +18,6 @@ package com.android.layoutlib.bridge.android.support;
 
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
-import com.android.internal.widget.RecyclerView;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
@@ -55,7 +54,8 @@ public class RecyclerViewUtil {
      */
     public static void setAdapter(@NonNull View recyclerView, @NonNull BridgeContext context,
             @NonNull LayoutlibCallback layoutlibCallback, int adapterLayout, int itemCount) {
-        String recyclerViewClassName = recyclerView.getClass().getName();
+        String recyclerViewClassName =
+                ReflectionUtils.getParentClass(recyclerView, RecyclerViewUtil.CN_RECYCLER_VIEW);
         String adapterClassName = recyclerViewClassName + "$Adapter";
         String layoutMgrClassName = recyclerViewClassName + "$LayoutManager";
 
@@ -98,7 +98,7 @@ public class RecyclerViewUtil {
             @NonNull String linearLayoutMgrClassName, @NonNull LayoutlibCallback callback)
             throws ReflectionException {
         try {
-            return callback.loadView(linearLayoutMgrClassName, LLM_CONSTRUCTOR_SIGNATURE,
+            return callback.loadClass(linearLayoutMgrClassName, LLM_CONSTRUCTOR_SIGNATURE,
                     new Object[]{context});
         } catch (Exception e) {
             throw new ReflectionException(e);
