@@ -486,6 +486,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                 // it doesn't get cached.
                 boolean disableBitmapCaching = Boolean.TRUE.equals(params.getFlag(
                     RenderParamsFlags.FLAG_KEY_DISABLE_BITMAP_CACHING));
+
                 if (mNewRenderSize || mCanvas == null || disableBitmapCaching) {
                     mNewRenderSize = false;
                     if (params.getImageFactory() != null) {
@@ -520,6 +521,19 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                     } else {
                         mCanvas.setBitmap(bitmap);
                     }
+
+                    boolean enableImageResizing =
+                            mImage.getWidth() != mMeasuredScreenWidth &&
+                            mImage.getHeight() != mMeasuredScreenHeight &&
+                            Boolean.TRUE.equals(params.getFlag(
+                                    RenderParamsFlags.FLAG_KEY_RESULT_IMAGE_AUTO_SCALE));
+
+                    if (enableImageResizing) {
+                        float scaleX = (float)mImage.getWidth() / mMeasuredScreenWidth;
+                        float scaleY = (float)mImage.getHeight() / mMeasuredScreenHeight;
+                        mCanvas.scale(scaleX, scaleY);
+                    }
+
                     mCanvas.setDensity(hardwareConfig.getDensity().getDpiValue());
                 }
 
