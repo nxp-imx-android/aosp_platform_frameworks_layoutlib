@@ -1309,4 +1309,40 @@ public class RenderTests extends RenderTestBase {
 
         renderAndVerify(params, "view_stub.png", -1);
     }
+
+    @Test
+    public void testImageResize() throws ClassNotFoundException {
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        LayoutPullParser parser = LayoutPullParser.createFromString(
+                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "    android:layout_width=\"match_parent\"\n" +
+                        "    android:layout_height=\"match_parent\"\n" +
+                        "    android:background=\"@drawable/ninepatch\"\n" +
+                        "    android:layout_margin=\"20dp\"\n" +
+                        "    android:orientation=\"vertical\">\n\n" +
+                        "    <Button\n" +
+                        "        android:layout_width=\"wrap_content\"\n" +
+                        "        android:layout_height=\"wrap_content\"\n" +
+                        "        android:text=\"Button\" />\n\n" +
+                        "    <Button\n" +
+                        "        android:layout_width=\"wrap_content\"\n" +
+                        "        android:layout_height=\"wrap_content\"\n" +
+                        "        android:text=\"Button\" />\n"
+                        + "</LinearLayout>");
+
+        // Ask for an image that it's 1/10th the size of the actual device image
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setImageFactory((width, height) ->
+                        new BufferedImage(width / 10, height / 10,
+                        BufferedImage.TYPE_INT_ARGB))
+                .setFlag(RenderParamsFlags.FLAG_KEY_RESULT_IMAGE_AUTO_SCALE, true)
+                .build();
+
+        renderAndVerify(params, "auto-scale-image.png");
+    }
 }
