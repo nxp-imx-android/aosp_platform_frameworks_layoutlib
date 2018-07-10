@@ -18,6 +18,7 @@ package com.android.layoutlib.bridge.intensive.util;
 
 import com.android.SdkConstants;
 import com.android.ide.common.rendering.api.AssetRepository;
+import com.android.ide.common.rendering.api.IImageFactory;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.ResourceNamespace;
@@ -58,6 +59,7 @@ public class SessionParamsBuilder {
     private Map<SessionParams.Key, Object> mFlags = new HashMap<>();
     private AssetRepository mAssetRepository = null;
     private boolean mDecor = true;
+    private IImageFactory mImageFactory = null;
 
     @NonNull
     public SessionParamsBuilder setParser(@NonNull LayoutPullParser layoutParser) {
@@ -153,6 +155,12 @@ public class SessionParamsBuilder {
     }
 
     @NonNull
+    public SessionParamsBuilder setImageFactory(@NonNull IImageFactory imageFactory) {
+        mImageFactory = imageFactory;
+        return this;
+    }
+
+    @NonNull
     public SessionParams build() {
         assert mFrameworkResources != null;
         assert mProjectResources != null;
@@ -173,6 +181,9 @@ public class SessionParamsBuilder {
         SessionParams params = new SessionParams(mLayoutParser, mRenderingMode, mProjectKey /* for
         caching */, mConfigGenerator.getHardwareConfig(), resourceResolver, mLayoutlibCallback,
                 mMinSdk, mTargetSdk, mLayoutLog);
+        if (mImageFactory != null) {
+            params.setImageFactory(mImageFactory);
+        }
 
         mFlags.forEach(params::setFlag);
         params.setAssetRepository(mAssetRepository);
