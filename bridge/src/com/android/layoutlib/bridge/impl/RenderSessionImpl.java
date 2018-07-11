@@ -46,7 +46,6 @@ import com.android.layoutlib.bridge.android.support.FragmentTabHostUtil;
 import com.android.layoutlib.bridge.android.support.SupportPreferencesUtil;
 import com.android.layoutlib.bridge.impl.binding.FakeAdapter;
 import com.android.layoutlib.bridge.impl.binding.FakeExpandableAdapter;
-import com.android.layoutlib.bridge.util.ReflectionUtils;
 import com.android.tools.layoutlib.java.System_Delegate;
 import com.android.util.Pair;
 import com.android.util.PropertiesMap;
@@ -486,6 +485,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                 // it doesn't get cached.
                 boolean disableBitmapCaching = Boolean.TRUE.equals(params.getFlag(
                     RenderParamsFlags.FLAG_KEY_DISABLE_BITMAP_CACHING));
+
                 if (mNewRenderSize || mCanvas == null || disableBitmapCaching) {
                     mNewRenderSize = false;
                     if (params.getImageFactory() != null) {
@@ -520,6 +520,19 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                     } else {
                         mCanvas.setBitmap(bitmap);
                     }
+
+                    boolean enableImageResizing =
+                            mImage.getWidth() != mMeasuredScreenWidth &&
+                            mImage.getHeight() != mMeasuredScreenHeight &&
+                            Boolean.TRUE.equals(params.getFlag(
+                                    RenderParamsFlags.FLAG_KEY_RESULT_IMAGE_AUTO_SCALE));
+
+                    if (enableImageResizing) {
+                        float scaleX = (float)mImage.getWidth() / mMeasuredScreenWidth;
+                        float scaleY = (float)mImage.getHeight() / mMeasuredScreenHeight;
+                        mCanvas.scale(scaleX, scaleY);
+                    }
+
                     mCanvas.setDensity(hardwareConfig.getDensity().getDpiValue());
                 }
 
@@ -829,7 +842,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
         // this must be called before addTab() so that the TabHost searches its TabWidget
         // and FrameLayout.
-        if (ReflectionUtils.isInstanceOf(tabHost, FragmentTabHostUtil.CN_FRAGMENT_TAB_HOST)) {
+        if (isInstanceOf(tabHost, FragmentTabHostUtil.CN_FRAGMENT_TAB_HOST)) {
             FragmentTabHostUtil.setup(tabHost, getContext());
         } else {
             tabHost.setup();
