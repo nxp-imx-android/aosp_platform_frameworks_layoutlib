@@ -656,6 +656,7 @@ public class GcSnapshot {
                 // Apply the color filter.
                 // Restore the original coordinates system and apply the filter only to the
                 // clipped area.
+                imageGraphics.setTransform(new AffineTransform());
                 filter.applyFilter(imageGraphics, width, height);
 
                 // Draw the tinted image on the main layer using as start point the clipping
