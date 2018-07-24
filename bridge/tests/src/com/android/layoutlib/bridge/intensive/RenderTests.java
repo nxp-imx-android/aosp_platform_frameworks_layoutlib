@@ -1345,4 +1345,12 @@ public class RenderTests extends RenderTestBase {
 
         renderAndVerify(params, "auto-scale-image.png");
     }
+
+    @Test
+    public void testTranslation() throws ClassNotFoundException, FileNotFoundException {
+        RenderResult res = renderAndVerify("translate_test.xml", "translate_test.png");
+        ViewInfo rootInfo = res.getRootViews().get(0);
+        ViewInfo buttonInfo = rootInfo.getChildren().get(0);
+        assertEquals(100, buttonInfo.getLeft());
+    }
 }
