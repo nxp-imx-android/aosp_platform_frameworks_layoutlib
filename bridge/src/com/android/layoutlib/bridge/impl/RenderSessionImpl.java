@@ -1002,10 +1002,14 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
             // The view is part of the layout added by the user. Hence,
             // the ViewCookie may be obtained only through the Context.
+            int shiftX = -scrollX + Math.round(view.getTranslationX()) + hOffset;
+            int shiftY = -scrollY + Math.round(view.getTranslationY()) + vOffset;
             result = new ViewInfo(view.getClass().getName(),
-                    getContext().getViewKey(view), -scrollX + view.getLeft() + hOffset,
-                    -scrollY + view.getTop() + vOffset, -scrollX + view.getRight() + hOffset,
-                    -scrollY + view.getBottom() + vOffset,
+                    getContext().getViewKey(view),
+                    shiftX + view.getLeft(),
+                    shiftY + view.getTop(),
+                    shiftX + view.getRight(),
+                    shiftY + view.getBottom(),
                     view, view.getLayoutParams());
         } else {
             // We are part of the system decor.
