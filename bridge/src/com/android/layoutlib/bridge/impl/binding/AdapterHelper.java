@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.layoutlib.bridge.impl.binding;
 
 import com.android.ide.common.rendering.api.DataBindingItem;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.ResourceReference;
-import com.android.ide.common.rendering.api.IProjectCallback.ViewAttribute;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.impl.RenderAction;
@@ -90,9 +88,10 @@ public class AdapterHelper {
                                 item.getDataBindingItem().getViewReference(),
                                 fullPosition, positionPerType,
                                 fullParentPosition, parentPositionPerType,
-                                resolvedRef, ViewAttribute.TEXT, tv.getText().toString());
+                                resolvedRef, LayoutlibCallback.ViewAttribute.TEXT,
+                                tv.getText().toString());
                         if (value != null) {
-                            if (value.getClass() != ViewAttribute.TEXT.getAttributeClass()) {
+                            if (value.getClass() != LayoutlibCallback.ViewAttribute.TEXT.getAttributeClass()) {
                                 Bridge.getLog().error(LayoutLog.TAG_BROKEN, String.format(
                                         "Wrong Adapter Item value class for TEXT. Expected String, got %s",
                                         value.getClass().getName()), null);
@@ -110,9 +109,9 @@ public class AdapterHelper {
                                 item.getDataBindingItem().getViewReference(),
                                 fullPosition, positionPerType,
                                 fullParentPosition, parentPositionPerType,
-                                resolvedRef, ViewAttribute.IS_CHECKED, cb.isChecked());
+                                resolvedRef, LayoutlibCallback.ViewAttribute.IS_CHECKED, cb.isChecked());
                         if (value != null) {
-                            if (value.getClass() != ViewAttribute.IS_CHECKED.getAttributeClass()) {
+                            if (value.getClass() != LayoutlibCallback.ViewAttribute.IS_CHECKED.getAttributeClass()) {
                                 Bridge.getLog().error(LayoutLog.TAG_BROKEN, String.format(
                                         "Wrong Adapter Item value class for IS_CHECKED. Expected Boolean, got %s",
                                         value.getClass().getName()), null);
@@ -130,9 +129,9 @@ public class AdapterHelper {
                                 item.getDataBindingItem().getViewReference(),
                                 fullPosition, positionPerType,
                                 fullParentPosition, parentPositionPerType,
-                                resolvedRef, ViewAttribute.SRC, iv.getDrawable());
+                                resolvedRef, LayoutlibCallback.ViewAttribute.SRC, iv.getDrawable());
                         if (value != null) {
-                            if (value.getClass() != ViewAttribute.SRC.getAttributeClass()) {
+                            if (value.getClass() != LayoutlibCallback.ViewAttribute.SRC.getAttributeClass()) {
                                 Bridge.getLog().error(LayoutLog.TAG_BROKEN, String.format(
                                         "Wrong Adapter Item value class for SRC. Expected Boolean, got %s",
                                         value.getClass().getName()), null);

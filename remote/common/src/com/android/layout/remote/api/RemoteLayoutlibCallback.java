@@ -13,17 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.layout.remote.api;
 
 import com.android.ide.common.rendering.api.AdapterBinding;
-import com.android.ide.common.rendering.api.IProjectCallback.ViewAttribute;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams.Key;
-
-import org.xmlpull.v1.XmlPullParser;
 
 import java.nio.file.Path;
 import java.rmi.Remote;
@@ -49,7 +45,7 @@ public interface RemoteLayoutlibCallback extends Remote {
     Object getAdapterItemValue(ResourceReference adapterView, Object adapterCookie,
             ResourceReference itemRef, int fullPosition, int positionPerType,
             int fullParentPosition, int parentPositionPerType, ResourceReference viewRef,
-            ViewAttribute viewAttribute, Object defaultValue) throws RemoteException;
+            LayoutlibCallback.ViewAttribute viewAttribute, Object defaultValue) throws RemoteException;
 
     AdapterBinding getAdapterBinding(ResourceReference adapterViewRef, Object adapterCookie,
             Object viewObject) throws RemoteException;
