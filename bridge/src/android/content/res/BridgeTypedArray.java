@@ -574,15 +574,7 @@ public final class BridgeTypedArray extends TypedArray {
         // then the xml attribute value was "resolved" which leads us to a ResourceValue with a
         // valid type, name, namespace and a potentially null value.
         if (!(resValue instanceof UnresolvedResourceValue)) {
-            // if this is a framework id
-            if (resValue.isFramework()) {
-                // look for idName in the android R classes
-                return mContext.getFrameworkResourceId(
-                        resValue.getResourceType(), resValue.getName(), defValue);
-            }
-
-            // look for idName in the project R class.
-            return mContext.getProjectResourceId(resValue.asReference(), defValue);
+            return mContext.getResourceId(resValue.asReference(), defValue);
         }
 
         // else, try to get the value, and resolve it somehow.
@@ -636,11 +628,7 @@ public final class BridgeTypedArray extends TypedArray {
                 }
                 // This calls the same method as in if(create), but doesn't create a dynamic id, if
                 // one is not found.
-                if (referencedId.getNamespace() == ResourceNamespace.ANDROID) {
-                    return mContext.getFrameworkResourceId(ResourceType.ID, resourceUrl.name, defValue);
-                } else {
-                    return mContext.getProjectResourceId(referencedId, defValue);
-                }
+                return mContext.getResourceId(referencedId, defValue);
             }
             else if (value.startsWith("@aapt:_aapt")) {
                 return mContext.getLayoutlibCallback().getOrGenerateResourceId(

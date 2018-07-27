@@ -89,7 +89,7 @@ public class RemoteBridgeImpl implements RemoteBridge {
             @NotNull RemoteRenderParams remoteParams) throws RemoteException {
         params.setAssetRepository(new RemoteAssetRepositoryAdapter(remoteParams.getAssets()));
         params.setActivityName(remoteParams.getActivityName());
-        params.setAppIcon(remoteParams.getAppIconResource());
+        params.setAppIcon(remoteParams.getAppIcon());
         params.setAppLabel(remoteParams.getAppLabel());
         params.setTimeout(remoteParams.getTimeout());
         params.setLocale(remoteParams.getLocale());
@@ -111,7 +111,7 @@ public class RemoteBridgeImpl implements RemoteBridge {
             String projectKey = mCachedProjectKeys.putIfAbsent(remoteParams.getProjectKey(),
                     remoteParams.getProjectKey());
 
-            // Unpack the remote params and convert it into the local SessionParams
+            // Unpack the remote params and convert it into the local SessionParams.
             SessionParams params = new SessionParams(
                     new RemoteILayoutPullParserAdapter(remoteParams.getLayoutDescription()),
                     remoteParams.getRenderingMode(), projectKey,

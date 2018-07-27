@@ -400,20 +400,9 @@ public class BridgeContext extends Context {
             else if (stringValue.charAt(0) == '@') {
                 outValue.type = TypedValue.TYPE_REFERENCE;
             }
-
         }
 
-        int a;
-        // if this is a framework value.
-        if (value.isFramework()) {
-            // look for idName in the android R classes.
-            // use 0 a default res value as it's not a valid id value.
-            a = getFrameworkResourceId(value.getResourceType(), value.getName(), 0 /*defValue*/);
-        } else {
-            // look for idName in the project R class.
-            // use 0 a default res value as it's not a valid id value.
-            a = getProjectResourceId(value.asReference(), 0 /*defValue*/);
-        }
+        int a = getResourceId(value.asReference(), 0 /*defValue*/);
 
         if (a != 0) {
             outValue.resourceId = a;
@@ -449,7 +438,7 @@ public class BridgeContext extends Context {
     public Pair<View, Boolean> inflateView(ResourceReference layout, ViewGroup parent,
             @SuppressWarnings("SameParameterValue") boolean attachToRoot,
             boolean skipCallbackParser) {
-        boolean isPlatformLayout = layout.isFramework();
+        boolean isPlatformLayout = layout.getNamespace().equals(ResourceNamespace.ANDROID);
 
         if (!isPlatformLayout && !skipCallbackParser) {
             // check if the project callback can provide us with a custom parser.
@@ -1094,21 +1083,11 @@ public class BridgeContext extends Context {
         return mRenderResources.getStyle(reference);
     }
 
-    public int getFrameworkResourceId(ResourceType resType, String resName, int defValue) {
-        ResourceReference reference =
-                new ResourceReference(ResourceNamespace.ANDROID, resType, resName);
-        if (getRenderResources().getUnresolvedResource(reference) != null) {
-            // Bridge.getResourceId creates a new resource id if an existing one isn't found. So,
-            // we check for the existence of the resource before calling it.
-            return Bridge.getResourceId(resType, resName);
-        }
-
-        return defValue;
-    }
-
-    public int getProjectResourceId(ResourceReference resource, int defValue) {
+    public int getResourceId(@NonNull ResourceReference resource, int defValue) {
         if (getRenderResources().getUnresolvedResource(resource) != null) {
-            if (mLayoutlibCallback != null) {
+            if (resource.getNamespace().equals(ResourceNamespace.ANDROID)) {
+                return Bridge.getResourceId(resource.getResourceType(), resource.getName());
+            } else if (mLayoutlibCallback != null) {
                 return mLayoutlibCallback.getOrGenerateResourceId(resource);
             }
         }
@@ -1130,7 +1109,6 @@ public class BridgeContext extends Context {
     public static ResourceReference createFrameworkAttrReference(@NonNull String name) {
         return createFrameworkResourceReference(ResourceType.ATTR, name);
     }
-
 
     /**
      * Returns the Framework resource reference with the given type and name.
