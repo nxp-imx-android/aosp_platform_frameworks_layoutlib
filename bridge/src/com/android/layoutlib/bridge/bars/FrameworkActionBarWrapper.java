@@ -18,7 +18,6 @@ package com.android.layoutlib.bridge.bars;
 
 import com.android.ide.common.rendering.api.ActionBarCallback;
 import com.android.ide.common.rendering.api.RenderResources;
-import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.internal.R;
@@ -48,9 +47,6 @@ import android.widget.ActionMenuPresenter;
 import android.widget.ActionMenuView;
 import android.widget.Toolbar;
 import android.widget.Toolbar_Accessor;
-
-import static com.android.SdkConstants.ANDROID_NS_NAME_PREFIX;
-import static com.android.resources.ResourceType.MENU;
 
 /**
  * A common API to access {@link ToolbarActionBar} and {@link WindowDecorActionBar}.
@@ -127,18 +123,9 @@ public abstract class FrameworkActionBarWrapper {
     protected void inflateMenus() {
         MenuInflater inflater = new MenuInflater(getActionMenuContext());
         MenuBuilder menuBuilder = getMenuBuilder();
-        for (String name : mCallback.getMenuIdNames()) {
-            int id;
-            if (name.startsWith(ANDROID_NS_NAME_PREFIX)) {
-                // Framework menu.
-                name = name.substring(ANDROID_NS_NAME_PREFIX.length());
-                id = mContext.getFrameworkResourceId(MENU, name, -1);
-            } else {
-                // Project menu.
-                id = mContext.getProjectResourceId(
-                        new ResourceReference(ResourceNamespace.TODO(), MENU, name), -1);
-            }
-            if (id > -1) {
+        for (ResourceReference menuId : mCallback.getMenuIds()) {
+            int id = mContext.getResourceId(menuId, -1);
+            if (id >= 0) {
                 inflater.inflate(id, menuBuilder);
             }
         }
