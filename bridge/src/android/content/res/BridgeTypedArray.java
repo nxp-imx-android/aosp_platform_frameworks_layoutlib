@@ -927,8 +927,8 @@ public final class BridgeTypedArray extends TypedArray {
             }
         }
 
-        if (map != null) {
-            // accumulator to store the value of the 1+ constants.
+        if (map != null && !map.isEmpty()) {
+            // Accumulator to store the value of the 1+ constants.
             int result = 0;
             boolean found = false;
 
@@ -944,7 +944,7 @@ public final class BridgeTypedArray extends TypedArray {
                         // Ignore and continue.
                     }
                 }
-                // split the value in case this is a mix of several flags.
+                // Split the value in case it is a mix of several flags.
                 String[] keywords = value.split("\\|");
                 for (String keyword : keywords) {
                     Integer i = map.get(keyword.trim());
