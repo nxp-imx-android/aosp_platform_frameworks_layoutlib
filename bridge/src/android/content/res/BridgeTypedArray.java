@@ -918,10 +918,8 @@ public final class BridgeTypedArray extends TypedArray {
         } else {
             // get the styleable matching the resolved name
             RenderResources res = mContext.getRenderResources();
-            ResourceValue attr =
-                    res.getResolvedResource(
-                            new ResourceReference(
-                                    mNamespaces[index], ResourceType.ATTR, mNames[index]));
+            ResourceValue attr = res.getResolvedResource(
+                    ResourceReference.attr(mNamespaces[index], mNames[index]));
             if (attr instanceof AttrResourceValue) {
                 map = ((AttrResourceValue) attr).getAttributeValues();
             }
