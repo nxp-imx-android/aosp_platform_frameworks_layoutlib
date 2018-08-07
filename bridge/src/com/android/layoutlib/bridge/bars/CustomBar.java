@@ -62,6 +62,8 @@ import static android.os._Original_Build.VERSION_CODES.LOLLIPOP;
  * It also provides a few utility methods to configure the content of the layout.
  */
 abstract class CustomBar extends LinearLayout {
+    private static final ResourceNamespace PRIVATE_LAYOUTLIB_NAMESPACE =
+            ResourceNamespace.fromPackageName("com.android.layoutlib");
     private final int mSimulatedPlatformVersion;
 
     protected abstract TextView getStyleableTextView();
@@ -82,10 +84,8 @@ abstract class CustomBar extends LinearLayout {
         XmlPullParser parser;
         try {
             parser = ParserFactory.create(getClass().getResourceAsStream(layoutPath), name);
-
-            // TODO(namespaces): does the namespace matter here?
             BridgeXmlBlockParser bridgeParser =
-                    new BridgeXmlBlockParser(parser, context, ResourceNamespace.TODO());
+                    new BridgeXmlBlockParser(parser, context, PRIVATE_LAYOUTLIB_NAMESPACE);
 
             try {
                 inflater.inflate(bridgeParser, this, true);
