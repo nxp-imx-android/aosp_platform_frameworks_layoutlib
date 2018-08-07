@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package android.util;
 
 import com.android.ide.common.rendering.api.AttrResourceValue;
@@ -28,11 +27,11 @@ import com.android.layoutlib.bridge.android.UnresolvedResourceValue;
 import com.android.layoutlib.bridge.android.XmlPullParserResolver;
 import com.android.layoutlib.bridge.impl.ResourceHelper;
 import com.android.resources.ResourceType;
-import com.android.tools.layoutlib.annotations.Nullable;
 
 import org.xmlpull.v1.XmlPullParser;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -40,7 +39,7 @@ import java.util.function.Function;
 /**
  * A correct implementation of the {@link AttributeSet} interface on top of a XmlPullParser
  */
-public class BridgeXmlPullAttributes extends XmlPullAttributes {
+public class BridgeXmlPullAttributes extends XmlPullAttributes implements ResolvingAttributeSet {
 
     interface EnumValueSupplier {
         @Nullable
@@ -301,6 +300,14 @@ public class BridgeXmlPullAttributes extends XmlPullAttributes {
         }
 
         return defaultValue;
+    }
+
+    @Override
+    @Nullable
+    public ResourceValue getResolvedAttributeValue(@Nullable String namespace,
+            @NonNull String name) {
+        String s = getAttributeValue(namespace, name);
+        return s == null ? null : getResourceValue(s);
     }
 
     // -- private helper methods
