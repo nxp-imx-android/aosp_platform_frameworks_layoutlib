@@ -64,15 +64,11 @@ import static com.android.layoutlib.bridge.android.BridgeContext.getBaseContext;
 public final class BridgeInflater extends LayoutInflater {
     private static final String INFLATER_CLASS_ATTR_NAME = "viewInflaterClass";
     private static final ResourceReference RES_AUTO_INFLATER_CLASS_ATTR =
-            new ResourceReference(
-                    ResourceNamespace.RES_AUTO, ResourceType.ATTR, INFLATER_CLASS_ATTR_NAME);
+            ResourceReference.attr(ResourceNamespace.RES_AUTO, INFLATER_CLASS_ATTR_NAME);
     private static final ResourceReference LEGACY_APPCOMPAT_INFLATER_CLASS_ATTR =
-            new ResourceReference(
-                    ResourceNamespace.APPCOMPAT_LEGACY, ResourceType.ATTR,
-                    INFLATER_CLASS_ATTR_NAME);
+            ResourceReference.attr(ResourceNamespace.APPCOMPAT_LEGACY, INFLATER_CLASS_ATTR_NAME);
     private static final ResourceReference ANDROIDX_APPCOMPAT_INFLATER_CLASS_ATTR =
-            new ResourceReference(
-                    ResourceNamespace.APPCOMPAT, ResourceType.ATTR, INFLATER_CLASS_ATTR_NAME);
+            ResourceReference.attr(ResourceNamespace.APPCOMPAT, INFLATER_CLASS_ATTR_NAME);
     private static final String LEGACY_DEFAULT_APPCOMPAT_INFLATER_NAME =
             "android.support.v7.app.AppCompatViewInflater";
     private static final String ANDROIDX_DEFAULT_APPCOMPAT_INFLATER_NAME =
