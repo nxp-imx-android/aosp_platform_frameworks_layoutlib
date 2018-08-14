@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,43 +23,37 @@ import android.annotation.NonNull;
 import android.graphics.BidiRenderer;
 import android.graphics.Paint;
 import android.graphics.Paint_Delegate;
-import android.graphics.Rect;
 import android.graphics.RectF;
-import android.text.StaticLayout_Delegate.Builder;
-import android.text.StaticLayout_Delegate.Run;
+import android.text.NativeLineBreaker_Delegate.Builder;
+import android.text.NativeLineBreaker_Delegate.Run;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import libcore.util.NativeAllocationRegistry_Delegate;
-
 /**
- * Delegate that provides implementation for native methods in {@link android.text.MeasuredParagraph}
+ * Delegate that provides implementation for native methods in {@link android.text.NativeMeasuredParagraph}
  * <p/>
  * Through the layoutlib_create tool, selected methods of StaticLayout have been replaced
  * by calls to methods of the same name in this delegate class.
  *
  */
-public class MeasuredParagraph_Delegate {
-
+public class NativeMeasuredParagraph_Builder_Delegate {
     // ---- Builder delegate manager ----
-    private static final DelegateManager<MeasuredParagraphBuilder> sBuilderManager =
-            new DelegateManager<>(MeasuredParagraphBuilder.class);
-    private static final DelegateManager<MeasuredParagraph_Delegate> sManager =
-            new DelegateManager<>(MeasuredParagraph_Delegate.class);
-    private static long sFinalizer = -1;
+    protected static final DelegateManager<NativeMeasuredParagraph_Builder_Delegate>
+            sBuilderManager =
+            new DelegateManager<>(NativeMeasuredParagraph_Builder_Delegate.class);
 
-    private long mNativeBuilderPtr;
+    protected final ArrayList<Run> mRuns = new ArrayList<>();
 
     @LayoutlibDelegate
     /*package*/ static long nInitBuilder() {
-        return sBuilderManager.addNewDelegate(new MeasuredParagraphBuilder());
+        return sBuilderManager.addNewDelegate(new NativeMeasuredParagraph_Builder_Delegate());
     }
 
     /**
      * Apply style to make native measured text.
      *
-     * @param nativeBuilderPtr The native MeasuredParagraph builder pointer.
+     * @param nativeBuilderPtr The native NativeMeasuredParagraph builder pointer.
      * @param paintPtr The native paint pointer to be applied.
      * @param start The start offset in the copied buffer.
      * @param end The end offset in the copied buffer.
@@ -68,7 +62,7 @@ public class MeasuredParagraph_Delegate {
     @LayoutlibDelegate
     /*package*/ static void nAddStyleRun(long nativeBuilderPtr, long paintPtr, int start,
             int end, boolean isRtl) {
-        MeasuredParagraphBuilder builder = sBuilderManager.getDelegate(nativeBuilderPtr);
+        NativeMeasuredParagraph_Builder_Delegate builder = sBuilderManager.getDelegate(nativeBuilderPtr);
         if (builder == null) {
             return;
         }
@@ -78,7 +72,7 @@ public class MeasuredParagraph_Delegate {
     /**
      * Apply ReplacementRun to make native measured text.
      *
-     * @param nativeBuilderPtr The native MeasuredParagraph builder pointer.
+     * @param nativeBuilderPtr The native NativeMeasuredParagraph builder pointer.
      * @param paintPtr The native paint pointer to be applied.
      * @param start The start offset in the copied buffer.
      * @param end The end offset in the copied buffer.
@@ -87,7 +81,7 @@ public class MeasuredParagraph_Delegate {
     @LayoutlibDelegate
     /*package*/ static void nAddReplacementRun(long nativeBuilderPtr, long paintPtr, int start,
             int end, float width) {
-        MeasuredParagraphBuilder builder = sBuilderManager.getDelegate(nativeBuilderPtr);
+        NativeMeasuredParagraph_Builder_Delegate builder = sBuilderManager.getDelegate(nativeBuilderPtr);
         if (builder == null) {
             return;
         }
@@ -97,42 +91,14 @@ public class MeasuredParagraph_Delegate {
     @LayoutlibDelegate
     /*package*/ static long nBuildNativeMeasuredParagraph(long nativeBuilderPtr,
             @NonNull char[] text, boolean computeHyphenation, boolean computeLayout) {
-        MeasuredParagraph_Delegate delegate = new MeasuredParagraph_Delegate();
+        NativeMeasuredParagraph_Delegate delegate = new NativeMeasuredParagraph_Delegate();
         delegate.mNativeBuilderPtr = nativeBuilderPtr;
-        return sManager.addNewDelegate(delegate);
+        return NativeMeasuredParagraph_Delegate.sManager.addNewDelegate(delegate);
     }
 
     @LayoutlibDelegate
     /*package*/ static void nFreeBuilder(long nativeBuilderPtr) {
         sBuilderManager.removeJavaReferenceFor(nativeBuilderPtr);
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static float nGetWidth(long nativePtr, int start, int end) {
-        // Ignore as it is not used for the layoutlib implementation
-        return 0.0f;
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static long nGetReleaseFunc() {
-        synchronized (MeasuredParagraph_Delegate.class) {
-            if (sFinalizer == -1) {
-                sFinalizer = NativeAllocationRegistry_Delegate.createFinalizer(
-                        sManager::removeJavaReferenceFor);
-            }
-        }
-        return sFinalizer;
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static int nGetMemoryUsage(long nativePtr) {
-        // Ignore as it is not used for the layoutlib implementation
-        return 0;
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static void nGetBounds(long nativePtr, char[] buf, int start, int end, Rect rect) {
-        // Ignore as it is not used for the layoutlib implementation
     }
 
     private static float measureText(long nativePaint, char[] text, int index, int count,
@@ -142,20 +108,6 @@ public class MeasuredParagraph_Delegate {
                 new BidiRenderer(null, paint, text).renderText(index, index + count, bidiFlags,
                         widths, 0, false);
         return bounds.right - bounds.left;
-    }
-
-    public static void computeRuns(long measuredTextPtr, Builder staticLayoutBuilder) {
-        MeasuredParagraph_Delegate delegate = sManager.getDelegate(measuredTextPtr);
-        if (delegate == null) {
-            return;
-        }
-        MeasuredParagraphBuilder builder = sBuilderManager.getDelegate(delegate.mNativeBuilderPtr);
-        if (builder == null) {
-            return;
-        }
-        for (Run run: builder.mRuns) {
-            run.addTo(staticLayoutBuilder);
-        }
     }
 
     private static class StyleRun extends Run {
@@ -189,9 +141,5 @@ public class MeasuredParagraph_Delegate {
             builder.mWidths[mStart] = mWidth;
             Arrays.fill(builder.mWidths, mStart + 1, mEnd, 0.0f);
         }
-    }
-
-    private static class MeasuredParagraphBuilder {
-        private final ArrayList<Run> mRuns = new ArrayList<>();
     }
 }
