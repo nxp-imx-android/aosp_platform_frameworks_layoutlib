@@ -45,6 +45,7 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.ResolvingAttributeSet;
 import android.view.View.OnAttachStateChangeListener;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
@@ -452,24 +453,16 @@ public final class BridgeInflater extends LayoutInflater {
             bc.setScrollYPos(view, value);
         }
         if (ReflectionUtils.isInstanceOf(view, RecyclerViewUtil.CN_RECYCLER_VIEW)) {
-            Integer resourceId = null;
-            String attrListItemValue = attrs.getAttributeValue(BridgeConstants.NS_TOOLS_URI,
-                    BridgeConstants.ATTR_LIST_ITEM);
+            int resourceId = 0;
             int attrItemCountValue = attrs.getAttributeIntValue(BridgeConstants.NS_TOOLS_URI,
                     BridgeConstants.ATTR_ITEM_COUNT, -1);
-            if (attrListItemValue != null && !attrListItemValue.isEmpty()) {
-                ResourceValue resValue = bc.getRenderResources().dereference(
-                        new UnresolvedResourceValue(attrListItemValue, ResourceNamespace.TODO(),
-                                mLayoutlibCallback.getImplicitNamespaces()));
-                if (resValue.isFramework()) {
-                    resourceId = Bridge.getResourceId(resValue.getResourceType(),
-                            resValue.getName());
-                } else {
-                    resourceId = mLayoutlibCallback.getOrGenerateResourceId(resValue.asReference());
+            if (attrs instanceof ResolvingAttributeSet) {
+                ResourceValue attrListItemValue =
+                        ((ResolvingAttributeSet) attrs).getResolvedAttributeValue(
+                                BridgeConstants.NS_TOOLS_URI, BridgeConstants.ATTR_LIST_ITEM);
+                if (attrListItemValue != null) {
+                    resourceId = bc.getResourceId(attrListItemValue.asReference(), 0);
                 }
-            }
-            if (resourceId == null) {
-                resourceId = 0;
             }
             RecyclerViewUtil.setAdapter(view, bc, mLayoutlibCallback, resourceId, attrItemCountValue);
         } else if (ReflectionUtils.isInstanceOf(view, DrawerLayoutUtil.CN_DRAWER_LAYOUT)) {

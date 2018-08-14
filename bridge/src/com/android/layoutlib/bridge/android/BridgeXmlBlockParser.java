@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.layoutlib.bridge.android;
-
 
 import com.android.ide.common.rendering.api.ILayoutPullParser;
 import com.android.ide.common.rendering.api.ResourceNamespace;
+import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.layoutlib.bridge.impl.ParserFactory;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -29,6 +28,7 @@ import android.annotation.Nullable;
 import android.content.res.XmlResourceParser;
 import android.util.AttributeSet;
 import android.util.BridgeXmlPullAttributes;
+import android.util.ResolvingAttributeSet;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,10 +39,9 @@ import java.io.Reader;
  * It delegates to both an instance of {@link XmlPullParser} and an instance of
  * XmlPullAttributes (for the {@link AttributeSet} part).
  */
-public class BridgeXmlBlockParser implements XmlResourceParser {
-
+public class BridgeXmlBlockParser implements XmlResourceParser, ResolvingAttributeSet {
     @NonNull private final XmlPullParser mParser;
-    @NonNull private final AttributeSet mAttrib;
+    @NonNull private final ResolvingAttributeSet mAttrib;
     @Nullable private final BridgeContext mContext;
     @NonNull private final ResourceNamespace mFileResourceNamespace;
 
@@ -493,4 +492,10 @@ public class BridgeXmlBlockParser implements XmlResourceParser {
         return mAttrib.getStyleAttribute();
     }
 
+    @Override
+    @Nullable
+    public ResourceValue getResolvedAttributeValue(@Nullable String namespace,
+            @NonNull String name) {
+        return mAttrib.getResolvedAttributeValue(namespace, name);
+    }
 }
