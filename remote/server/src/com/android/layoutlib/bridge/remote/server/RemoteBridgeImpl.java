@@ -111,7 +111,7 @@ public class RemoteBridgeImpl implements RemoteBridge {
             String projectKey = mCachedProjectKeys.putIfAbsent(remoteParams.getProjectKey(),
                     remoteParams.getProjectKey());
 
-            // Unpack the remote params and convert it into the local SessionParams
+            // Unpack the remote params and convert it into the local SessionParams.
             SessionParams params = new SessionParams(
                     new RemoteILayoutPullParserAdapter(remoteParams.getLayoutDescription()),
                     remoteParams.getRenderingMode(), projectKey,

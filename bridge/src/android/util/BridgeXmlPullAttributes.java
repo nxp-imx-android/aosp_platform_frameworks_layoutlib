@@ -78,7 +78,7 @@ public class BridgeXmlPullAttributes extends XmlPullAttributes {
         this(parser, context, xmlFileResourceNamespace, Bridge::getEnumValues, (ns, attrName) -> {
             ResourceValue attr =
                     context.getRenderResources().getUnresolvedResource(
-                            new ResourceReference(ns, ResourceType.ATTR, attrName));
+                            ResourceReference.attr(ns, attrName));
             return attr instanceof AttrResourceValue
                     ? ((AttrResourceValue) attr).getAttributeValues()
                     : null;
@@ -103,7 +103,6 @@ public class BridgeXmlPullAttributes extends XmlPullAttributes {
 
         if (BridgeConstants.NS_RESOURCES.equals(ns)) {
             return Bridge.getResourceId(ResourceType.ATTR, name);
-
         }
 
         // this is not an attribute in the android namespace, we query the customviewloader, if
@@ -113,7 +112,7 @@ public class BridgeXmlPullAttributes extends XmlPullAttributes {
             ResourceNamespace namespace = ResourceNamespace.fromNamespaceUri(ns);
             if (namespace != null) {
                 return mContext.getLayoutlibCallback().getOrGenerateResourceId(
-                        new ResourceReference(namespace, ResourceType.ATTR, name));
+                        ResourceReference.attr(namespace, name));
             }
         }
 
