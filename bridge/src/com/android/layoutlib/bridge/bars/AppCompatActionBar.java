@@ -18,7 +18,6 @@ package com.android.layoutlib.bridge.bars;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.RenderResources;
-import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams;
@@ -44,9 +43,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import static com.android.SdkConstants.ANDROID_NS_NAME_PREFIX;
-import static com.android.resources.ResourceType.MENU;
-
 /**
  * Assumes that the AppCompat library is present in the project's classpath and creates an
  * actionbar around it.
@@ -68,7 +64,7 @@ public class AppCompatActionBar extends BridgeActionBar {
         super(context, params);
         ResourceReference resource = context.createAppCompatResourceReference(
                 ResourceType.ID, "action_bar_activity_content");
-        int contentRootId = context.getProjectResourceId(resource, 0);
+        int contentRootId = context.getResourceId(resource, 0);
         View contentView = getDecorContent().findViewById(contentRootId);
 
         if (contentView != null) {
@@ -181,12 +177,12 @@ public class AppCompatActionBar extends BridgeActionBar {
     }
 
     private void inflateMenus() {
-        List<String> menuNames = getCallBack().getMenuIdNames();
-        if (menuNames.isEmpty()) {
+        List<ResourceReference> menuIds = getCallBack().getMenuIds();
+        if (menuIds.isEmpty()) {
             return;
         }
 
-        if (menuNames.size() > 1) {
+        if (menuIds.size() > 1) {
             // Supporting multiple menus means that we would need to instantiate our own supportlib
             // MenuInflater instances using reflection
             Bridge.getLog().fidelityWarning(LayoutLog.TAG_UNSUPPORTED,
@@ -194,21 +190,12 @@ public class AppCompatActionBar extends BridgeActionBar {
                     null, null, null);
         }
 
-        String name = menuNames.get(0);
-        int id;
-        if (name.startsWith(ANDROID_NS_NAME_PREFIX)) {
-            // Framework menu.
-            name = name.substring(ANDROID_NS_NAME_PREFIX.length());
-            id = mBridgeContext.getFrameworkResourceId(MENU, name, -1);
-        } else {
-            // Project menu.
-            id = mBridgeContext.getProjectResourceId(
-                    new ResourceReference(ResourceNamespace.TODO(), MENU, name), -1);
-        }
+        ResourceReference menuId = menuIds.get(0);
+        int id = mBridgeContext.getResourceId(menuId, -1);
         if (id < 1) {
             return;
         }
-        // Get toolbar decorator
+        // Get toolbar decorator.
         Object mDecorToolbar = getFieldValue(mWindowDecorActionBar, "mDecorToolbar");
         if (mDecorToolbar == null) {
             return;
