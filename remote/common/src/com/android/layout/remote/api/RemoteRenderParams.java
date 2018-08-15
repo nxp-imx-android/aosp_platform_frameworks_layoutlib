@@ -50,7 +50,7 @@ public interface RemoteRenderParams extends Remote {
 
     IImageFactory getImageFactory() throws RemoteException;
 
-    ResourceValue getAppIconResource() throws RemoteException;
+    ResourceValue getAppIcon() throws RemoteException;
 
     /** @deprectated Use {@link #getAppIconResource}. */
     @Deprecated

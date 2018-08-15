@@ -555,22 +555,18 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
      *
      * @param type the type of the resource
      * @param name the name of the resource.
-     *
      * @return an int containing the resource id.
      */
     public static int getResourceId(ResourceType type, String name) {
         Map<String, Integer> map = sRevRMap.get(type);
-        Integer value = null;
-        if (map != null) {
-            value = map.get(name);
-        }
-
+        Integer value = map == null ? null : map.get(name);
         return value == null ? sDynamicIds.getId(type, name) : value;
     }
 
     /**
      * Returns the list of possible enums for a given attribute name.
      */
+    @Nullable
     public static Map<String, Integer> getEnumValues(String attributeName) {
         if (sEnumValueMap != null) {
             return sEnumValueMap.get(attributeName);

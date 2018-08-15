@@ -8,14 +8,15 @@ import android.annotation.Nullable;
 import android.icu.text.BreakIterator;
 import android.text.Layout.BreakStrategy;
 import android.text.Layout.HyphenationFrequency;
+import android.text.NativeLineBreaker.LineBreaks;
 import android.text.Primitive.PrimitiveType;
-import android.text.StaticLayout.LineBreaks;
 
 import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.text.Segment;
+import libcore.util.NativeAllocationRegistry_Delegate;
 
 /**
  * Delegate that provides implementation for native methods in {@link android.text.StaticLayout}
@@ -24,7 +25,7 @@ import javax.swing.text.Segment;
  * by calls to methods of the same name in this delegate class.
  *
  */
-public class StaticLayout_Delegate {
+public class NativeLineBreaker_Delegate {
 
     private static final char CHAR_SPACE     = 0x20;
     private static final char CHAR_TAB       = 0x09;
@@ -33,7 +34,8 @@ public class StaticLayout_Delegate {
 
     // ---- Builder delegate manager ----
     private static final DelegateManager<Builder> sBuilderManager =
-        new DelegateManager<Builder>(Builder.class);
+        new DelegateManager<>(Builder.class);
+    private static long sFinalizer = -1;
 
     @LayoutlibDelegate
     /*package*/ static long nInit(
@@ -47,8 +49,14 @@ public class StaticLayout_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static void nFinish(long nativePtr) {
-        sBuilderManager.removeJavaReferenceFor(nativePtr);
+    /*package*/ static long nGetReleaseFunc() {
+        synchronized (NativeMeasuredParagraph_Delegate.class) {
+            if (sFinalizer == -1) {
+                sFinalizer = NativeAllocationRegistry_Delegate.createFinalizer(
+                        sBuilderManager::removeJavaReferenceFor);
+            }
+        }
+        return sFinalizer;
     }
 
     @LayoutlibDelegate
@@ -73,8 +81,7 @@ public class StaticLayout_Delegate {
             @NonNull float[] recycleWidths,
             @NonNull float[] recycleAscents,
             @NonNull float[] recycleDescents,
-            @NonNull int[] recycleFlags,
-            @NonNull float[] charWidths) {
+            @NonNull int[] recycleFlags) {
         Builder builder = sBuilderManager.getDelegate(nativePtr);
         if (builder == null) {
             return 0;
@@ -85,7 +92,7 @@ public class StaticLayout_Delegate {
         builder.mLineWidth = new LineWidth(firstWidth, firstWidthLineCount, restWidth);
         builder.mTabStopCalculator = new TabStops(variableTabStops, defaultTabStop);
 
-        MeasuredParagraph_Delegate.computeRuns(measuredTextPtr, builder);
+        NativeMeasuredParagraph_Delegate.computeRuns(measuredTextPtr, builder);
 
         // compute all possible breakpoints.
         BreakIterator it = BreakIterator.getLineInstance();
@@ -119,7 +126,6 @@ public class StaticLayout_Delegate {
                         builder.mTabStopCalculator);
         }
         builder.mLineBreaker.computeBreaks(recycle);
-        System.arraycopy(builder.mWidths, 0, charWidths, 0, builder.mWidths.length);
         return recycle.breaks.length;
     }
 

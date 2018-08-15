@@ -574,15 +574,7 @@ public final class BridgeTypedArray extends TypedArray {
         // then the xml attribute value was "resolved" which leads us to a ResourceValue with a
         // valid type, name, namespace and a potentially null value.
         if (!(resValue instanceof UnresolvedResourceValue)) {
-            // if this is a framework id
-            if (resValue.isFramework()) {
-                // look for idName in the android R classes
-                return mContext.getFrameworkResourceId(
-                        resValue.getResourceType(), resValue.getName(), defValue);
-            }
-
-            // look for idName in the project R class.
-            return mContext.getProjectResourceId(resValue.asReference(), defValue);
+            return mContext.getResourceId(resValue.asReference(), defValue);
         }
 
         // else, try to get the value, and resolve it somehow.
@@ -636,11 +628,7 @@ public final class BridgeTypedArray extends TypedArray {
                 }
                 // This calls the same method as in if(create), but doesn't create a dynamic id, if
                 // one is not found.
-                if (referencedId.getNamespace() == ResourceNamespace.ANDROID) {
-                    return mContext.getFrameworkResourceId(ResourceType.ID, resourceUrl.name, defValue);
-                } else {
-                    return mContext.getProjectResourceId(referencedId, defValue);
-                }
+                return mContext.getResourceId(referencedId, defValue);
             }
             else if (value.startsWith("@aapt:_aapt")) {
                 return mContext.getLayoutlibCallback().getOrGenerateResourceId(
@@ -918,17 +906,15 @@ public final class BridgeTypedArray extends TypedArray {
         } else {
             // get the styleable matching the resolved name
             RenderResources res = mContext.getRenderResources();
-            ResourceValue attr =
-                    res.getResolvedResource(
-                            new ResourceReference(
-                                    mNamespaces[index], ResourceType.ATTR, mNames[index]));
+            ResourceValue attr = res.getResolvedResource(
+                    ResourceReference.attr(mNamespaces[index], mNames[index]));
             if (attr instanceof AttrResourceValue) {
                 map = ((AttrResourceValue) attr).getAttributeValues();
             }
         }
 
-        if (map != null) {
-            // accumulator to store the value of the 1+ constants.
+        if (map != null && !map.isEmpty()) {
+            // Accumulator to store the value of the 1+ constants.
             int result = 0;
             boolean found = false;
 
@@ -944,7 +930,7 @@ public final class BridgeTypedArray extends TypedArray {
                         // Ignore and continue.
                     }
                 }
-                // split the value in case this is a mix of several flags.
+                // Split the value in case it is a mix of several flags.
                 String[] keywords = value.split("\\|");
                 for (String keyword : keywords) {
                     Integer i = map.get(keyword.trim());
