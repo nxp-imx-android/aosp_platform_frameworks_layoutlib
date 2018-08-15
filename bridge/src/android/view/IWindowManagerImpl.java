@@ -430,7 +430,7 @@ public class IWindowManagerImpl implements IWindowManager {
     }
 
     @Override
-    public int getPreferredOptionsPanelGravity() throws RemoteException {
+    public int getPreferredOptionsPanelGravity(int displayId) throws RemoteException {
         return Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
     }
 
