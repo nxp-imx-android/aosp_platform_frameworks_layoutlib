@@ -168,6 +168,11 @@ public class BridgePowerManager implements IPowerManager {
     }
 
     @Override
+    public int getLastSleepReason() {
+        return PowerManager.GO_TO_SLEEP_REASON_TIMEOUT;
+    }
+
+    @Override
     public void setDozeAfterScreenOff(boolean mode) throws RemoteException {
         // pass for now.
     }
