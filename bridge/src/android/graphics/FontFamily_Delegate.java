@@ -95,11 +95,11 @@ public class FontFamily_Delegate {
     /**
      * A class associating {@link Font} with its metadata.
      */
-    private static final class FontInfo {
+    public static final class FontInfo {
         @Nullable
-        Font mFont;
-        int mWeight;
-        boolean mIsItalic;
+        public Font mFont;
+        public int mWeight;
+        public boolean mIsItalic;
 
         @Override
         public boolean equals(Object o) {
@@ -288,7 +288,7 @@ public class FontFamily_Delegate {
     }
 
     @Nullable
-    /*package*/ static String getFontLocation() {
+    public static String getFontLocation() {
         return sFontLocation;
     }
 
@@ -510,7 +510,7 @@ public class FontFamily_Delegate {
     /**
      * Compute matching metric between two styles - 0 is an exact match.
      */
-    private static int computeMatch(@NonNull FontInfo font1, @NonNull FontInfo font2) {
+    public static int computeMatch(@NonNull FontInfo font1, @NonNull FontInfo font2) {
         int score = Math.abs(font1.mWeight - font2.mWeight);
         if (font1.mIsItalic != font2.mIsItalic) {
             score += 200;
@@ -525,9 +525,8 @@ public class FontFamily_Delegate {
      * @param srcFont the source font
      * @param outFont contains the desired font style. Updated to contain the derived font and
      *                its style
-     * @return outFont
      */
-    private void deriveFont(@NonNull FontInfo srcFont, @NonNull FontInfo outFont) {
+    public static void deriveFont(@NonNull FontInfo srcFont, @NonNull FontInfo outFont) {
         int desiredWeight = outFont.mWeight;
         int srcWeight = srcFont.mWeight;
         assert srcFont.mFont != null;
