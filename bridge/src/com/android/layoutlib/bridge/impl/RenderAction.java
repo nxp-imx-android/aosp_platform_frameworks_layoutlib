@@ -361,8 +361,8 @@ public abstract class RenderAction<T extends RenderParams> {
             density = Density.MEDIUM;
         }
 
-        config.screenWidthDp = hardwareConfig.getScreenWidth() / density.getDpiValue();
-        config.screenHeightDp = hardwareConfig.getScreenHeight() / density.getDpiValue();
+        config.screenWidthDp = hardwareConfig.getScreenWidth() * 160 / density.getDpiValue();
+        config.screenHeightDp = hardwareConfig.getScreenHeight() * 160 / density.getDpiValue();
         if (config.screenHeightDp < config.screenWidthDp) {
             //noinspection SuspiciousNameCombination
             config.smallestScreenWidthDp = config.screenHeightDp;
