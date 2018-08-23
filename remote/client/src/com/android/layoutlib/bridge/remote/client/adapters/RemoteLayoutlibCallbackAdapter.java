@@ -17,6 +17,7 @@ package com.android.layoutlib.bridge.remote.client.adapters;
 
 import com.android.ide.common.rendering.api.AdapterBinding;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
+import com.android.ide.common.rendering.api.LayoutlibCallback.ViewAttribute;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams.Key;
@@ -85,7 +86,7 @@ public class RemoteLayoutlibCallbackAdapter implements RemoteLayoutlibCallback {
     public Object getAdapterItemValue(ResourceReference adapterView, Object adapterCookie,
             ResourceReference itemRef, int fullPosition, int positionPerType,
             int fullParentPosition, int parentPositionPerType, ResourceReference viewRef,
-            LayoutlibCallback.ViewAttribute viewAttribute, Object defaultValue) {
+            ViewAttribute viewAttribute, Object defaultValue) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
