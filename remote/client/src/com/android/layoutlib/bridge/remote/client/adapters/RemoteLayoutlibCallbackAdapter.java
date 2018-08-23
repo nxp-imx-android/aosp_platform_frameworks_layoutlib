@@ -17,8 +17,8 @@
 package com.android.layoutlib.bridge.remote.client.adapters;
 
 import com.android.ide.common.rendering.api.AdapterBinding;
-import com.android.ide.common.rendering.api.IProjectCallback.ViewAttribute;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
+import com.android.ide.common.rendering.api.LayoutlibCallback.ViewAttribute;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams.Key;
