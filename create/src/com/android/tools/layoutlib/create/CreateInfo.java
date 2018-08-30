@@ -347,6 +347,12 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.FontFamily#mBuilderPtr",
         "android.graphics.Typeface#sDynamicTypefaceCache",
         "android.graphics.drawable.AdaptiveIconDrawable#sMask",
+        "android.animation.PropertyValuesHolder#sSetterPropertyMap",
+        "android.animation.PropertyValuesHolder#sGetterPropertyMap",
+        "android.animation.PropertyValuesHolder$IntPropertyValuesHolder#sJNISetterPropertyMap",
+        "android.animation.PropertyValuesHolder$FloatPropertyValuesHolder#sJNISetterPropertyMap",
+        "android.animation.PropertyValuesHolder$MultiFloatValuesHolder#sJNISetterPropertyMap",
+        "android.animation.PropertyValuesHolder$MultiIntValuesHolder#sJNISetterPropertyMap",
     };
 
     /**
