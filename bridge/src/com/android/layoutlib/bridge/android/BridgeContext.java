@@ -164,7 +164,7 @@ public class BridgeContext extends Context {
 
     private final Map<Object, Map<ResourceReference, ResourceValue>> mDefaultPropMaps =
             new IdentityHashMap<>();
-    private final Map<Object, String> mDefaultStyleMap = new IdentityHashMap<>();
+    private final Map<Object, ResourceReference> mDefaultStyleMap = new IdentityHashMap<>();
 
     // cache for TypedArray generated from StyleResourceValue object
     private TypedArrayCache mTypedArrayCache;
@@ -316,7 +316,7 @@ public class BridgeContext extends Context {
         return mDefaultPropMaps;
     }
 
-    public Map<Object, String> getDefaultStyles() {
+    public Map<Object, ResourceReference> getDefaultNamespacedStyles() {
         return mDefaultStyleMap;
     }
 
@@ -754,7 +754,7 @@ public class BridgeContext extends Context {
 
                 if (item != null) {
                     if (key != null) {
-                        mDefaultStyleMap.put(key, defStyleAttribute.getQualifiedName());
+                        mDefaultStyleMap.put(key, defStyleAttribute);
                     }
                     // item is a reference to a style entry. Search for it.
                     item = mRenderResources.resolveResValue(item);
@@ -781,7 +781,7 @@ public class BridgeContext extends Context {
                         item = mRenderResources.getStyle(value);
                         if (item != null) {
                             if (key != null) {
-                                mDefaultStyleMap.put(key, item.getName());
+                                mDefaultStyleMap.put(key, item.asReference());
                             }
 
                             defStyleValues = item;
