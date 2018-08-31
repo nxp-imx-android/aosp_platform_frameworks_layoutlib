@@ -162,12 +162,6 @@ public class IWindowManagerImpl implements IWindowManager {
     }
 
     @Override
-    public boolean inputMethodClientHasFocus(IInputMethodClient arg0) throws RemoteException {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
     public boolean isKeyguardLocked() throws RemoteException {
         // TODO Auto-generated method stub
         return false;
