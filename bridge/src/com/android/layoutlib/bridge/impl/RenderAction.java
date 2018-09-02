@@ -29,6 +29,7 @@ import com.android.resources.ScreenRound;
 import com.android.resources.ScreenSize;
 import com.android.tools.layoutlib.annotations.VisibleForTesting;
 
+import android.animation.PropertyValuesHolder_Accessor;
 import android.content.res.Configuration;
 import android.os.HandlerThread_Delegate;
 import android.util.DisplayMetrics;
@@ -286,6 +287,8 @@ public abstract class RenderAction<T extends RenderParams> {
             mContext.getRenderResources().setLogger(null);
         }
         ParserFactory.setParserFactory(null);
+
+        PropertyValuesHolder_Accessor.clearClassCaches();
     }
 
     public static BridgeContext getCurrentContext() {
@@ -358,8 +361,8 @@ public abstract class RenderAction<T extends RenderParams> {
             density = Density.MEDIUM;
         }
 
-        config.screenWidthDp = hardwareConfig.getScreenWidth() / density.getDpiValue();
-        config.screenHeightDp = hardwareConfig.getScreenHeight() / density.getDpiValue();
+        config.screenWidthDp = hardwareConfig.getScreenWidth() * 160 / density.getDpiValue();
+        config.screenHeightDp = hardwareConfig.getScreenHeight() * 160 / density.getDpiValue();
         if (config.screenHeightDp < config.screenWidthDp) {
             //noinspection SuspiciousNameCombination
             config.smallestScreenWidthDp = config.screenHeightDp;

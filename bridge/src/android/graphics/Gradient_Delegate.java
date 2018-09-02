@@ -107,14 +107,18 @@ public abstract class Gradient_Delegate extends Shader_Delegate {
                 for (int i  = 0 ; i <= GRADIENT_SIZE ; i++) {
                     // compute current position
                     float currentPos = (float)i/GRADIENT_SIZE;
-                    while (currentPos > mPositions[nextPos]) {
+                    while (nextPos < mPositions.length && currentPos > mPositions[nextPos]) {
                         prevPos = nextPos++;
                     }
 
-                    float percent = (currentPos - mPositions[prevPos]) /
-                            (mPositions[nextPos] - mPositions[prevPos]);
+                    if (nextPos == mPositions.length) {
+                        mGradient[i] = mColors[prevPos];
+                    } else {
+                        float percent = (currentPos - mPositions[prevPos]) /
+                                (mPositions[nextPos] - mPositions[prevPos]);
 
-                    mGradient[i] = computeColor(mColors[prevPos], mColors[nextPos], percent);
+                        mGradient[i] = computeColor(mColors[prevPos], mColors[nextPos], percent);
+                    }
                 }
             }
         }
