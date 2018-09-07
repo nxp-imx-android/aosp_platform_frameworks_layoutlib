@@ -328,7 +328,7 @@ public class FontFamily_Delegate {
 
     @LayoutlibDelegate
     /*package*/ static long nGetFamilyReleaseFunc() {
-        synchronized (ColorFilter_Delegate.class) {
+        synchronized (FontFamily_Delegate.class) {
             if (sFamilyFinalizer == -1) {
                 sFamilyFinalizer = NativeAllocationRegistry_Delegate.createFinalizer(
                         sManager::removeJavaReferenceFor);
