@@ -511,11 +511,11 @@ public class IWindowManagerImpl implements IWindowManager {
         throws RemoteException {}
 
     @Override
-    public void createInputConsumer(IBinder token, String name, InputChannel inputChannel)
-            throws RemoteException {}
+    public void createInputConsumer(IBinder token, String name, int displayId,
+            InputChannel inputChannel) throws RemoteException {}
 
     @Override
-    public boolean destroyInputConsumer(String name) throws RemoteException {
+    public boolean destroyInputConsumer(String name, int displayId) throws RemoteException {
         return false;
     }
 
