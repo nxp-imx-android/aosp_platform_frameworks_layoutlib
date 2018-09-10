@@ -161,6 +161,10 @@ public class RenderTests extends RenderTestBase {
     @Test
     public void testArrayCheck() throws ClassNotFoundException, FileNotFoundException {
         renderAndVerify("array_check.xml", "array_check.png");
+
+        // We expect fidelity warnings for Path.isConvex. Fail for anything else.
+        sRenderMessages.removeIf(
+                message -> message.equals("Font$Builder.nAddAxis is not supported."));
     }
 
     @Test
