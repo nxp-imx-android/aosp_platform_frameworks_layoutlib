@@ -786,7 +786,7 @@ public class GcSnapshot {
             g.setStroke(paint.getJavaStroke());
         }
         // set the composite.
-        setComposite(g, paint, compositeOnly || customShader, forceMode);
+        setComposite(g, paint, compositeOnly, forceMode);
 
         return g;
     }

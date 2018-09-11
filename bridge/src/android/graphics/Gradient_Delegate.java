@@ -62,6 +62,10 @@ public abstract class Gradient_Delegate extends Shader_Delegate {
         } else {
             assert colors.length == positions.length :
                     "color and position " + "arrays must be of equal length";
+            positions[0] = Math.min(Math.max(0, positions[0]), 1);
+            for (int i = 1; i < positions.length; i++) {
+                positions[i] = Math.min(Math.max(positions[i-1], positions[i]), 1);
+            }
         }
 
         mColors = colors;
@@ -107,11 +111,17 @@ public abstract class Gradient_Delegate extends Shader_Delegate {
                 for (int i  = 0 ; i <= GRADIENT_SIZE ; i++) {
                     // compute current position
                     float currentPos = (float)i/GRADIENT_SIZE;
-                    while (nextPos < mPositions.length && currentPos > mPositions[nextPos]) {
+
+                    if (currentPos < mPositions[0]) {
+                        mGradient[i] = mColors[0];
+                        continue;
+                    }
+
+                    while (nextPos < mPositions.length && currentPos >= mPositions[nextPos]) {
                         prevPos = nextPos++;
                     }
 
-                    if (nextPos == mPositions.length) {
+                    if (nextPos == mPositions.length || currentPos == prevPos) {
                         mGradient[i] = mColors[prevPos];
                     } else {
                         float percent = (currentPos - mPositions[prevPos]) /
