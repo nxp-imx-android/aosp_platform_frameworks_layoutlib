@@ -34,27 +34,20 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.res.FontResourcesParser;
 import android.graphics.FontFamily_Delegate.FontVariant;
+import android.graphics.fonts.FontFamily_Builder_Delegate;
 import android.graphics.fonts.FontVariationAxis;
-import android.text.FontConfig;
-import android.util.ArrayMap;
 
 import java.awt.Font;
 import java.io.IOException;
-import java.lang.ref.SoftReference;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
 
 import libcore.util.NativeAllocationRegistry_Delegate;
-
-import static android.graphics.FontFamily_Delegate.getFontLocation;
 
 /**
  * Delegate implementing the native methods of android.graphics.Typeface
@@ -81,16 +74,21 @@ public final class Typeface_Delegate {
     private static long sDefaultTypeface;
     @NonNull
     private final FontFamily_Delegate[] mFontFamilies;  // the reference to FontFamily_Delegate.
+    @NonNull
+    private final FontFamily_Builder_Delegate[] mFontFamilyBuilders;  // the reference to
+    // FontFamily_Builder_Delegate.
     /** @see Font#getStyle() */
     private final int mStyle;
     private final int mWeight;
-    private SoftReference<EnumMap<FontVariant, List<Font>>> mFontsCache = new SoftReference<>(null);
 
 
     // ---- Public Helper methods ----
 
-    public Typeface_Delegate(@NonNull FontFamily_Delegate[] fontFamilies, int style, int weight) {
+    private Typeface_Delegate(@NonNull FontFamily_Delegate[] fontFamilies,
+            @NonNull FontFamily_Builder_Delegate[] fontFamilyBuilders, int style,
+            int weight) {
         mFontFamilies = fontFamilies;
+        mFontFamilyBuilders = fontFamilyBuilders;
         mStyle = style;
         mWeight = weight;
     }
@@ -124,7 +122,8 @@ public final class Typeface_Delegate {
         }
 
         return sManager.addNewDelegate(
-                new Typeface_Delegate(delegate.mFontFamilies, style, delegate.mWeight));
+                new Typeface_Delegate(delegate.mFontFamilies, delegate.mFontFamilyBuilders, style,
+                        delegate.mWeight));
     }
 
     @LayoutlibDelegate
@@ -141,7 +140,8 @@ public final class Typeface_Delegate {
         int style = weight >= 600 ? (italic ? Typeface.BOLD_ITALIC : Typeface.BOLD) :
                 (italic ? Typeface.ITALIC : Typeface.NORMAL);
         return sManager.addNewDelegate(
-                new Typeface_Delegate(delegate.mFontFamilies, style, weight));
+                new Typeface_Delegate(delegate.mFontFamilies, delegate.mFontFamilyBuilders, style,
+                        weight));
     }
 
     @LayoutlibDelegate
@@ -172,16 +172,23 @@ public final class Typeface_Delegate {
             return 0;
         }
         Typeface_Delegate weightAlias =
-                new Typeface_Delegate(delegate.mFontFamilies, delegate.mStyle, weight);
+                new Typeface_Delegate(delegate.mFontFamilies, delegate.mFontFamilyBuilders,
+                        delegate.mStyle,
+                        weight);
         return sManager.addNewDelegate(weightAlias);
     }
 
     @LayoutlibDelegate
     /*package*/ static synchronized long nativeCreateFromArray(long[] familyArray, int weight,
             int italic) {
-        FontFamily_Delegate[] fontFamilies = new FontFamily_Delegate[familyArray.length];
-        for (int i = 0; i < familyArray.length; i++) {
-            fontFamilies[i] = FontFamily_Delegate.getDelegate(familyArray[i]);
+        List<FontFamily_Delegate> fontFamilies = new ArrayList<>();
+        List<FontFamily_Builder_Delegate> fontFamilyBuilders = new ArrayList<>();
+        for (long aFamilyArray : familyArray) {
+            try {
+                fontFamilies.add(FontFamily_Delegate.getDelegate(aFamilyArray));
+            } catch (ClassCastException e) {
+                fontFamilyBuilders.add(FontFamily_Builder_Delegate.getDelegate(aFamilyArray));
+            }
         }
         if (weight == Typeface.RESOLVE_BY_FONT_TABLE) {
             weight = 400;
@@ -191,7 +198,10 @@ public final class Typeface_Delegate {
         }
         int style = weight >= 600 ? (italic == 1 ? Typeface.BOLD_ITALIC : Typeface.BOLD) :
                 (italic == 1 ? Typeface.ITALIC : Typeface.NORMAL);
-        Typeface_Delegate delegate = new Typeface_Delegate(fontFamilies, style, weight);
+        Typeface_Delegate delegate =
+                new Typeface_Delegate(fontFamilies.toArray(new FontFamily_Delegate[0]),
+                fontFamilyBuilders.toArray(new FontFamily_Builder_Delegate[0]),
+                style, weight);
         return sManager.addNewDelegate(delegate);
     }
 
@@ -230,26 +240,6 @@ public final class Typeface_Delegate {
         return delegate.mWeight;
     }
 
-    @LayoutlibDelegate
-    /*package*/ static void buildSystemFallback(String xmlPath, String fontDir,
-            ArrayMap<String, Typeface> fontMap, ArrayMap<String, FontFamily[]> fallbackMap) {
-        Typeface.buildSystemFallback_Original(getFontLocation() + "/fonts.xml", fontDir, fontMap,
-                fallbackMap);
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static FontFamily createFontFamily(String familyName, List<FontConfig.Font> fonts,
-            String[] languageTags, int variant, Map<String, ByteBuffer> cache, String fontDir) {
-        FontFamily fontFamily = new FontFamily(languageTags, variant);
-        for (FontConfig.Font font : fonts) {
-            String fullPathName = fontDir + font.getFontName();
-            FontFamily_Delegate.addFont(fontFamily.mBuilderPtr, fullPathName, font.getWeight(),
-                    font.isItalic());
-        }
-        fontFamily.freeze();
-        return fontFamily;
-    }
-
     /**
      * Loads a single font or font family from disk
      */
@@ -267,7 +257,7 @@ public final class Typeface_Delegate {
             // create a block parser for the file
             Boolean psiParserSupport = context.getLayoutlibCallback().getFlag(
                     RenderParamsFlags.FLAG_KEY_XML_FILE_PARSER_SUPPORT);
-            XmlPullParser parser = null;
+            XmlPullParser parser;
             if (psiParserSupport != null && psiParserSupport) {
                 parser = context.getLayoutlibCallback().createXmlParserForPsiFile(path);
             } else {
@@ -323,57 +313,6 @@ public final class Typeface_Delegate {
 
     // ---- Private delegate/helper methods ----
 
-    private static List<Font> computeFonts(FontVariant variant, FontFamily_Delegate[] fontFamilies,
-            int inputWeight, int inputStyle) {
-        // Calculate the required weight based on style and weight of this typeface.
-        int weight = inputWeight + 50 +
-                ((inputStyle & Font.BOLD) == 0 ? 0 : FontFamily_Delegate.BOLD_FONT_WEIGHT_DELTA);
-        if (weight > 1000) {
-            weight = 1000;
-        } else if (weight < 100) {
-            weight = 100;
-        }
-        final boolean isItalic = (inputStyle & Font.ITALIC) != 0;
-        List<Font> fonts = new ArrayList<Font>(fontFamilies.length);
-        for (int i = 0; i < fontFamilies.length; i++) {
-            FontFamily_Delegate ffd = fontFamilies[i];
-            if (ffd != null && ffd.isValid()) {
-                Font font = ffd.getFont(weight, isItalic);
-                if (font != null) {
-                    FontVariant ffdVariant = ffd.getVariant();
-                    if (ffdVariant == FontVariant.NONE) {
-                        fonts.add(font);
-                        continue;
-                    }
-                    // We cannot open each font and get locales supported, etc to match the fonts.
-                    // As a workaround, we hardcode certain assumptions like Elegant and Compact
-                    // always appear in pairs.
-                    assert i < fontFamilies.length - 1;
-                    FontFamily_Delegate ffd2 = fontFamilies[++i];
-                    assert ffd2 != null;
-                    FontVariant ffd2Variant = ffd2.getVariant();
-                    Font font2 = ffd2.getFont(weight, isItalic);
-                    assert ffd2Variant != FontVariant.NONE && ffd2Variant != ffdVariant &&
-                            font2 != null;
-                    // Add the font with the matching variant to the list.
-                    if (variant == ffd.getVariant()) {
-                        fonts.add(font);
-                    } else {
-                        fonts.add(font2);
-                    }
-                } else {
-                    // The FontFamily is valid but doesn't contain any matching font. This means
-                    // that the font failed to load. We add null to the list of fonts. Don't throw
-                    // the warning just yet. If this is a non-english font, we don't want to warn
-                    // users who are trying to render only english text.
-                    fonts.add(null);
-                }
-            }
-        }
-
-        return fonts;
-    }
-
     /**
      * Return an Iterable of fonts that match the style and variant. The list is ordered
      * according to preference of fonts.
@@ -389,11 +328,12 @@ public final class Typeface_Delegate {
     public Iterable<Font> getFonts(final FontVariant variant) {
         assert variant != FontVariant.NONE;
 
-        return new FontsIterator(mFontFamilies, variant, mWeight, mStyle);
+        return new FontsIterator(mFontFamilies, mFontFamilyBuilders, variant, mWeight, mStyle);
     }
 
     private static class FontsIterator implements Iterator<Font>, Iterable<Font> {
         private final FontFamily_Delegate[] fontFamilies;
+        private final FontFamily_Builder_Delegate[] fontFamilyBuilders;
         private final int weight;
         private final boolean isItalic;
         private final FontVariant variant;
@@ -401,6 +341,7 @@ public final class Typeface_Delegate {
         private int index = 0;
 
         private FontsIterator(@NonNull FontFamily_Delegate[] fontFamilies,
+                @NonNull FontFamily_Builder_Delegate[] fontFamilyBuilders,
                 @NonNull FontVariant variant, int weight, int style) {
             // Calculate the required weight based on style and weight of this typeface.
             int boldExtraWeight =
@@ -408,23 +349,36 @@ public final class Typeface_Delegate {
             this.weight = Math.min(Math.max(100, weight + 50 + boldExtraWeight), 1000);
             this.isItalic = (style & Font.ITALIC) != 0;
             this.fontFamilies = fontFamilies;
+            this.fontFamilyBuilders = fontFamilyBuilders;
             this.variant = variant;
         }
 
         @Override
         public boolean hasNext() {
-            return index < fontFamilies.length;
+            return index < (fontFamilies.length + fontFamilyBuilders.length);
         }
 
         @Override
         @Nullable
         public Font next() {
-            FontFamily_Delegate ffd = fontFamilies[index++];
-            if (ffd == null || !ffd.isValid()) {
-                return null;
+            Font font;
+            FontVariant ffdVariant;
+            if (index < fontFamilies.length) {
+                FontFamily_Delegate ffd = fontFamilies[index++];
+                if (ffd == null || !ffd.isValid()) {
+                    return null;
+                }
+                font = ffd.getFont(weight, isItalic);
+                ffdVariant = ffd.getVariant();
+            } else {
+                FontFamily_Builder_Delegate ffd = fontFamilyBuilders[index++ - fontFamilies.length];
+                if (ffd == null) {
+                    return null;
+                }
+                font = ffd.getFont(weight, isItalic);
+                ffdVariant = ffd.getVariant();
             }
 
-            Font font = ffd.getFont(weight, isItalic);
             if (font == null) {
                 // The FontFamily is valid but doesn't contain any matching font. This means
                 // that the font failed to load. We add null to the list of fonts. Don't throw
@@ -433,25 +387,26 @@ public final class Typeface_Delegate {
                 return null;
             }
 
-            FontVariant ffdVariant = ffd.getVariant();
-            if (ffdVariant == FontVariant.NONE) {
+            if (ffdVariant == FontVariant.NONE || ffdVariant == variant) {
                 return font;
             }
 
             // We cannot open each font and get locales supported, etc to match the fonts.
             // As a workaround, we hardcode certain assumptions like Elegant and Compact
             // always appear in pairs.
-            assert index < fontFamilies.length - 1;
-            FontFamily_Delegate ffd2 = fontFamilies[index++];
-            assert ffd2 != null;
+            if (index < fontFamilies.length) {
+                assert index < fontFamilies.length - 1;
+                FontFamily_Delegate ffd2 = fontFamilies[index++];
+                assert ffd2 != null;
 
-            if (ffdVariant == variant) {
-                return font;
+                return ffd2.getFont(weight, isItalic);
+            } else {
+                assert index < fontFamilies.length + fontFamilyBuilders.length - 1;
+                FontFamily_Builder_Delegate ffd2 = fontFamilyBuilders[index++ - fontFamilies.length];
+                assert ffd2 != null;
+
+                return ffd2.getFont(weight, isItalic);
             }
-
-            Font font2 = ffd2.getFont(weight, isItalic);
-            // Add the font with the matching variant to the list.
-            return variant == ffd.getVariant() ? font : font2;
         }
 
         @NonNull
@@ -462,7 +417,8 @@ public final class Typeface_Delegate {
 
         @Override
         public Spliterator<Font> spliterator() {
-            return Spliterators.spliterator(iterator(), fontFamilies.length,
+            return Spliterators.spliterator(iterator(),
+                    fontFamilies.length + fontFamilyBuilders.length,
                     Spliterator.IMMUTABLE | Spliterator.SIZED);
         }
     }
