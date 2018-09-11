@@ -60,6 +60,8 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     private final ActionBarCallback mActionBarCallback = new ActionBarCallback();
     private final ClassLoader mModuleClassLoader;
     private String mAdaptiveIconMaskPath;
+    private boolean mSetUseShadow = true;
+    private boolean mHighShadowQuality;
 
     public LayoutLibTestCallback(ILogger logger, ClassLoader classLoader) {
         mLog = logger;
@@ -194,10 +196,32 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
         if (key.equals(RenderParamsFlags.FLAG_KEY_ADAPTIVE_ICON_MASK_PATH)) {
             return (T) mAdaptiveIconMaskPath;
         }
+        if (key.equals(RenderParamsFlags.FLAG_RENDER_HIGH_QUALITY_SHADOW)) {
+            return (T) new Boolean(mHighShadowQuality);
+        }
+        if (key.equals(RenderParamsFlags.FLAG_ENABLE_SHADOW)) {
+            return (T) new Boolean(mSetUseShadow);
+        }
         return null;
     }
 
     public void setAdaptiveIconMaskPath(String adaptiveIconMaskPath) {
         mAdaptiveIconMaskPath = adaptiveIconMaskPath;
+    }
+
+    /**
+     * Enables shadow from rendering. Shadow rendering is enabled by default.
+     * @param useShadow true to enable shadow. False to disable.
+     */
+    public void setUseShadow(boolean useShadow) {
+        mSetUseShadow = useShadow;
+    }
+
+    /**
+     * Sets high quality shadow rendering. Turned off by default.
+     * @param useHighQuality true to use high quality shadow. False otherwise.
+     */
+    public void setShadowQuality(boolean useHighQuality) {
+        mHighShadowQuality = useHighQuality;
     }
 }
