@@ -23,7 +23,7 @@ import android.annotation.NonNull;
 import android.text.FontConfig;
 import android.util.ArrayMap;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 
 import static android.graphics.FontFamily_Delegate.getFontLocation;
 
@@ -45,7 +45,7 @@ public class SystemFonts_Delegate {
     /*package*/ static FontConfig.Alias[] buildSystemFallback(@NonNull String xmlPath,
             @NonNull String fontDir,
             @NonNull ArrayMap<String, FontFamily[]> fallbackMap,
-            @NonNull HashSet<Font> availableFonts) {
+            @NonNull ArrayList<Font> availableFonts) {
         return SystemFonts.buildSystemFallback_Original(getFontLocation() + "/fonts.xml",
                 getFontLocation() + "/", fallbackMap, availableFonts);
     }
