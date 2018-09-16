@@ -39,8 +39,8 @@ built_core_classes := $(call java-lib-files,core-libart)
 built_ext_dep := $(call java-lib-deps,ext)
 built_ext_classes := $(call java-lib-files,ext)
 
-built_icudata_dep := $(call java-lib-deps,icu4j-icudata-host-jarjar,HOST)
-built_icutzdata_dep := $(call java-lib-deps,icu4j-icutzdata-host-jarjar,HOST)
+built_icudata_dep := $(call java-lib-deps,icu4j-icudata-jarjar,HOST)
+built_icutzdata_dep := $(call java-lib-deps,icu4j-icutzdata-jarjar,HOST)
 
 built_layoutlib_create_jar := $(call java-lib-files,layoutlib_create,HOST)
 
