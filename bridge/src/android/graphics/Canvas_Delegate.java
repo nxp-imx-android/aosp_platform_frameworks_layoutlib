@@ -184,9 +184,6 @@ public final class Canvas_Delegate extends BaseCanvas_Delegate {
         }
 
         Paint_Delegate paintDelegate = Paint_Delegate.getDelegate(paint);
-        if (paintDelegate == null) {
-            return 0;
-        }
 
         return canvasDelegate.saveLayer(new RectF(l, t, r, b),
                 paintDelegate, layerFlags);
