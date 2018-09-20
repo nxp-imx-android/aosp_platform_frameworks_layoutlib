@@ -589,7 +589,6 @@ public final class BridgeTypedArray extends TypedArray {
         // broken object. The namespace and resolver come from where the XML attribute was defined.
         ResourceNamespace contextNamespace = resValue.getNamespace();
         Resolver namespaceResolver = resValue.getNamespaceResolver();
-        resValue = null;
 
         if (value.startsWith("#")) {
             // this looks like a color, do not try to parse it
@@ -618,7 +617,7 @@ public final class BridgeTypedArray extends TypedArray {
 
                 // Look for the idName in project or android R class depending on isPlatform.
                 if (resourceUrl.isCreate()) {
-                    Integer idValue;
+                    int idValue;
                     if (referencedId.getNamespace() == ResourceNamespace.ANDROID) {
                         idValue = Bridge.getResourceId(ResourceType.ID, resourceUrl.name);
                     } else {
@@ -630,9 +629,10 @@ public final class BridgeTypedArray extends TypedArray {
                 // one is not found.
                 return mContext.getResourceId(referencedId, defValue);
             }
-            else if (value.startsWith("@aapt:_aapt")) {
-                return mContext.getLayoutlibCallback().getOrGenerateResourceId(
-                        new ResourceReference(ResourceNamespace.AAPT, ResourceType.AAPT, value));
+            else if (resourceUrl.type == ResourceType.AAPT) {
+                ResourceReference referencedId =
+                        resourceUrl.resolve(contextNamespace, namespaceResolver);
+                return mContext.getLayoutlibCallback().getOrGenerateResourceId(referencedId);
             }
         }
         // not a direct id valid reference. First check if it's an enum (this is a corner case
