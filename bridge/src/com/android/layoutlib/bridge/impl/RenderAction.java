@@ -38,7 +38,6 @@ import android.view.IWindowManagerImpl;
 import android.view.Surface;
 import android.view.ViewConfiguration_Accessor;
 import android.view.WindowManagerGlobal_Delegate;
-import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodManager_Accessor;
 
 import java.util.Locale;
@@ -241,9 +240,6 @@ public abstract class RenderAction<T extends RenderParams> {
         mContext.initResources();
         sCurrentContext = mContext;
 
-        // create an InputMethodManager
-        InputMethodManager.getInstance();
-
         // Set-up WindowManager
         // FIXME: find those out, and possibly add them to the render params
         boolean hasNavigationBar = true;
@@ -278,7 +274,7 @@ public abstract class RenderAction<T extends RenderParams> {
         ViewConfiguration_Accessor.clearConfigurations();
 
         // remove the InputMethodManager
-        InputMethodManager_Accessor.resetInstance();
+        InputMethodManager_Accessor.tearDownEditMode();
 
         sCurrentContext = null;
 
