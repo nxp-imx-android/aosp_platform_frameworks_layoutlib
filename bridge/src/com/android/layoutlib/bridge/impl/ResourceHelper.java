@@ -30,6 +30,7 @@ import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
 import com.android.ninepatch.NinePatch;
 import com.android.ninepatch.NinePatchChunk;
 import com.android.resources.Density;
+import com.android.resources.ResourceType;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -321,7 +322,8 @@ public final class ResourceHelper {
             }
 
             return null;
-        } else if (lowerCaseValue.endsWith(".xml") || stringValue.startsWith("@aapt:_aapt/")) {
+        } else if (lowerCaseValue.endsWith(".xml") ||
+                value.getResourceType() == ResourceType.AAPT) {
             // create a block parser for the file
             try {
                 BridgeXmlBlockParser blockParser = getXmlBlockParser(context, value);
