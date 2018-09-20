@@ -77,7 +77,6 @@ public class GcSnapshot {
     /** a local layer created with {@link Canvas#saveLayer(RectF, Paint, int)}.
      * If this is null, this does not mean there's no layer, just that the snapshot is not the
      * one that created the layer.
-     * @see #getLayerSnapshot()
      */
     private final Layer mLocalLayer;
     private final Paint_Delegate mLocalLayerPaint;
@@ -252,7 +251,6 @@ public class GcSnapshot {
 
     /**
      * Creates the root snapshot.
-     * {@link #setGraphics2D(Graphics2D)} will have to be called on it when possible.
      */
     private GcSnapshot() {
         mPrevious = null;
@@ -769,6 +767,10 @@ public class GcSnapshot {
         // make new one graphics
         Graphics2D g = (Graphics2D) original.create();
 
+        if (paint == null) {
+            return g;
+        }
+
         // configure it
 
         if (paint.isAntiAliased()) {
@@ -779,9 +781,8 @@ public class GcSnapshot {
         }
 
         // set the shader first, as it'll replace the color if it can be used it.
-        boolean customShader = false;
         if (!compositeOnly) {
-            customShader = setShader(g, paint);
+            setShader(g, paint);
             // set the stroke
             g.setStroke(paint.getJavaStroke());
         }
@@ -791,27 +792,22 @@ public class GcSnapshot {
         return g;
     }
 
-    private boolean setShader(Graphics2D g, Paint_Delegate paint) {
+    private void setShader(Graphics2D g, Paint_Delegate paint) {
         Shader_Delegate shaderDelegate = paint.getShader();
         if (shaderDelegate != null) {
             if (shaderDelegate.isSupported()) {
                 java.awt.Paint shaderPaint = shaderDelegate.getJavaPaint();
                 assert shaderPaint != null;
-                if (shaderPaint != null) {
-                    g.setPaint(shaderPaint);
-                    return true;
-                }
+                g.setPaint(shaderPaint);
+                return;
             } else {
                 Bridge.getLog().fidelityWarning(LayoutLog.TAG_SHADER,
-                        shaderDelegate.getSupportMessage(),
-                        null /*throwable*/, null /*data*/);
+                        shaderDelegate.getSupportMessage(), null, null, null);
             }
         }
 
         // if no shader, use the paint color
         g.setColor(new Color(paint.getColor(), true /*hasAlpha*/));
-
-        return false;
     }
 
     private void setComposite(Graphics2D g, Paint_Delegate paint, boolean usePaintAlpha,

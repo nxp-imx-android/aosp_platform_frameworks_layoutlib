@@ -1394,4 +1394,38 @@ public class RenderTests extends RenderTestBase {
         ViewInfo buttonInfo = rootInfo.getChildren().get(0);
         assertEquals(100, buttonInfo.getLeft());
     }
+
+    /**
+     * Test a vector drawable that uses trimStart and trimEnd. It also tests all the primitives
+     * for vector drawables (lines, moves and cubic and quadratic curves).
+     */
+    @Test
+    public void testCanvas() throws ClassNotFoundException {
+        // Create the layout pull parser.
+        LayoutPullParser parser = LayoutPullParser.createFromString(
+                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "              android:padding=\"16dp\"\n" +
+                        "              android:orientation=\"horizontal\"\n" +
+                        "              android:layout_width=\"fill_parent\"\n" +
+                        "              android:layout_height=\"fill_parent\">\n" +
+                        "    <com.android.layoutlib.test.myapplication.widgets.CanvasTestView\n" +
+                        "             android:layout_height=\"fill_parent\"\n" +
+                        "             android:layout_width=\"fill_parent\"\n" +
+                        "             android:src=\"@drawable/android\" />\n" + "\n" +
+                        "</LinearLayout>");
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .disableDecoration()
+                .build();
+
+        renderAndVerify(params, "canvas.png", TimeUnit.SECONDS.toNanos(2));
+    }
 }
