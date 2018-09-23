@@ -195,7 +195,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.view.View#isInEditMode",
         "android.view.ViewRootImpl#isInTouchMode",
         "android.view.WindowManagerGlobal#getWindowManagerService",
-        "android.view.inputmethod.InputMethodManager#getInstance",
+        "android.view.inputmethod.InputMethodManager#isInEditMode",
         "android.view.MenuInflater#registerMenu",
         "android.view.RenderNode#getMatrix",
         "android.view.RenderNode#nCreate",

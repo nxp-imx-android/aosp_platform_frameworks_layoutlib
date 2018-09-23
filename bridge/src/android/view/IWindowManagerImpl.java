@@ -34,8 +34,6 @@ import android.view.RemoteAnimationAdapter;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.policy.IKeyguardDismissCallback;
 import com.android.internal.policy.IShortcutService;
-import com.android.internal.view.IInputContext;
-import com.android.internal.view.IInputMethodClient;
 
 /**
  * Basic implementation of {@link IWindowManager} so that {@link Display} (and
@@ -180,8 +178,7 @@ public class IWindowManagerImpl implements IWindowManager {
     }
 
     @Override
-    public IWindowSession openSession(IWindowSessionCallback argn1, IInputMethodClient arg0,
-            IInputContext arg1) throws RemoteException {
+    public IWindowSession openSession(IWindowSessionCallback argn1) throws RemoteException {
         // TODO Auto-generated method stub
         return null;
     }
