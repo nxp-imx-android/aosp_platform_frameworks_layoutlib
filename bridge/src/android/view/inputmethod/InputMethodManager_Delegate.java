@@ -16,7 +16,6 @@
 
 package android.view.inputmethod;
 
-import com.android.internal.view.IInputMethodManager;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 
@@ -32,7 +31,7 @@ public class InputMethodManager_Delegate {
     // ---- Overridden methods ----
 
     @LayoutlibDelegate
-    private static boolean isInEditMode() {
+    /*package*/ static boolean isInEditMode() {
         return true;
     }
 }
