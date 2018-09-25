@@ -8,7 +8,7 @@ import android.annotation.Nullable;
 import android.icu.text.BreakIterator;
 import android.text.Layout.BreakStrategy;
 import android.text.Layout.HyphenationFrequency;
-import android.text.NativeLineBreaker.LineBreaks;
+import android.text.NativeLineBreaker.Result;
 import android.text.Primitive.PrimitiveType;
 
 import java.text.CharacterIterator;
@@ -37,6 +37,11 @@ public class NativeLineBreaker_Delegate {
         new DelegateManager<>(Builder.class);
     private static long sFinalizer = -1;
 
+    // ---- Result delegate manager ----
+    private static final DelegateManager<Result> sResultManager =
+        new DelegateManager<>(Result.class);
+    private static long sResultFinalizer = -1;
+
     @LayoutlibDelegate
     /*package*/ static long nInit(
             @BreakStrategy int breakStrategy,
@@ -60,7 +65,7 @@ public class NativeLineBreaker_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static int nComputeLineBreaks(
+    /*package*/ static long nComputeLineBreaks(
             /* non zero */ long nativePtr,
 
             // Inputs
@@ -72,16 +77,7 @@ public class NativeLineBreaker_Delegate {
             float restWidth,
             @Nullable int[] variableTabStops,
             int defaultTabStop,
-            int indentsOffset,
-
-            // Outputs
-            @NonNull LineBreaks recycle,
-            int recycleLength,
-            @NonNull int[] recycleBreaks,
-            @NonNull float[] recycleWidths,
-            @NonNull float[] recycleAscents,
-            @NonNull float[] recycleDescents,
-            @NonNull int[] recycleFlags) {
+            int indentsOffset) {
         Builder builder = sBuilderManager.getDelegate(nativePtr);
         if (builder == null) {
             return 0;
@@ -125,8 +121,55 @@ public class NativeLineBreaker_Delegate {
                 builder.mLineBreaker = new GreedyLineBreaker(primitives, builder.mLineWidth,
                         builder.mTabStopCalculator);
         }
-        builder.mLineBreaker.computeBreaks(recycle);
-        return recycle.breaks.length;
+        Result result = new Result(builder.mLineBreaker.computeBreaks());
+        return sResultManager.addNewDelegate(result);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static int nGetLineCount(long ptr) {
+        Result result = sResultManager.getDelegate(ptr);
+        return result.mResult.mLineBreakOffset.size();
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static int nGetLineBreakOffset(long ptr, int idx) {
+        Result result = sResultManager.getDelegate(ptr);
+        return result.mResult.mLineBreakOffset.get(idx);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static float nGetLineWidth(long ptr, int idx) {
+        Result result = sResultManager.getDelegate(ptr);
+        return result.mResult.mLineWidths.get(idx);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static float nGetLineAscent(long ptr, int idx) {
+        Result result = sResultManager.getDelegate(ptr);
+        return result.mResult.mLineAscents.get(idx);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static float nGetLineDescent(long ptr, int idx) {
+        Result result = sResultManager.getDelegate(ptr);
+        return result.mResult.mLineDescents.get(idx);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static int nGetLineFlag(long ptr, int idx) {
+        Result result = sResultManager.getDelegate(ptr);
+        return result.mResult.mLineFlags.get(idx);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static long nGetReleaseResultFunc() {
+        synchronized (NativeMeasuredParagraph_Delegate.class) {
+            if (sResultFinalizer == -1) {
+                sResultFinalizer = NativeAllocationRegistry_Delegate.createFinalizer(
+                        sBuilderManager::removeJavaReferenceFor);
+            }
+        }
+        return sResultFinalizer;
     }
 
     /**
@@ -193,5 +236,12 @@ public class NativeLineBreaker_Delegate {
         }
 
         abstract void addTo(Builder builder);
+    }
+
+    public static class Result {
+        final LineBreaker.Result mResult;
+        public Result(LineBreaker.Result result) {
+            mResult = result;
+        }
     }
 }

@@ -17,10 +17,11 @@
 package android.text;
 
 import android.annotation.NonNull;
-import android.text.NativeLineBreaker.LineBreaks;
+import android.text.NativeLineBreaker.Result;
 import android.text.Primitive.PrimitiveType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static android.text.Primitive.PrimitiveType.PENALTY_INFINITY;
@@ -35,8 +36,7 @@ public class GreedyLineBreaker extends LineBreaker {
     }
 
     @Override
-    public void computeBreaks(@NonNull LineBreaks lineBreaks) {
-        BreakInfo breakInfo = new BreakInfo();
+    public Result computeBreaks() {
         int lineNum = 0;
         float width = 0, printedWidth = 0;
         boolean breakFound = false, goodBreakFound = false;
@@ -47,6 +47,7 @@ public class GreedyLineBreaker extends LineBreaker {
         float maxWidth = mLineWidth.getLineWidth(lineNum);
 
         int numPrimitives = mPrimitives.size();
+        Result result = new Result();
         // greedily fit as many characters as possible on each line
         // loop over all primitives, and choose the best break point
         // (if possible, a break point without splitting a word)
@@ -77,18 +78,22 @@ public class GreedyLineBreaker extends LineBreaker {
                         i = goodBreakIndex; // no +1 because of i++
                         lineNum++;
                         maxWidth = mLineWidth.getLineWidth(lineNum);
-                        breakInfo.mBreaksList.add(mPrimitives.get(goodBreakIndex).location);
-                        breakInfo.mWidthsList.add(goodBreakWidth);
-                        breakInfo.mFlagsList.add(firstTabIndex < goodBreakIndex);
+                        result.mLineBreakOffset.add(mPrimitives.get(goodBreakIndex).location);
+                        result.mLineWidths.add(goodBreakWidth);
+                        result.mLineAscents.add(0f);
+                        result.mLineDescents.add(0f);
+                        result.mLineFlags.add(firstTabIndex < goodBreakIndex ? TAB_MASK : 0);
                         firstTabIndex = Integer.MAX_VALUE;
                     } else {
                         // must split a word because there is no other option
                         i = breakIndex; // no +1 because of i++
                         lineNum++;
                         maxWidth = mLineWidth.getLineWidth(lineNum);
-                        breakInfo.mBreaksList.add(mPrimitives.get(breakIndex).location);
-                        breakInfo.mWidthsList.add(breakWidth);
-                        breakInfo.mFlagsList.add(firstTabIndex < breakIndex);
+                        result.mLineBreakOffset.add(mPrimitives.get(breakIndex).location);
+                        result.mLineWidths.add(breakWidth);
+                        result.mLineAscents.add(0f);
+                        result.mLineDescents.add(0f);
+                        result.mLineFlags.add(firstTabIndex < breakIndex ? TAB_MASK : 0);
                         firstTabIndex = Integer.MAX_VALUE;
                     }
                     printedWidth = width = 0;
@@ -111,9 +116,11 @@ public class GreedyLineBreaker extends LineBreaker {
                 if (p.penalty == -PENALTY_INFINITY) {
                     lineNum++;
                     maxWidth = mLineWidth.getLineWidth(lineNum);
-                    breakInfo.mBreaksList.add(p.location);
-                    breakInfo.mWidthsList.add(printedWidth);
-                    breakInfo.mFlagsList.add(firstTabIndex < i);
+                    result.mLineBreakOffset.add(p.location);
+                    result.mLineWidths.add(printedWidth);
+                    result.mLineAscents.add(0f);
+                    result.mLineDescents.add(0f);
+                    result.mLineFlags.add(firstTabIndex < i ? TAB_MASK : 0);
                     firstTabIndex = Integer.MAX_VALUE;
                     printedWidth = width = 0;
                     goodBreakFound = breakFound = false;
@@ -144,49 +151,19 @@ public class GreedyLineBreaker extends LineBreaker {
         if (breakFound || goodBreakFound) {
             // output last break if there are more characters to output
             if (goodBreakFound) {
-                breakInfo.mBreaksList.add(mPrimitives.get(goodBreakIndex).location);
-                breakInfo.mWidthsList.add(goodBreakWidth);
-                breakInfo.mFlagsList.add(firstTabIndex < goodBreakIndex);
+                result.mLineBreakOffset.add(mPrimitives.get(goodBreakIndex).location);
+                result.mLineWidths.add(goodBreakWidth);
+                result.mLineAscents.add(0f);
+                result.mLineDescents.add(0f);
+                result.mLineFlags.add(firstTabIndex < goodBreakIndex ? TAB_MASK : 0);
             } else {
-                breakInfo.mBreaksList.add(mPrimitives.get(breakIndex).location);
-                breakInfo.mWidthsList.add(breakWidth);
-                breakInfo.mFlagsList.add(firstTabIndex < breakIndex);
+                result.mLineBreakOffset.add(mPrimitives.get(breakIndex).location);
+                result.mLineWidths.add(breakWidth);
+                result.mLineAscents.add(0f);
+                result.mLineDescents.add(0f);
+                result.mLineFlags.add(firstTabIndex < breakIndex ? TAB_MASK : 0);
             }
         }
-        breakInfo.copyTo(lineBreaks);
-    }
-
-    private static class BreakInfo {
-        List<Integer> mBreaksList = new ArrayList<Integer>();
-        List<Float> mWidthsList = new ArrayList<Float>();
-        List<Boolean> mFlagsList = new ArrayList<Boolean>();
-
-        public void copyTo(LineBreaks lineBreaks) {
-            if (lineBreaks.breaks.length != mBreaksList.size()) {
-                lineBreaks.breaks = new int[mBreaksList.size()];
-                lineBreaks.widths = new float[mWidthsList.size()];
-                lineBreaks.flags = new int[mFlagsList.size()];
-            }
-
-            int i = 0;
-            for (int b : mBreaksList) {
-                lineBreaks.breaks[i] = b;
-                i++;
-            }
-            i = 0;
-            for (float b : mWidthsList) {
-                lineBreaks.widths[i] = b;
-                i++;
-            }
-            i = 0;
-            for (boolean b : mFlagsList) {
-                lineBreaks.flags[i] = b ? TAB_MASK : 0;
-                i++;
-            }
-
-            mBreaksList = null;
-            mWidthsList = null;
-            mFlagsList = null;
-        }
+        return result;
     }
 }

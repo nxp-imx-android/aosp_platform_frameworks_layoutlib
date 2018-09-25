@@ -17,8 +17,8 @@
 package android.text;
 
 import android.annotation.NonNull;
-import android.text.NativeLineBreaker.LineBreaks;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,5 +39,13 @@ public abstract class LineBreaker {
         mTabStops = tabStops;
     }
 
-    public abstract void computeBreaks(@NonNull LineBreaks breakInfo);
+    public abstract Result computeBreaks();
+
+    public static class Result {
+        List<Integer> mLineBreakOffset = new ArrayList<>();
+        List<Float> mLineWidths = new ArrayList<>();
+        List<Float> mLineAscents = new ArrayList<>();
+        List<Float> mLineDescents = new ArrayList<>();
+        List<Integer> mLineFlags = new ArrayList<>();
+    }
 }
