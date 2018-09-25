@@ -963,8 +963,7 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testShadowFlagsNoShadows() throws Exception {
-        LayoutPullParser parser = LayoutPullParser.createFromPath(
-                "./testApp/MyApplication/src/main/res/layout/shadows_test.xml");
+        LayoutPullParser parser = createParserFromPath("shadows_test.xml");
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
