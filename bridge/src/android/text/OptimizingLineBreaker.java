@@ -17,10 +17,10 @@
 package android.text;
 
 import android.annotation.NonNull;
-import android.text.NativeLineBreaker.LineBreaks;
 import android.text.Primitive.PrimitiveType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -41,17 +41,20 @@ public class OptimizingLineBreaker extends LineBreaker {
     }
 
     @Override
-    public void computeBreaks(@NonNull LineBreaks breakInfo) {
+    public Result computeBreaks() {
+        Result result = new Result();
         int numBreaks = mPrimitives.size();
         assert numBreaks > 0;
         if (numBreaks == 1) {
             // This can be true only if it's an empty paragraph.
             Primitive p = mPrimitives.get(0);
             assert p.type == PrimitiveType.PENALTY;
-            breakInfo.breaks = new int[]{0};
-            breakInfo.widths = new float[]{p.width};
-            breakInfo.flags = new int[]{0};
-            return;
+            result.mLineBreakOffset.add(0);
+            result.mLineWidths.add(p.width);
+            result.mLineAscents.add(0f);
+            result.mLineDescents.add(0f);
+            result.mLineFlags.add(0);
+            return result;
         }
         Node[] opt = new Node[numBreaks];
         opt[0] = new Node(-1, 0, 0, 0, false);
@@ -120,35 +123,21 @@ public class OptimizingLineBreaker extends LineBreaker {
         }
 
         int idx = numBreaks - 1;
-        int count = opt[idx].mPrevCount;
-        resize(breakInfo, count);
         while (opt[idx].mPrev != -1) {
-            count--;
-            assert count >=0;
-
-            breakInfo.breaks[count] = mPrimitives.get(idx).location;
-            breakInfo.widths[count] = opt[idx].mWidth;
-            breakInfo.flags [count] = opt[idx].mHasTabs ? TAB_MASK : 0;
+            result.mLineBreakOffset.add(mPrimitives.get(idx).location);
+            result.mLineWidths.add(opt[idx].mWidth);
+            result.mLineAscents.add(0f);
+            result.mLineDescents.add(0f);
+            result.mLineFlags.add(opt[idx].mHasTabs ? TAB_MASK : 0);
             idx = opt[idx].mPrev;
         }
-    }
 
-    private static void resize(LineBreaks lineBreaks, int size) {
-        if (lineBreaks.breaks.length == size) {
-            return;
-        }
-        int[] breaks = new int[size];
-        float[] widths = new float[size];
-        int[] flags = new int[size];
-
-        int toCopy = Math.min(size, lineBreaks.breaks.length);
-        System.arraycopy(lineBreaks.breaks, 0, breaks, 0, toCopy);
-        System.arraycopy(lineBreaks.widths, 0, widths, 0, toCopy);
-        System.arraycopy(lineBreaks.flags, 0, flags, 0, toCopy);
-
-        lineBreaks.breaks = breaks;
-        lineBreaks.widths = widths;
-        lineBreaks.flags = flags;
+        Collections.reverse(result.mLineBreakOffset);
+        Collections.reverse(result.mLineWidths);
+        Collections.reverse(result.mLineAscents);
+        Collections.reverse(result.mLineDescents);
+        Collections.reverse(result.mLineFlags);
+        return result;
     }
 
     @NonNull
