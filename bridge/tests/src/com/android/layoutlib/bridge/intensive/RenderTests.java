@@ -1460,4 +1460,9 @@ public class RenderTests extends RenderTestBase {
 
         renderAndVerify(params, "canvas.png", TimeUnit.SECONDS.toNanos(2));
     }
+
+    @Test
+    public void testTypedArrays() throws ClassNotFoundException, FileNotFoundException {
+        renderAndVerify("typed_array.xml", "typed_arrays.png");
+    }
 }
