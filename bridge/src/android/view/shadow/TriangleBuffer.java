@@ -27,7 +27,7 @@ import static android.view.math.Math3DHelper.min;
 /**
  * 2D Triangle buffer element that colours using z value. (z scale set).
  */
-public class TriangleBuffer {
+class TriangleBuffer {
     int mWidth;
     int mHeight;
     int mImgWidth;
@@ -56,9 +56,36 @@ public class TriangleBuffer {
         mData = new int[width * height];
     }
 
-    public void drawTriangles(float[] strip,float scale) {
-        float m = Math.max((mMaxX - mMinX), (mMaxY - mMinY));
+    public void drawTriangles(int[] index, float[] vert, float[] color,float scale) {
+        int indexSize = index.length / 3;
+        for (int i = 0; i < indexSize; i++) {
+            int vIndex = index[i * 3 + 0];
+            float vx = vert[vIndex * 2 + 0];
+            float vy = vert[vIndex * 2 + 1];
+            float c =  scale*color[vIndex * 4 + 3];
+            float fx3 = vx, fy3 = vy, fz3 = c;
 
+            vIndex = index[i * 3 + 1];
+            vx = vert[vIndex * 2 + 0];
+            vy = vert[vIndex * 2 + 1];
+            c =  scale*color[vIndex * 4 + 3];
+            float fx2 = vx, fy2 = vy, fz2 = c;
+
+            vIndex = index[i * 3 + 2];
+            vx = vert[vIndex * 2 + 0];
+            vy = vert[vIndex * 2 + 1];
+            c =  scale*color[vIndex * 4 + 3];
+            float fx1 = vx, fy1 = vy, fz1 = c;
+
+            triangleZBuffMin(mData, mImgWidth, mImgHeight, fx3, fy3, fz3, fx2, fy2,
+                    fz2, fx1, fy1, fz1);
+            triangleZBuffMin(mData, mImgWidth, mImgHeight, fx1, fy1, fz1, fx2, fy2,
+                    fz2, fx3, fy3, fz3);
+        }
+        mBitmap.setPixels(mData, 0, mWidth, 0, 0, mWidth, mHeight);
+    }
+
+    public void drawTriangles(float[] strip,float scale) {
         for (int i = 0; i < strip.length-8; i+=3) {
             float fx3 = strip[i], fy3 = strip[i+1], fz3 = scale* strip[i+2];
             float fx2 = strip[i+3], fy2 = strip[i+4], fz2 = scale* strip[i+5];

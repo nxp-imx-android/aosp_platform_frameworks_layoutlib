@@ -20,7 +20,7 @@ package android.view.shadow;
 /**
  * Model for spot shadow rendering. Assumes single light, single object.
  */
-public class ShadowConfig {
+class SpotShadowConfig {
     private final int mWidth;
     private final int mHeight;
 
@@ -40,7 +40,7 @@ public class ShadowConfig {
 
     private final float mShadowStrength;
 
-    private ShadowConfig(ShadowConfig.Builder builder) {
+    private SpotShadowConfig(SpotShadowConfig.Builder builder) {
         mWidth = builder.mWidth;
         mHeight = builder.mHeight;
         mLightRadius = builder.mLightRadius;
@@ -202,8 +202,8 @@ public class ShadowConfig {
             return this;
         }
 
-        public ShadowConfig build() {
-            return new ShadowConfig(this);
+        public SpotShadowConfig build() {
+            return new SpotShadowConfig(this);
         }
     }
 
