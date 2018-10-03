@@ -16,8 +16,6 @@
 
 package android.view.math;
 
-import com.android.tools.layoutlib.annotations.VisibleForTesting;
-
 public class Math3DHelper {
 
     private static final float EPSILON = 0.0000001f;
@@ -25,17 +23,19 @@ public class Math3DHelper {
     private Math3DHelper() { }
 
     /**
-     * [p1x+t*(p2x-p1x)=dx*t2+px,p1y+t*(p2y-p1y)=dy*t2+py],[t,t2];
+     * Calculates [p1x+t*(p2x-p1x)=dx*t2+px,p1y+t*(p2y-p1y)=dy*t2+py],[t,t2];
+     *
+     * @param d - dimension in which the poly is represented (supports 2 or 3D)
+     * @return float[]{t2, t, p1} or float[]{Float.NaN}
      */
-    private static float rayIntersectPoly(float[] poly, int polyLength, float px, float py,
-            float dx, float dy) {
-        // p2 = (p1 + 1) % length
+    public static float[] rayIntersectPoly(float[] poly, int polyLength, float px, float py,
+            float dx, float dy, int d) {
         int p1 = polyLength - 1;
         for (int p2 = 0; p2 < polyLength; p2++) {
-            float p1x = poly[p1 * 2 + 0];
-            float p1y = poly[p1 * 2 + 1];
-            float p2x = poly[p2 * 2 + 0];
-            float p2y = poly[p2 * 2 + 1];
+            float p1x = poly[p1 * d + 0];
+            float p1y = poly[p1 * d + 1];
+            float p2x = poly[p2 * d + 0];
+            float p2y = poly[p2 * d + 1];
             float div = (dx * (p1y - p2y) + dy * (p2x - p1x));
             if (div != 0) {
                 float t = (dx * (p1y - py) + dy * (px - p1x)) / div;
@@ -45,13 +45,13 @@ public class Math3DHelper {
                             + px * (p2y - p1y))
                             / div;
                     if (t2 > 0) {
-                        return t2;
+                        return new float[]{t2, t, p1};
                     }
                 }
             }
             p1 = p2;
         }
-        return Float.NaN;
+        return new float[]{Float.NaN};
     }
 
     public static void centroid2d(float[] poly, int len, float[] ret) {
@@ -437,11 +437,16 @@ public class Math3DHelper {
         return true;
     }
 
+    /**
+     * Imagine a donut shaped image and trying to create triangles from its centroid (like
+     * cutting a pie). This function performs such action (and also edge-case triangle strips
+     * generation) then returns the resulting triangle strips.
+     *
+     * @param retstrips - the resulting triangle strips
+     */
     public static void donutPie2(float[] penumbra, int penumbraLength,
-            float[] umbra,
-            int umbraLength,
-            int rays, int layers,
-            float strength, float[] retstrips) {
+            float[] umbra, int umbraLength, int rays, int layers, float strength,
+            float[] retstrips) {
         int rings = layers + 1;
 
         double step = Math.PI * 2 / rays;
@@ -456,8 +461,8 @@ public class Math3DHelper {
         for (int i = 0; i < rays; i++) {
             float dx = (float) Math.sin(Math.PI / 4 + step * i);
             float dy = (float) Math.cos(Math.PI / 4 + step * i);
-            t2[i] = rayIntersectPoly(umbra, umbraLength, cx, cy, dx, dy);
-            t1[i] = rayIntersectPoly(penumbra, penumbraLength, cx, cy, dx, dy);
+            t2[i] = rayIntersectPoly(umbra, umbraLength, cx, cy, dx, dy, 2)[0];
+            t1[i] = rayIntersectPoly(penumbra, penumbraLength, cx, cy, dx, dy, 2)[0];
         }
 
         int p = 0;
@@ -523,40 +528,19 @@ public class Math3DHelper {
     }
 
     /**
-     * For testing purpose.
-     * @return x, y coord ignoring z
-     */
-    @VisibleForTesting
-    public static int[][] flatten(float[] rect) {
-        int rectSize = rect.length/3;
-        int[] x = new int[rectSize];
-        int[] y = new int[rectSize];
-
-        for (int i = 0; i < rectSize; i++) {
-            x[i] = (int) rect[i*3];
-            y[i] = (int) rect[i*3 + 1];
-        }
-
-        return new int[][] { x, y };
-    }
-
-    /**
-     * For testing purpose.
      * @return Rect bound of flattened (ignoring z). LTRB
+     * @param dimension - 2D or 3D
      */
-    @VisibleForTesting
-    public static float[] flatBound(float[] poly) {
-        int polySize = poly.length/3;
+    public static float[] flatBound(float[] poly, int dimension) {
+        int polySize = poly.length/dimension;
         float left = poly[0];
         float right = poly[0];
         float top = poly[1];
         float bottom = poly[1];
-        float height = poly[2];
 
         for (int i = 0; i < polySize; i++) {
-            float x = poly[i*3];
-            float y = poly[i*3+1];
-            float z = poly[i*3+2];
+            float x = poly[i * dimension + 0];
+            float y = poly[i * dimension + 1];
 
             if (left > x) {
                 left = x;
@@ -569,12 +553,22 @@ public class Math3DHelper {
             } else if (bottom < y) {
                 bottom = y;
             }
-
-            if (height < z) {
-                height = z;
-            }
         }
-        return new float[]{left, top, right, bottom, height};
+        return new float[]{left, top, right, bottom};
     }
+
+    /**
+     * Translate the polygon to x and y
+     * @param dimension in what dimension is polygon represented (supports 2 or 3D).
+     */
+    public static void translate(float[] poly, float translateX, float translateY, int dimension) {
+        int polySize = poly.length/dimension;
+
+        for (int i = 0; i < polySize; i++) {
+            poly[i * dimension + 0] += translateX;
+            poly[i * dimension + 1] += translateY;
+        }
+    }
+
 }
 

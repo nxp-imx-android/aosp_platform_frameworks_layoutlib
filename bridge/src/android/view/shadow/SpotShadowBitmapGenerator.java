@@ -26,16 +26,17 @@ import android.view.math.Math3DHelper;
 /**
  * Generate spot shadow bitmap.
  */
-public class SpotShadowBitmapGenerator {
+class SpotShadowBitmapGenerator {
 
-    private final ShadowConfig mShadowConfig;
+    private final SpotShadowConfig mShadowConfig;
     private final TriangleBuffer mTriangle;
     private float[] mStrips;
     private float[] mLightSources;
     private float mTranslateX;
     private float mTranslateY;
 
-    public SpotShadowBitmapGenerator(ShadowConfig config) {
+    public SpotShadowBitmapGenerator(SpotShadowConfig config) {
+        // TODO: Reduce the buffer size based on shadow bounds.
         mTriangle = new TriangleBuffer();
         mShadowConfig = config;
         // For now assume no change to the world size
@@ -70,12 +71,11 @@ public class SpotShadowBitmapGenerator {
                 return;
             }
 
-
             // Bit of a hack to re-adjust spot shadow to fit correctly within parent canvas.
             // Problem is that outline passed is not a final position, which throws off our
             // whereas our shadow rendering algorithm, which requires pre-set range for
             // optimization purposes.
-            float[] shadowBounds = Math3DHelper.flatBound(mStrips);
+            float[] shadowBounds = Math3DHelper.flatBound(mStrips, 3);
 
             if ((shadowBounds[2] - shadowBounds[0]) > mShadowConfig.getWidth() ||
                     (shadowBounds[3] - shadowBounds[1]) > mShadowConfig.getHeight()) {
@@ -99,24 +99,16 @@ public class SpotShadowBitmapGenerator {
             } else if (shadowBounds[3] > mShadowConfig.getHeight()) {
                 mTranslateY = shadowBounds[3] - mShadowConfig.getHeight();
             }
-            translate(mStrips, mTranslateX, mTranslateY);
+            Math3DHelper.translate(mStrips, mTranslateX, mTranslateY, 3);
 
             mTriangle.drawTriangles(mStrips, mShadowConfig.getShadowStrength());
         } catch (IndexOutOfBoundsException|ArithmeticException mathError) {
-            Bridge.getLog().warning(LayoutLog.TAG_INFO,  "Arithmetic error while drawing shadow",
+            Bridge.getLog().warning(LayoutLog.TAG_INFO,  "Arithmetic error while drawing " +
+                            "spot shadow",
                     mathError);
         } catch (Exception ex) {
             Bridge.getLog().warning(LayoutLog.TAG_INFO,  "Error while drawing shadow",
                     ex);
-        }
-    }
-
-    private void translate(float[] poly, float translateX, float translateY) {
-        int polySize = poly.length/3;
-
-        for (int i = 0; i < polySize; i++) {
-            poly[i*3] += translateX;
-            poly[i*3 + 1] += translateY;
         }
     }
 
