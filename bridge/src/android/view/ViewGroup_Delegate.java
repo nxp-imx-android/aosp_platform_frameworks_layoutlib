@@ -30,6 +30,7 @@ import android.graphics.Path_Delegate;
 import android.graphics.Rect;
 import android.graphics.Region.Op;
 import android.view.animation.Transformation;
+import android.view.shadow.HighQualityShadowPainter;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -84,7 +85,11 @@ public class ViewGroup_Delegate {
         }
 
         if(outline.mMode == Outline.MODE_ROUND_RECT && outline.mRect != null) {
-            if (!highQualityShadow) {
+            if (highQualityShadow) {
+                float densityDpi = bridgeContext.getResources().getDisplayMetrics().densityDpi;
+                HighQualityShadowPainter.paintRectShadow(
+                        parent, outline, elevation, canvas, child.getAlpha(), densityDpi);
+            } else {
                 RectShadowPainter.paintShadow(outline, elevation, canvas, child.getAlpha());
             }
             return;

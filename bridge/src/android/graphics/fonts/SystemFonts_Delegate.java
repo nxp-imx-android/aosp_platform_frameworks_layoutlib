@@ -44,9 +44,10 @@ public class SystemFonts_Delegate {
     @LayoutlibDelegate
     /*package*/ static FontConfig.Alias[] buildSystemFallback(@NonNull String xmlPath,
             @NonNull String fontDir,
+            @NonNull FontCustomizationParser.Result oemCustomization,
             @NonNull ArrayMap<String, FontFamily[]> fallbackMap,
             @NonNull ArrayList<Font> availableFonts) {
         return SystemFonts.buildSystemFallback_Original(getFontLocation() + "/fonts.xml",
-                getFontLocation() + "/", fallbackMap, availableFonts);
+                getFontLocation() + "/", oemCustomization, fallbackMap, availableFonts);
     }
 }
