@@ -21,18 +21,26 @@ package android.view.shadow;
  */
 class ShadowConstants {
 
+    /**
+     * This is used as a factor by which to scale down the shadow bitmap. If we have world
+     * Width x Height, shadow bitmap will be Width/SCALE_DOWN x Height/SCALE_DOWN and during
+     * canvas draw the shadow will be scaled up, resulting faster perf (due to smaller bitmap) but
+     * blurrier (lower quality) shadow.
+     */
+    public static final int SCALE_DOWN = 5;
+
     public static final int SPOT_SHADOW_RAYS = 40;
-    public static final int SPOT_SHADOW_LAYERS = 13;
-    public static final int SPOT_SHADOW_LIGHT_RADIUS = 50;
+    public static final int SPOT_SHADOW_LAYERS = 1;
+    public static final int SPOT_SHADOW_LIGHT_RADIUS = 50 / SCALE_DOWN;
     public static final int SPOT_SHADOW_LIGHT_SOURCE_POINTS = 4;
-    public static final int SPOT_SHADOW_LIGHT_Z_HEIGHT_DP = 50;
-    public static final int SPOT_SHADOW_LIGHT_Z_EPSILON = 10;
+    public static final int SPOT_SHADOW_LIGHT_Z_HEIGHT_DP = 50 / SCALE_DOWN;
+    public static final int SPOT_SHADOW_LIGHT_Z_EPSILON = 10 / SCALE_DOWN;
     public static final float SPOT_SHADOW_STRENGTH = 0.3f;
 
     public static final float AMBIENT_SHADOW_EDGE_SCALE = 60f;
-    public static final float AMBIENT_SHADOW_SHADOW_BOUND = 0.02f;
+    public static final float AMBIENT_SHADOW_SHADOW_BOUND = 0.02f * SCALE_DOWN;
     public static final int AMBIENT_SHADOW_RAYS = 120;
-    public static final int AMBIENT_SHADOW_LAYERS = 10;
+    public static final int AMBIENT_SHADOW_LAYERS = 1;
     public static final float AMBIENT_SHADOW_STRENGTH = 1.0f;
 
     public static final int COORDINATE_SIZE = 3;
