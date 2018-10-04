@@ -16,11 +16,14 @@
 
 package android.view.shadow;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Outline;
 import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.ViewGroup;
+
+import static android.view.shadow.ShadowConstants.SCALE_DOWN;
 
 public class HighQualityShadowPainter {
 
@@ -31,18 +34,45 @@ public class HighQualityShadowPainter {
      */
     public static void paintRectShadow(ViewGroup parent, Outline outline, float elevation,
             Canvas canvas, float alpha, float densityDpi) {
-        int width = parent.getWidth();
-        int height = parent.getHeight();
+
+        if (!validate(elevation, densityDpi)) {
+            return;
+        }
+
+        int width = parent.getWidth() / SCALE_DOWN;
+        int height = parent.getHeight() / SCALE_DOWN;
 
         Rect rectBound = new Rect();
         if (!outline.getRect(rectBound)) {
             return;
         }
 
-        float[] poly = getPoly(rectBound, elevation);
+        rectBound.left /= SCALE_DOWN;
+        rectBound.right /= SCALE_DOWN;
+        rectBound.top /= SCALE_DOWN;
+        rectBound.bottom /= SCALE_DOWN;
+
+        float[] poly = getPoly(rectBound, elevation / SCALE_DOWN);
 
         paintAmbientShadow(poly, canvas, width, height);
-        paintSpotShadow(poly, rectBound, elevation, canvas, alpha, densityDpi, width, height);
+        paintSpotShadow(poly, rectBound, elevation / SCALE_DOWN,
+                canvas, alpha, densityDpi, width, height);
+    }
+
+    /**
+     * High quality shadow does not work well with object that is too high in elevation. Check if
+     * the object elevation is reasonable and returns true if shadow will work well. False other
+     * wise.
+     */
+    private static boolean validate(float elevation, float densityDpi) {
+        float scaledElevationPx = elevation / SCALE_DOWN;
+        float scaledSpotLightHeightPx = ShadowConstants.SPOT_SHADOW_LIGHT_Z_HEIGHT_DP *
+                (densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        if (scaledElevationPx > scaledSpotLightHeightPx) {
+            return false;
+        }
+
+        return true;
     }
 
     private static void paintAmbientShadow(float[] polygon, Canvas canvas, int width, int height) {
@@ -66,20 +96,14 @@ public class HighQualityShadowPainter {
             return;
         }
 
-        int save = canvas.save();
-        canvas.drawBitmap(generator.getBitmap(), -generator.getTranslateX(),
-                -generator.getTranslateY(), null);
-        canvas.restoreToCount(save);
+        drawScaled(canvas, generator.getBitmap(), (int) generator.getTranslateX(),
+                (int) generator.getTranslateY(), width, height);
     }
 
     private static void paintSpotShadow(float[] poly, Rect rectBound, float elevation, Canvas canvas, float alpha,
             float densityDpi, int width, int height) {
 
         // TODO: Use alpha later
-        // TODO: potential optimization with memory usage of light coords + poly vertices
-        //      - For Rect case, their size never changes
-        //      - After single-light-source CL, the light source coord does not change
-
         float lightZHeightPx = ShadowConstants.SPOT_SHADOW_LIGHT_Z_HEIGHT_DP * (densityDpi / DisplayMetrics.DENSITY_DEFAULT);
         if (lightZHeightPx - elevation < ShadowConstants.SPOT_SHADOW_LIGHT_Z_EPSILON) {
             // If the view is above or too close to the light source then return.
@@ -108,9 +132,25 @@ public class HighQualityShadowPainter {
             return;
         }
 
+        drawScaled(canvas, generator.getBitmap(), (int) generator.getTranslateX(),
+                (int) generator.getTranslateY(), width, height);
+    }
+
+    /**
+     * Draw the bitmap scaled up.
+     * @param translateX - offset in x axis by which the bitmap is shifted.
+     * @param translateY - offset in y axis by which the bitmap is shifted.
+     */
+    private static void drawScaled(Canvas canvas, Bitmap bitmap, int translateX, int translateY,
+            int width, int height) {
+        Rect dest = new Rect();
+        dest.left = -translateX * SCALE_DOWN;
+        dest.top = -translateY * SCALE_DOWN;
+        dest.right = (width * SCALE_DOWN) + dest.left;
+        dest.bottom = (height * SCALE_DOWN) + dest.top;
+
         int save = canvas.save();
-        canvas.drawBitmap(generator.getBitmap(), -generator.getTranslateX(),
-                -generator.getTranslateY(), null);
+        canvas.drawBitmap(bitmap, null, dest, null);
         canvas.restoreToCount(save);
     }
 
