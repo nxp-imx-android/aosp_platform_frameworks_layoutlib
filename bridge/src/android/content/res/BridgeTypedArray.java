@@ -765,6 +765,16 @@ public final class BridgeTypedArray extends TypedArray {
             case TYPE_REFERENCE:
                 outValue.resourceId = mResourceId[index];
                 return true;
+            case TYPE_INT_COLOR_ARGB4:
+            case TYPE_INT_COLOR_ARGB8:
+            case TYPE_INT_COLOR_RGB4:
+            case TYPE_INT_COLOR_RGB8:
+                ColorStateList colorStateList = getColorStateList(index);
+                if (colorStateList == null) {
+                    return false;
+                }
+                outValue.data = colorStateList.getDefaultColor();
+                return true;
             default:
                 // For back-compatibility, parse as float.
                 String s = getString(index);
