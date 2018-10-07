@@ -285,11 +285,6 @@ public class IWindowManagerImpl implements IWindowManager {
     }
 
     @Override
-    public void setFocusedApp(IBinder arg0, boolean arg1) throws RemoteException {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
     public void getInitialDisplaySize(int displayId, Point size) {
         // TODO Auto-generated method stub
     }
