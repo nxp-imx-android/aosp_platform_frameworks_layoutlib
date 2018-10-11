@@ -90,7 +90,8 @@ public class HighQualityShadowPainter {
         }
 
         int save = canvas.save();
-        canvas.drawBitmap(generator.getBitmap(), 0, 0, null);
+        canvas.drawBitmap(generator.getBitmap(), -generator.getTranslateX(),
+                -generator.getTranslateY(), null);
         canvas.restoreToCount(save);
     }
 
