@@ -24,19 +24,6 @@ import android.view.ViewGroup;
 
 public class HighQualityShadowPainter {
 
-    private static final int SHADOW_RAYS = 40;
-    private static final int SHADOW_LAYERS = 13;
-    private static final float SHADOW_STRENGTH = 0.4f;
-
-    private static final int LIGHT_RADIUS = 50;
-    private static final int LIGHT_SOURCE_POINTS = 4;
-
-    private static final int LIGHT_Z_HEIGHT_DP = 50;
-    private static final int LIGHT_Z_EPSILON = 10;
-
-    private static final int COORDINATE_SIZE = 3;
-    private static final int RECT_VERTICES_SIZE = 4;
-
     private HighQualityShadowPainter() { }
 
     /**
@@ -44,19 +31,6 @@ public class HighQualityShadowPainter {
      */
     public static void paintRectShadow(ViewGroup parent, Outline outline, float elevation,
             Canvas canvas, float alpha, float densityDpi) {
-
-        // TODO: Use alpha later
-        // TODO: potential optimization with memory usage of light coords + poly vertices
-        //      - For Rect case, their size never changes
-        //      - After single-light-source CL, the light source coord does not change
-
-        float lightZHeightPx = LIGHT_Z_HEIGHT_DP * (densityDpi / DisplayMetrics.DENSITY_DEFAULT);
-        if (lightZHeightPx - elevation < LIGHT_Z_EPSILON) {
-            // If the view is above or too close to the light source then return.
-            // This is done to somewhat simulate android behaviour.
-            return;
-        }
-
         int width = parent.getWidth();
         int height = parent.getHeight();
 
@@ -67,22 +41,67 @@ public class HighQualityShadowPainter {
 
         float[] poly = getPoly(rectBound, elevation);
 
+        paintAmbientShadow(poly, canvas, width, height);
+        paintSpotShadow(poly, rectBound, elevation, canvas, alpha, densityDpi, width, height);
+    }
+
+    private static void paintAmbientShadow(float[] polygon, Canvas canvas, int width, int height) {
+        // TODO: Consider re-using the triangle buffer here since the world stays consistent.
+        // TODO: Reduce the buffer size based on shadow bounds.
+
+        AmbientShadowConfig config = new AmbientShadowConfig.Builder()
+                .setSize(width, height)
+                .setPolygon(polygon)
+                .setEdgeScale(ShadowConstants.AMBIENT_SHADOW_EDGE_SCALE)
+                .setShadowBoundRatio(ShadowConstants.AMBIENT_SHADOW_SHADOW_BOUND)
+                .setShadowStrength(ShadowConstants.AMBIENT_SHADOW_STRENGTH)
+                .setRays(ShadowConstants.AMBIENT_SHADOW_RAYS)
+                .setLayers(ShadowConstants.AMBIENT_SHADOW_LAYERS)
+                .build();
+
+        AmbientShadowBitmapGenerator generator = new AmbientShadowBitmapGenerator(config);
+        generator.populateShadow();
+
+        if (!generator.isValid()) {
+            return;
+        }
+
+        int save = canvas.save();
+        canvas.drawBitmap(generator.getBitmap(), -generator.getTranslateX(),
+                -generator.getTranslateY(), null);
+        canvas.restoreToCount(save);
+    }
+
+    private static void paintSpotShadow(float[] poly, Rect rectBound, float elevation, Canvas canvas, float alpha,
+            float densityDpi, int width, int height) {
+
+        // TODO: Use alpha later
+        // TODO: potential optimization with memory usage of light coords + poly vertices
+        //      - For Rect case, their size never changes
+        //      - After single-light-source CL, the light source coord does not change
+
+        float lightZHeightPx = ShadowConstants.SPOT_SHADOW_LIGHT_Z_HEIGHT_DP * (densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        if (lightZHeightPx - elevation < ShadowConstants.SPOT_SHADOW_LIGHT_Z_EPSILON) {
+            // If the view is above or too close to the light source then return.
+            // This is done to somewhat simulate android behaviour.
+            return;
+        }
+
         float lightX = (rectBound.left + rectBound.right) / 2;
         float lightY = rectBound.top;
 
-        ShadowConfig config = new ShadowConfig.Builder()
+        SpotShadowConfig config = new SpotShadowConfig.Builder()
                 .setSize(width, height)
-                .setLayers(SHADOW_LAYERS)
-                .setRays(SHADOW_RAYS)
+                .setLayers(ShadowConstants.SPOT_SHADOW_LAYERS)
+                .setRays(ShadowConstants.SPOT_SHADOW_RAYS)
                 .setLightCoord(lightX, lightY, lightZHeightPx)
-                .setLightRadius(LIGHT_RADIUS)
-                .setLightSourcePoints(LIGHT_SOURCE_POINTS)
-                .setShadowStrength(SHADOW_STRENGTH)
-                .setPolygon(poly, RECT_VERTICES_SIZE)
+                .setLightRadius(ShadowConstants.SPOT_SHADOW_LIGHT_RADIUS)
+                .setLightSourcePoints(ShadowConstants.SPOT_SHADOW_LIGHT_SOURCE_POINTS)
+                .setShadowStrength(ShadowConstants.SPOT_SHADOW_STRENGTH)
+                .setPolygon(poly, ShadowConstants.RECT_VERTICES_SIZE)
                 .build();
 
         SpotShadowBitmapGenerator generator = new SpotShadowBitmapGenerator(config);
-
         generator.populateShadow();
 
         if (!generator.validate()) {
@@ -96,7 +115,8 @@ public class HighQualityShadowPainter {
     }
 
     private static float[] getPoly(Rect rect, float elevation) {
-        float[] poly = new float[RECT_VERTICES_SIZE * COORDINATE_SIZE];
+        float[] poly = new float[ShadowConstants.RECT_VERTICES_SIZE *
+                ShadowConstants.COORDINATE_SIZE];
 
         poly[0] = poly[9] = rect.left;
         poly[1] = poly[4] = rect.top;
