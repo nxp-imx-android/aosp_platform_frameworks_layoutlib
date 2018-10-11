@@ -536,7 +536,36 @@ public class Resources_Delegate {
 
     @LayoutlibDelegate
     static TypedArray obtainTypedArray(Resources resources, int id) throws NotFoundException {
-        throw new UnsupportedOperationException();
+        BridgeContext context = getContext(resources);
+        ResourceReference reference = context.resolveId(id);
+        RenderResources renderResources = context.getRenderResources();
+        ResourceValue value = renderResources.getResolvedResource(reference);
+
+        if (!(value instanceof ArrayResourceValue)) {
+            throw new NotFoundException("Array resource ID #0x" + Integer.toHexString(id));
+        }
+
+        ArrayResourceValue arrayValue = (ArrayResourceValue) value;
+        int length = arrayValue.getElementCount();
+        ResourceNamespace namespace = arrayValue.getNamespace();
+        BridgeTypedArray typedArray = newTypeArray(resources, length);
+
+        for (int i = 0; i < length; i++) {
+            ResourceValue elementValue;
+            ResourceUrl resourceUrl = ResourceUrl.parse(arrayValue.getElement(i));
+            if (resourceUrl != null) {
+                ResourceReference elementRef =
+                  resourceUrl.resolve(namespace, arrayValue.getNamespaceResolver());
+                elementValue = renderResources.getResolvedResource(elementRef);
+            } else {
+                elementValue = new ResourceValueImpl(namespace, ResourceType.STRING, "element" + i,
+                  arrayValue.getElement(i));
+            }
+            typedArray.bridgeSetValue(i, elementValue.getName(), namespace, i, elementValue);
+        }
+
+        typedArray.sealArray();
+        return typedArray;
     }
 
     @LayoutlibDelegate

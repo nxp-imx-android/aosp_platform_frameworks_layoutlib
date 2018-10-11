@@ -962,8 +962,40 @@ public class RenderTests extends RenderTestBase {
     }
 
     @Test
+    public void testShadowFlagsNoShadows() throws Exception {
+        LayoutPullParser parser = createParserFromPath("shadows_test.xml");
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+        layoutLibCallback.setUseShadow(false);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setConfigGenerator(ConfigGenerator.NEXUS_5)
+                .setCallback(layoutLibCallback)
+                .build();
+
+        renderAndVerify(params, "shadows_test_no_shadow.png");
+    }
+
+    @Test
     public void testRectangleShadow() throws Exception {
         renderAndVerify("shadows_test.xml", "shadows_test.png");
+    }
+
+    @Test
+    public void testHighQualityRectangleShadow() throws Exception {
+        LayoutPullParser parser = createParserFromPath("shadows_test.xml");
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+        layoutLibCallback.setShadowQuality(true);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setConfigGenerator(ConfigGenerator.NEXUS_5)
+                .setCallback(layoutLibCallback)
+                .build();
+
+        renderAndVerify(params, "shadows_test_high_quality.png");
     }
 
     @Test
@@ -1427,5 +1459,10 @@ public class RenderTests extends RenderTestBase {
                 .build();
 
         renderAndVerify(params, "canvas.png", TimeUnit.SECONDS.toNanos(2));
+    }
+
+    @Test
+    public void testTypedArrays() throws ClassNotFoundException, FileNotFoundException {
+        renderAndVerify("typed_array.xml", "typed_arrays.png");
     }
 }
