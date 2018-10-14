@@ -30,6 +30,7 @@ import android.text.TextUtils;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
+import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -310,6 +311,49 @@ public class BaseCanvas_Delegate {
                                 (int)left, (int)top,
                                 (int)(right - left), (int)(bottom - top),
                                 2 * (int)rx, 2 * (int)ry);
+                    }
+                });
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static void nDrawDoubleRoundRect(long nativeCanvas, float outerLeft,
+            float outerTop, float outerRight, float outerBottom, float outerRx, float outerRy,
+            float innerLeft, float innerTop, float innerRight, float innerBottom, float innerRx,
+            float innerRy, long nativePaint) {
+        nDrawDoubleRoundRect(nativeCanvas, outerLeft, outerTop, outerRight, outerBottom,
+                new float[]{outerRx, outerRy, outerRx, outerRy, outerRx, outerRy, outerRx, outerRy},
+                innerLeft, innerTop, innerRight, innerBottom,
+                new float[]{innerRx, innerRy, innerRx, innerRy, innerRx, innerRy, innerRx, innerRy},
+                nativePaint);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static void nDrawDoubleRoundRect(long nativeCanvas, float outerLeft,
+            float outerTop, float outerRight, float outerBottom, float[] outerRadii,
+            float innerLeft, float innerTop, float innerRight, float innerBottom,
+            float[] innerRadii, long nativePaint) {
+        draw(nativeCanvas, nativePaint, false /*compositeOnly*/, false /*forceSrcMode*/,
+                (graphics, paintDelegate) -> {
+                    RoundRectangle innerRect = new RoundRectangle(innerLeft, innerTop,
+                            innerRight - innerLeft, innerBottom - innerTop, innerRadii);
+                    RoundRectangle outerRect = new RoundRectangle(outerLeft, outerTop,
+                            outerRight - outerLeft, outerBottom - outerTop, outerRadii);
+
+                    int style = paintDelegate.getStyle();
+
+                    // draw
+                    if (style == Paint.Style.STROKE.nativeInt ||
+                            style == Paint.Style.FILL_AND_STROKE.nativeInt) {
+                        graphics.draw(innerRect);
+                        graphics.draw(outerRect);
+                    }
+
+                    if (style == Paint.Style.FILL.nativeInt ||
+                            style == Paint.Style.FILL_AND_STROKE.nativeInt) {
+                        Area outerArea = new Area(outerRect);
+                        Area innerArea = new Area(innerRect);
+                        outerArea.subtract(innerArea);
+                        graphics.fill(outerArea);
                     }
                 });
     }
