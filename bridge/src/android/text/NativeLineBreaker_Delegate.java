@@ -5,10 +5,10 @@ import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.graphics.text.LineBreaker.Result;
 import android.icu.text.BreakIterator;
 import android.text.Layout.BreakStrategy;
 import android.text.Layout.HyphenationFrequency;
-import android.text.NativeLineBreaker.Result;
 import android.text.Primitive.PrimitiveType;
 
 import java.text.CharacterIterator;
