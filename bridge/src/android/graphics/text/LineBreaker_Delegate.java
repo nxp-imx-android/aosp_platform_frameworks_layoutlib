@@ -1,15 +1,31 @@
-package android.text;
+/*
+ * Copyright (C) 2018 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package android.graphics.text;
 
 import com.android.layoutlib.bridge.impl.DelegateManager;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.graphics.text.LineBreaker.Result;
 import android.icu.text.BreakIterator;
+import android.text.Layout;
 import android.text.Layout.BreakStrategy;
 import android.text.Layout.HyphenationFrequency;
-import android.text.Primitive.PrimitiveType;
+import android.graphics.text.Primitive.PrimitiveType;
 
 import java.text.CharacterIterator;
 import java.util.ArrayList;
@@ -25,7 +41,7 @@ import libcore.util.NativeAllocationRegistry_Delegate;
  * by calls to methods of the same name in this delegate class.
  *
  */
-public class NativeLineBreaker_Delegate {
+public class LineBreaker_Delegate {
 
     private static final char CHAR_SPACE     = 0x20;
     private static final char CHAR_TAB       = 0x09;
@@ -55,7 +71,7 @@ public class NativeLineBreaker_Delegate {
 
     @LayoutlibDelegate
     /*package*/ static long nGetReleaseFunc() {
-        synchronized (NativeMeasuredParagraph_Delegate.class) {
+        synchronized (MeasuredText_Delegate.class) {
             if (sFinalizer == -1) {
                 sFinalizer = NativeAllocationRegistry_Delegate.createFinalizer(
                         sBuilderManager::removeJavaReferenceFor);
@@ -88,7 +104,7 @@ public class NativeLineBreaker_Delegate {
         builder.mLineWidth = new LineWidth(firstWidth, firstWidthLineCount, restWidth);
         builder.mTabStopCalculator = new TabStops(variableTabStops, defaultTabStop);
 
-        NativeMeasuredParagraph_Delegate.computeRuns(measuredTextPtr, builder);
+        MeasuredText_Delegate.computeRuns(measuredTextPtr, builder);
 
         // compute all possible breakpoints.
         BreakIterator it = BreakIterator.getLineInstance();
@@ -163,7 +179,7 @@ public class NativeLineBreaker_Delegate {
 
     @LayoutlibDelegate
     /*package*/ static long nGetReleaseResultFunc() {
-        synchronized (NativeMeasuredParagraph_Delegate.class) {
+        synchronized (MeasuredText_Delegate.class) {
             if (sResultFinalizer == -1) {
                 sResultFinalizer = NativeAllocationRegistry_Delegate.createFinalizer(
                         sBuilderManager::removeJavaReferenceFor);
@@ -220,7 +236,7 @@ public class NativeLineBreaker_Delegate {
     public static class Builder {
         char[] mText;
         float[] mWidths;
-        private LineBreaker mLineBreaker;
+        private BaseLineBreaker mLineBreaker;
         private int mBreakStrategy;
         private LineWidth mLineWidth;
         private TabStops mTabStopCalculator;
@@ -239,8 +255,8 @@ public class NativeLineBreaker_Delegate {
     }
 
     public static class Result {
-        final LineBreaker.Result mResult;
-        public Result(LineBreaker.Result result) {
+        final BaseLineBreaker.Result mResult;
+        public Result(BaseLineBreaker.Result result) {
             mResult = result;
         }
     }
