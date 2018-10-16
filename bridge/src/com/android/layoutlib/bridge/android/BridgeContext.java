@@ -1917,6 +1917,12 @@ public class BridgeContext extends Context {
     }
 
     @Override
+    public int getDisplayId() {
+        // pass
+        return 0;
+    }
+
+    @Override
     public void updateDisplay(int displayId) {
         // pass
     }
