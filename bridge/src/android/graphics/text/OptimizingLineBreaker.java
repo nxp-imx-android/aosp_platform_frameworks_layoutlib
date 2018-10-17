@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Android Open Source Project
+ * Copyright (C) 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package android.text;
+package android.graphics.text;
 
 import android.annotation.NonNull;
-import android.text.Primitive.PrimitiveType;
+import android.graphics.text.Primitive.PrimitiveType;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
-import static android.text.Primitive.PrimitiveType.PENALTY_INFINITY;
+import static android.graphics.text.Primitive.PrimitiveType.PENALTY_INFINITY;
 
 
 // Based on the native implementation of OptimizingLineBreaker in
@@ -33,7 +33,7 @@ import static android.text.Primitive.PrimitiveType.PENALTY_INFINITY;
  * A more complex version of line breaking where we try to prevent the right edge from being too
  * jagged.
  */
-public class OptimizingLineBreaker extends LineBreaker {
+public class OptimizingLineBreaker extends BaseLineBreaker {
 
     public OptimizingLineBreaker(@NonNull List<Primitive> primitives, @NonNull LineWidth lineWidth,
             @NonNull TabStops tabStops) {

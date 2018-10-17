@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,30 @@
  * limitations under the License.
  */
 
-package android.text;
+package android.graphics.text;
 
 import com.android.layoutlib.bridge.impl.DelegateManager;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import android.graphics.Rect;
-import android.text.NativeLineBreaker_Delegate.Builder;
-import android.text.NativeLineBreaker_Delegate.Run;
+import android.graphics.text.LineBreaker_Delegate.Builder;
+import android.graphics.text.LineBreaker_Delegate.Run;
 
 import libcore.util.NativeAllocationRegistry_Delegate;
 
 /**
- * Delegate that provides implementation for native methods in {@link android.text.NativeMeasuredParagraph}
+ * Delegate that provides implementation for native methods in
+ * {@link android.graphics.text.MeasuredText}
  * <p/>
  * Through the layoutlib_create tool, selected methods of StaticLayout have been replaced
  * by calls to methods of the same name in this delegate class.
  *
  */
-public class NativeMeasuredParagraph_Delegate {
+public class MeasuredText_Delegate {
 
     // ---- Builder delegate manager ----
-    protected static final DelegateManager<NativeMeasuredParagraph_Delegate> sManager =
-            new DelegateManager<>(NativeMeasuredParagraph_Delegate.class);
+    protected static final DelegateManager<MeasuredText_Delegate> sManager =
+            new DelegateManager<>(MeasuredText_Delegate.class);
     private static long sFinalizer = -1;
 
     protected long mNativeBuilderPtr;
@@ -49,7 +50,7 @@ public class NativeMeasuredParagraph_Delegate {
 
     @LayoutlibDelegate
     /*package*/ static long nGetReleaseFunc() {
-        synchronized (NativeMeasuredParagraph_Delegate.class) {
+        synchronized (MeasuredText_Delegate.class) {
             if (sFinalizer == -1) {
                 sFinalizer = NativeAllocationRegistry_Delegate.createFinalizer(
                         sManager::removeJavaReferenceFor);
@@ -76,12 +77,12 @@ public class NativeMeasuredParagraph_Delegate {
     }
 
     public static void computeRuns(long measuredTextPtr, Builder staticLayoutBuilder) {
-        NativeMeasuredParagraph_Delegate delegate = sManager.getDelegate(measuredTextPtr);
+        MeasuredText_Delegate delegate = sManager.getDelegate(measuredTextPtr);
         if (delegate == null) {
             return;
         }
-        NativeMeasuredParagraph_Builder_Delegate builder =
-                NativeMeasuredParagraph_Builder_Delegate.sBuilderManager.getDelegate(delegate.mNativeBuilderPtr);
+        MeasuredText_Builder_Delegate builder =
+                MeasuredText_Builder_Delegate.sBuilderManager.getDelegate(delegate.mNativeBuilderPtr);
         if (builder == null) {
             return;
         }

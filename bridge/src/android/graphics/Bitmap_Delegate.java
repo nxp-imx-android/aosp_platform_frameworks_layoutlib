@@ -30,11 +30,11 @@ import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import android.annotation.Nullable;
 import android.graphics.Bitmap.Config;
+import android.hardware.HardwareBuffer;
 import android.os.Parcel;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -621,6 +621,14 @@ public final class Bitmap_Delegate {
     /*package*/ static Bitmap nativeCreateHardwareBitmap(GraphicBuffer buffer) {
         Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED,
                 "Bitmap.nativeCreateHardwareBitmap() is not supported", null /*data*/);
+        return null;
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static Bitmap nativeWrapHardwareBufferBitmap(HardwareBuffer buffer,
+            float[] xyzD50, ColorSpace.Rgb.TransferParameters p) {
+        Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED,
+                "Bitmap.nativeWrapHardwareBufferBitmap() is not supported", null, null, null);
         return null;
     }
 
