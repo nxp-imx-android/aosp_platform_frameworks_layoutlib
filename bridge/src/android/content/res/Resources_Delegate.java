@@ -1100,15 +1100,14 @@ public class Resources_Delegate {
 
         ResourceUrl url = resourceUrlFromName(name, defType, defPackage);
         if (url != null) {
-            ResourceNamespace defNamespace =
-                    defPackage == null
-                            ? ResourceNamespace.RES_AUTO
-                            : ResourceNamespace.fromPackageName(defPackage);
+            if (ANDROID_PKG.equals(url.namespace)) {
+                return Bridge.getResourceId(url.type, url.name);
+            }
 
-            return ANDROID_PKG.equals(url.namespace)
-                    ? Bridge.getResourceId(url.type, url.name)
-                    : getLayoutlibCallback(resources).getOrGenerateResourceId(
-                            url.resolve(defNamespace, Resolver.EMPTY_RESOLVER));
+            if (getContext(resources).getPackageName().equals(url.namespace)) {
+                return getLayoutlibCallback(resources).getOrGenerateResourceId(
+                        new ResourceReference(ResourceNamespace.RES_AUTO, url.type, url.name));
+            }
         }
 
         return 0;
