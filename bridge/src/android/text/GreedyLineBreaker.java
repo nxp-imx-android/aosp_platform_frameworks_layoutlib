@@ -166,6 +166,8 @@ public class GreedyLineBreaker extends LineBreaker {
                 lineBreaks.breaks = new int[mBreaksList.size()];
                 lineBreaks.widths = new float[mWidthsList.size()];
                 lineBreaks.flags = new int[mFlagsList.size()];
+                lineBreaks.ascents = new float[mBreaksList.size()];
+                lineBreaks.descents = new float[mBreaksList.size()];
             }
 
             int i = 0;

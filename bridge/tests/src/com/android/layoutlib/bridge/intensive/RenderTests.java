@@ -1503,4 +1503,47 @@ public class RenderTests extends RenderTestBase {
                 TimeUnit.SECONDS.toNanos(2));
     }
 
+    @Test
+    public void testManyLineBreaks() throws Exception {
+        String layout =
+                "<FrameLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "              android:layout_width=\"match_parent\"\n" +
+                        "              android:layout_height=\"match_parent\">\n" + "\n" +
+                        "    <EditText\n" +
+                        "        android:layout_width=\"match_parent\"\n" +
+                        "        android:layout_height=\"wrap_content\"\n" +
+                        "        android:fallbackLineSpacing=\"true\"\n" +
+                        "        android:text=\"A very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very long text\"/>\n" +
+                        "</FrameLayout>";
+
+        LayoutPullParser parser = LayoutPullParser.createFromString(layout);
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .disableDecoration()
+                .build();
+
+        renderAndVerify(params, "many_line_breaks.png",
+                TimeUnit.SECONDS.toNanos(2));
+    }
+
 }
