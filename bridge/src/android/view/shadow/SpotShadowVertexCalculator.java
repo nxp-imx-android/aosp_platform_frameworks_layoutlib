@@ -21,7 +21,7 @@ import android.view.math.Math3DHelper;
 /**
  * Generates the vertices required for spot shadow and all other shadow-related rendering.
  */
-public class SpotShadowVertexCalculator {
+class SpotShadowVertexCalculator {
 
     private SpotShadowVertexCalculator() { }
 
@@ -72,7 +72,7 @@ public class SpotShadowVertexCalculator {
      * (bounds) of the shadow
      * @param layers - Number of layers for shadow. It determines intensity of pen-umbra
      * @param strength - Strength of the shadow overall [0-1]
-     * @param retstrips - Array mData to be filled
+     * @param retstrips - Array mData to be filled in format : {x1, y1, z1, x2, y2, z2}
      * @return 1 if successful, error code otherwise.
      */
     public static int calculateShadow(

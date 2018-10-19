@@ -1465,4 +1465,42 @@ public class RenderTests extends RenderTestBase {
     public void testTypedArrays() throws ClassNotFoundException, FileNotFoundException {
         renderAndVerify("typed_array.xml", "typed_arrays.png");
     }
+
+    /**
+     * Tests that the gradients are correctly displayed when using transparent colors
+     * and a wide range of offset values.
+     * <p/>
+     * http://b/112759140
+     */
+    @Test
+    public void testAnimatedVectorDrawableWithColorInterpolator() throws ClassNotFoundException {
+        // Create the layout pull parser.
+        LayoutPullParser parser = LayoutPullParser.createFromString(
+                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "              android:padding=\"16dp\"\n" +
+                        "              android:orientation=\"horizontal\"\n" +
+                        "              android:layout_width=\"match_parent\"\n" +
+                        "              android:layout_height=\"match_parent\">\n" +
+                        "    <ImageView\n" +
+                        "             android:layout_height=\"match_parent\"\n" +
+                        "             android:layout_width=\"match_parent\"\n" +
+                        "             android:src=\"@drawable/avd_color_interpolator\" />\n\n" +
+                        "</LinearLayout>");
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .disableDecoration()
+                .build();
+
+        renderAndVerify(params, "color_interpolation.png",
+                TimeUnit.SECONDS.toNanos(2));
+    }
+
 }
