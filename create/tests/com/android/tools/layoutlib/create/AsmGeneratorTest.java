@@ -61,7 +61,7 @@ public class AsmGeneratorTest {
     private File mTempFile;
 
     // ASM internal name for the the class in java package that should be refactored.
-    private static final String JAVA_CLASS_NAME = "notjava/lang/JavaClass";
+    private static final String JAVA_CLASS_NAME = "notjava.lang.JavaClass";
 
     @Before
     public void setUp() throws Exception {
@@ -87,7 +87,7 @@ public class AsmGeneratorTest {
     }
 
     @Test
-    public void testClassRenaming() throws IOException, LogAbortException {
+    public void testClassRenaming() throws IOException {
 
         ICreateInfo ci = new CreateInfoAdapter() {
             @Override
@@ -95,7 +95,7 @@ public class AsmGeneratorTest {
                 // classes to rename (so that we can replace them)
                 return new String[] {
                         "mock_android.view.View", "mock_android.view._Original_View",
-                        "not.an.actual.ClassName", "anoter.fake.NewClassName",
+                        "not.an.actual.ClassName", "another.fake.NewClassName",
                 };
             }
         };
@@ -118,7 +118,7 @@ public class AsmGeneratorTest {
     }
 
     @Test
-    public void testJavaClassRefactoring() throws IOException, LogAbortException {
+    public void testJavaClassRefactoring() throws IOException {
         ICreateInfo ci = new CreateInfoAdapter() {
             @Override
             public Class<?>[] getInjectedClasses() {
@@ -171,7 +171,7 @@ public class AsmGeneratorTest {
     }
 
     @Test
-    public void testClassRefactoring() throws IOException, LogAbortException {
+    public void testClassRefactoring() throws IOException {
         ICreateInfo ci = new CreateInfoAdapter() {
             @Override
             public Class<?>[] getInjectedClasses() {
@@ -214,7 +214,7 @@ public class AsmGeneratorTest {
     }
 
     @Test
-    public void testClassExclusion() throws IOException, LogAbortException {
+    public void testClassExclusion() throws IOException {
         ICreateInfo ci = new CreateInfoAdapter() {
             @Override
             public String[] getExcludedClasses() {
@@ -262,8 +262,8 @@ public class AsmGeneratorTest {
     }
 
     @Test
-    public void testMethodInjection() throws IOException, LogAbortException,
-            ClassNotFoundException, IllegalAccessException, InstantiationException,
+    public void testMethodInjection() throws IOException, ClassNotFoundException,
+            IllegalAccessException, InstantiationException,
             NoSuchMethodException, InvocationTargetException {
         ICreateInfo ci = new CreateInfoAdapter() {
             @Override
