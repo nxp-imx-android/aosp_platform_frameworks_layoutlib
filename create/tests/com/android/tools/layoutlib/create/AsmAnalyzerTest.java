@@ -20,7 +20,6 @@ package com.android.tools.layoutlib.create;
 import com.android.tools.layoutlib.create.AsmAnalyzer.DependencyVisitor;
 import com.android.tools.layoutlib.create.AsmAnalyzer.Result;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 
@@ -31,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -68,7 +66,6 @@ public class AsmAnalyzerTest {
         getDefaultAnalyzer().parseZip(MOCK_ANDROID_JAR, map, filesFound);
 
         assertArrayEquals(new String[] {
-                "notjava.lang.JavaClass",
                 "mock_android.dummy.DummyClass",
                 "mock_android.dummy.InnerTest",
                 "mock_android.dummy.InnerTest$1",
@@ -94,7 +91,8 @@ public class AsmAnalyzerTest {
                 "mock_android.widget.LinearLayout",
                 "mock_android.widget.LinearLayout$LayoutParams",
                 "mock_android.widget.TableLayout",
-                "mock_android.widget.TableLayout$LayoutParams"
+                "mock_android.widget.TableLayout$LayoutParams",
+                "notjava.lang.JavaClass",
             },
             map.keySet().toArray());
         assertArrayEquals(new String[] {"mock_android/data/dataFile"},
@@ -227,6 +225,7 @@ public class AsmAnalyzerTest {
         assertArrayEquals(new String[] { }, out_deps.keySet().toArray());
         assertArrayEquals(new String[] {
                 "mock_android.widget.LinearLayout",
+                "notjava.lang.JavaClass",
         }, keep.keySet().toArray());
     }
 }
