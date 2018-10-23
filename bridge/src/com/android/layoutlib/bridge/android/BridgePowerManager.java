@@ -44,6 +44,17 @@ public class BridgePowerManager implements IPowerManager {
         return false;
     }
 
+    @Override
+    public boolean setDynamicPowerSavings(boolean dynamicPowerSavingsEnabled, int disableThreshold)
+            throws RemoteException {
+        return false;
+    }
+
+    @Override
+    public int getPowerSaveMode() {
+        return 0;
+    }
+
     public PowerSaveState getPowerSaveState(int serviceType) {
         return null;
     }
