@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package android.view;
+package android.graphics;
 
 import com.android.layoutlib.bridge.impl.DelegateManager;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
-
-import android.graphics.Matrix;
 
 import libcore.util.NativeAllocationRegistry_Delegate;
 
