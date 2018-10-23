@@ -552,4 +552,17 @@ public class IWindowManagerImpl implements IWindowManager {
     @Override
     public void dontOverrideDisplayInfo(int displayId) throws RemoteException {
     }
+
+    @Override
+    public void freezeDisplayRotation(int displayId, int rotation) throws RemoteException {
+    }
+
+    @Override
+    public void thawDisplayRotation(int displayId) throws RemoteException {
+    }
+
+    @Override
+    public boolean isDisplayRotationFrozen(int displayId) throws RemoteException {
+        return false;
+    }
 }
