@@ -49,6 +49,7 @@ public class Font_Builder_Delegate {
     protected int mWeight;
     protected boolean mItalic;
     protected int mTtcIndex;
+    protected String filePath;
 
     @LayoutlibDelegate
     /*package*/ static long nInitBuilder() {
@@ -80,14 +81,15 @@ public class Font_Builder_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static long nBuild(
-            long builderPtr, ByteBuffer buffer, int weight, boolean italic, int ttcIndex) {
+    /*package*/ static long nBuild(long builderPtr, ByteBuffer buffer, String filePath, int weight,
+            boolean italic, int ttcIndex) {
         Font_Builder_Delegate font = sBuilderManager.getDelegate(builderPtr);
         if (font != null) {
             font.mBuffer = buffer;
             font.mWeight = weight;
             font.mItalic = italic;
             font.mTtcIndex = ttcIndex;
+            font.filePath = filePath;
         }
         return builderPtr;
     }
