@@ -42,8 +42,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
 
@@ -64,6 +66,8 @@ import libcore.util.NativeAllocationRegistry_Delegate;
 public final class Typeface_Delegate {
 
     public static final String SYSTEM_FONTS = "/system/fonts/";
+
+    private static final Map<String, FontFamily_Delegate[]> sGenericNativeFamilies = new HashMap<>();
 
     // ---- delegate manager ----
     private static final DelegateManager<Typeface_Delegate> sManager =
@@ -105,6 +109,7 @@ public final class Typeface_Delegate {
         // initialize Typeface because the SDK fonts location hasn't been set.
         if (FontFamily_Delegate.getFontLocation() != null) {
             Typeface.sDefaults = null;
+            sGenericNativeFamilies.clear();
         }
     }
 
@@ -309,6 +314,15 @@ public final class Typeface_Delegate {
     @LayoutlibDelegate
     /*package*/ static Typeface create(Typeface family, int style, boolean isItalic) {
         return Typeface.create_Original(family, style, isItalic);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static void nativeRegisterGenericFamily(String str, long nativePtr) {
+        Typeface_Delegate delegate = sManager.getDelegate(nativePtr);
+        if (delegate == null) {
+            return;
+        }
+        sGenericNativeFamilies.put(str, delegate.mFontFamilies);
     }
 
     // ---- Private delegate/helper methods ----
