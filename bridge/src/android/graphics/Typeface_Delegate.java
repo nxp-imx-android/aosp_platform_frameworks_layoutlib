@@ -289,7 +289,7 @@ public final class Typeface_Delegate {
                         null /*data*/);
             }
         } else {
-            typeface = Typeface.createFromResources(context.getAssets(), path, 0);
+            typeface = new Typeface.Builder(context.getAssets(), path).build();
         }
 
         return typeface;
