@@ -48,12 +48,14 @@ import com.android.layoutlib.bridge.impl.binding.FakeExpandableAdapter;
 import com.android.tools.layoutlib.java.System_Delegate;
 import com.android.util.Pair;
 
+import android.animation.AnimationHandler;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Fragment_Delegate;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap_Delegate;
+import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
+import android.graphics.drawable.AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate;
 import android.os.Looper;
 import android.preference.Preference_Delegate;
 import android.view.AttachInfo_Accessor;
@@ -82,6 +84,8 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -125,6 +129,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
     private List<ViewInfo> mSystemViewInfoList;
     private Layout.Builder mLayoutBuilder;
     private boolean mNewRenderSize;
+    private Bitmap mBitmap;
 
     private static final class PostInflateException extends Exception {
         private static final long serialVersionUID = 1L;
@@ -181,6 +186,8 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
         ILayoutPullParser layoutParser = params.getLayoutDescription();
         mBlockParser = new BridgeXmlBlockParser(layoutParser, context, layoutParser.getLayoutNamespace());
+
+        Bitmap.setDefaultDensity(params.getHardwareConfig().getDensity().getDpiValue());
 
         return SUCCESS.createResult();
     }
@@ -350,8 +357,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                     visitAllChildren(mViewRoot, 0, 0, params.getExtendedViewInfoMode(),
                     false);
 
-            Choreographer_Delegate.clearFrames();
-
             return SUCCESS.createResult();
         } catch (PostInflateException e) {
             return ERROR_INFLATION.createResult(e.getMessage(), e);
@@ -512,14 +517,17 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                     }
 
                     // create an Android bitmap around the BufferedImage
-                    Bitmap bitmap = Bitmap_Delegate.createBitmap(mImage,
-                            true /*isMutable*/, hardwareConfig.getDensity());
+                    mBitmap = Bitmap.createBitmap(mImage.getWidth(), mImage.getHeight(),
+                            Config.ARGB_8888);
+                    mBitmap.setPixels(mImage.getRGB(0, 0, mImage.getWidth(), mImage.getHeight(),
+                            null, 0, mImage.getWidth()), 0, mImage.getWidth(), 0, 0, mImage
+                            .getWidth(), mImage.getHeight());
 
                     if (mCanvas == null) {
                         // create a Canvas around the Android bitmap
-                        mCanvas = new Canvas(bitmap);
+                        mCanvas = new Canvas(mBitmap);
                     } else {
-                        mCanvas.setBitmap(bitmap);
+                        mCanvas.setBitmap(mBitmap);
                     }
 
                     boolean enableImageResizing =
@@ -557,13 +565,17 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                         renderAndBuildResult(mViewRoot, NOP_CANVAS);
 
                         // The first frame will initialize the animations
-                        Choreographer_Delegate.doFrame(initialTime);
                         mFirstFrameExecuted = true;
                     }
                     // Second frame will move the animations
-                    Choreographer_Delegate.doFrame(initialTime + mElapsedFrameTimeNanos);
+                    AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate.sFrameTime =
+                            mElapsedFrameTimeNanos / 1000000;
                 }
                 renderResult = renderAndBuildResult(mViewRoot, mCanvas);
+                int[] pixels = new int[mImage.getWidth() * mImage.getHeight()];
+                mBitmap.getPixels(pixels, 0, mImage.getWidth(), 0, 0, mImage.getWidth(),
+                        mImage.getHeight());
+                mImage.setRGB(0, 0, mImage.getWidth(), mImage.getHeight(), pixels, 0, mImage.getWidth());
             }
 
             mSystemViewInfoList =
@@ -1164,7 +1176,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         mContentRoot = null;
 
         if (createdLooper) {
-            Choreographer_Delegate.dispose();
             Bridge.cleanupThread();
         }
     }

@@ -45,6 +45,20 @@ public interface ICreateInfo {
     String[] getDelegateClassNatives();
 
     /**
+     * Returns the list of classes for which to create a delegate class that delegates all native
+     * methods to corresponding native methods. This is useful for classes that call native
+     * methods during static initialization.
+     * The list can be empty but must not be null.
+     */
+    String[] getDelegateClassNativesToNatives();
+
+    /**
+     * Returns the list of classes for which not to delegate any native method.
+     * The list can be empty but must not be null.
+     */
+    String[] getKeepClassNatives();
+
+    /**
      * Returns the list of classes to rename, must be an even list: the binary FQCN
      * of class to replace followed by the new FQCN.
      * The list can be empty but must not be null.
@@ -85,6 +99,13 @@ public interface ICreateInfo {
      * separated by a '#'.
      */
     String[] getPromotedFields();
+
+    /**
+     * Returns a list of methods which should be promoted to public visibility. The array values
+     * are in the form of the binary FQCN of the class containing the method and the method name
+     * separated by a '#'.
+     */
+    String[] getPromotedMethods();
 
     /**
      * Returns a list of classes to be promoted to public visibility.

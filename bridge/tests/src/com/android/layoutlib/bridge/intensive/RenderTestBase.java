@@ -27,7 +27,6 @@ import com.android.ide.common.resources.deprecated.ResourceRepository;
 import com.android.io.FolderWrapper;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
-import com.android.layoutlib.bridge.impl.DelegateManager;
 import com.android.layoutlib.bridge.intensive.setup.ConfigGenerator;
 import com.android.layoutlib.bridge.intensive.setup.LayoutLibTestCallback;
 import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser;
@@ -35,7 +34,6 @@ import com.android.layoutlib.bridge.intensive.util.ImageUtils;
 import com.android.layoutlib.bridge.intensive.util.ModuleClassLoader;
 import com.android.layoutlib.bridge.intensive.util.SessionParamsBuilder;
 import com.android.layoutlib.bridge.intensive.util.TestAssetRepository;
-import com.android.layoutlib.bridge.intensive.util.TestUtils;
 import com.android.tools.layoutlib.java.System_Delegate;
 import com.android.utils.ILogger;
 
@@ -61,6 +59,8 @@ import java.util.concurrent.TimeUnit;
 import com.google.android.collect.Lists;
 import com.google.common.collect.ImmutableMap;
 
+import static com.android.SdkConstants.PLATFORM_DARWIN;
+import static com.android.SdkConstants.currentPlatform;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -312,7 +312,8 @@ public class RenderTestBase {
         File buildProp = new File(PLATFORM_DIR, "build.prop");
         File attrs = new File(res, "values" + File.separator + "attrs.xml");
         sBridge = new Bridge();
-        sBridge.init(ConfigGenerator.loadProperties(buildProp), fontLocation, null,
+        sBridge.init(ConfigGenerator.loadProperties(buildProp), fontLocation,
+                PLATFORM_DIR + "/../../../../../com.android.runtime/etc/icu",
                 ConfigGenerator.getEnumMap(attrs), getLayoutLog());
         Bridge.getLock().lock();
         try {
@@ -329,11 +330,6 @@ public class RenderTestBase {
         sProjectResources = null;
         sLogger = null;
         sBridge = null;
-
-        TestUtils.gc();
-
-        System.out.println("Objects still linked from the DelegateManager:");
-        DelegateManager.dump(System.out);
     }
 
     @NonNull
@@ -377,6 +373,8 @@ public class RenderTestBase {
         try {
             String goldenImagePath = APP_TEST_DIR + "/golden/" + goldenImageName;
             ImageUtils.requireSimilar(goldenImagePath, image);
+            String emulatorImagePath = APP_TEST_DIR + "/emulator/" + goldenImageName;
+            ImageUtils.requireSimilar(emulatorImagePath, image);
         } catch (IOException e) {
             getLogger().error(e, e.getMessage());
         }
@@ -406,7 +404,7 @@ public class RenderTestBase {
     @Nullable
     protected static RenderResult renderAndVerify(SessionParams params, String goldenFileName)
             throws ClassNotFoundException {
-        return RenderTestBase.renderAndVerify(params, goldenFileName, -1);
+        return RenderTestBase.renderAndVerify(params, goldenFileName, TimeUnit.SECONDS.toNanos(2));
     }
 
     protected static LayoutLog getLayoutLog() {
@@ -572,7 +570,7 @@ public class RenderTestBase {
                 .setProjectResources(sProjectResources)
                 .setTheme("AppTheme", true)
                 .setRenderingMode(RenderingMode.NORMAL)
-                .setTargetSdk(22)
+                .setTargetSdk(27)
                 .setFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true)
                 .setAssetRepository(new TestAssetRepository(TEST_RES_DIR + "/" + APP_TEST_ASSET));
     }

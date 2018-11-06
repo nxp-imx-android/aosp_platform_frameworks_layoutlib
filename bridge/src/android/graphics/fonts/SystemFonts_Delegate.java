@@ -25,8 +25,6 @@ import android.util.ArrayMap;
 
 import java.util.ArrayList;
 
-import static android.graphics.FontFamily_Delegate.getFontLocation;
-
 /**
  * Delegate implementing the native methods of android.graphics.fonts.SystemFonts
  * <p>
@@ -41,13 +39,19 @@ import static android.graphics.FontFamily_Delegate.getFontLocation;
  */
 public class SystemFonts_Delegate {
 
+    private static String sFontLocation;
+
+    public static void setFontLocation(String fontLocation) {
+        sFontLocation = fontLocation;
+    }
+
     @LayoutlibDelegate
     /*package*/ static FontConfig.Alias[] buildSystemFallback(@NonNull String xmlPath,
             @NonNull String fontDir,
             @NonNull FontCustomizationParser.Result oemCustomization,
             @NonNull ArrayMap<String, FontFamily[]> fallbackMap,
             @NonNull ArrayList<Font> availableFonts) {
-        return SystemFonts.buildSystemFallback_Original(getFontLocation() + "/fonts.xml",
-                getFontLocation() + "/", oemCustomization, fallbackMap, availableFonts);
+        return SystemFonts.buildSystemFallback_Original(sFontLocation + "fonts.xml",
+                sFontLocation, oemCustomization, fallbackMap, availableFonts);
     }
 }

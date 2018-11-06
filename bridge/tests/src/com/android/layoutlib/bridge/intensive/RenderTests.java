@@ -160,7 +160,7 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testArrayCheck() throws ClassNotFoundException, FileNotFoundException {
-        renderAndVerify("array_check.xml", "array_check.png", false);
+        renderAndVerify("array_check.xml", "array_check.png", true);
 
         // We expect fidelity warnings for Path.isConvex. Fail for anything else.
         sRenderMessages.removeIf(
@@ -376,7 +376,6 @@ public class RenderTests extends RenderTestBase {
                 .setParser(parser)
                 .setCallback(layoutLibCallback)
                 .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
-                .disableDecoration()
                 .setRenderingMode(RenderingMode.V_SCROLL)
                 .build();
 
@@ -803,7 +802,7 @@ public class RenderTests extends RenderTestBase {
     @Test
     public void testFonts() throws ClassNotFoundException, FileNotFoundException {
         // TODO: styles seem to be broken in TextView
-        renderAndVerify("fonts_test.xml", "font_test.png", false);
+        renderAndVerify("fonts_test.xml", "font_test.png", true);
         sRenderMessages.removeIf(
                 message -> message.equals("Font$Builder.nAddAxis is not supported."));
     }
@@ -1024,7 +1023,7 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testRectangleShadow() throws Exception {
-        renderAndVerify("shadows_test.xml", "shadows_test.png", false);
+        renderAndVerify("shadows_test.xml", "shadows_test.png", true);
     }
 
     @Test
@@ -1467,7 +1466,7 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testTranslation() throws ClassNotFoundException, FileNotFoundException {
-        RenderResult res = renderAndVerify("translate_test.xml", "translate_test.png", false);
+        RenderResult res = renderAndVerify("translate_test.xml", "translate_test.png", true);
         ViewInfo rootInfo = res.getRootViews().get(0);
         ViewInfo buttonInfo = rootInfo.getChildren().get(0);
         assertEquals(100, buttonInfo.getLeft());
@@ -1509,7 +1508,7 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testTypedArrays() throws ClassNotFoundException, FileNotFoundException {
-        renderAndVerify("typed_array.xml", "typed_arrays.png", false);
+        renderAndVerify("typed_array.xml", "typed_arrays.png", true);
     }
 
     /**
@@ -1549,4 +1548,9 @@ public class RenderTests extends RenderTestBase {
                 TimeUnit.SECONDS.toNanos(2));
     }
 
+    @Test
+    public void testJustified() throws ClassNotFoundException, FileNotFoundException {
+        renderAndVerify("justified_inter_word.xml", "justified_inter_word.png", true);
+        renderAndVerify("justified_none.xml", "justified_none.png", true);
+    }
 }

@@ -79,6 +79,6 @@ public class VMRuntime_Delegate {
     /*package*/ static int getNotifyNativeInterval() {
         // This cannot return 0, otherwise it is responsible for triggering an exception
         // whenever trying to use a NativeAllocationRegistry with size 0
-        return 1;
+        return 128; // see art/runtime/gc/heap.h -> kNotifyNativeInterval
     }
 }

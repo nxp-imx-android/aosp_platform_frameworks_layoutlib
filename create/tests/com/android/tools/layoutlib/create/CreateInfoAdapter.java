@@ -39,6 +39,16 @@ class CreateInfoAdapter implements ICreateInfo {
     }
 
     @Override
+    public String[] getDelegateClassNativesToNatives() {
+        return EMPTY_STRING_ARRAY;
+    }
+
+    @Override
+    public String[] getKeepClassNatives() {
+        return EMPTY_STRING_ARRAY;
+    }
+
+    @Override
     public String[] getRenamedClasses() {
         return EMPTY_STRING_ARRAY;
     }
@@ -65,6 +75,11 @@ class CreateInfoAdapter implements ICreateInfo {
 
     @Override
     public String[] getPromotedFields() {
+        return EMPTY_STRING_ARRAY;
+    }
+
+    @Override
+    public String[] getPromotedMethods() {
         return EMPTY_STRING_ARRAY;
     }
 

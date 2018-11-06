@@ -1,0 +1,13 @@
+
+cc_library_host_static {
+    name: "liblayoutlib_helper",
+    srcs: [
+        "properties.cpp",
+    ],
+    cflags: [
+        "-Wno-unused-parameter",
+    ],
+    export_include_dirs: [
+        "include",
+    ],
+}

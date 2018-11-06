@@ -63,10 +63,6 @@ public class NativeAllocationRegistry_Delegate {
     /*package*/ static Runnable registerNativeAllocation(NativeAllocationRegistry registry,
             Object referent,
             long nativePtr) {
-        // Mark the object as already "natively" tracked.
-        // This allows the DelegateManager to dispose objects without waiting
-        // for an explicit call when the referent does not exist anymore.
-        sManager.markAsNativeAllocation(referent, nativePtr);
         if (referent == null) {
             throw new IllegalArgumentException("referent is null");
         }
@@ -94,13 +90,28 @@ public class NativeAllocationRegistry_Delegate {
     /*package*/ static Runnable registerNativeAllocation(NativeAllocationRegistry registry,
             Object referent,
             NativeAllocationRegistry.Allocator allocator) {
+        if (referent == null) {
+            throw new IllegalArgumentException("referent is null");
+        }
+
+        // Create the cleaner before running the allocator so that
+        // VMRuntime.registerNativeFree is eventually called if the allocate
+        // method throws an exception.
+        CleanerThunk thunk = registry.new CleanerThunk();
+        Cleaner cleaner = Cleaner.create(referent, thunk);
+        CleanerRunner result = new CleanerRunner(cleaner);
         long nativePtr = allocator.allocate();
-        return NativeAllocationRegistry_Delegate.registerNativeAllocation(registry, referent,
-                nativePtr);
+        if (nativePtr == 0) {
+            cleaner.clean();
+            return null;
+        }
+        registerNativeAllocation(registry.size);
+        thunk.setNativePtr(nativePtr);
+        return result;
     }
 
 
-        @LayoutlibDelegate
+    @LayoutlibDelegate
     /*package*/ static void applyFreeFunction(long freeFunction, long nativePtr) {
         // This method MIGHT run in the context of the finalizer thread. If the delegate method
         // crashes, it could bring down the VM. That's why we catch all the exceptions and ignore

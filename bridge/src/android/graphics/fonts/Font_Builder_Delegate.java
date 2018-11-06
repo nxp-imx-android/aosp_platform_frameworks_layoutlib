@@ -24,10 +24,10 @@ import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 import android.annotation.NonNull;
 import android.content.res.AssetManager;
 
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
+import java.nio.channels.FileChannel;
 
 import libcore.util.NativeAllocationRegistry_Delegate;
 
@@ -44,23 +44,8 @@ import libcore.util.NativeAllocationRegistry_Delegate;
  * @see DelegateManager
  */
 public class Font_Builder_Delegate {
-    protected static final DelegateManager<Font_Builder_Delegate> sBuilderManager =
-            new DelegateManager<>(Font_Builder_Delegate.class);
-    private static final DelegateManager<String> sAssetManager =
-            new DelegateManager<>(String.class);
-    private static long sFontFinalizer = -1;
+    private static DelegateManager<String> sAssetManager = new DelegateManager<>(String.class);
     private static long sAssetFinalizer = -1;
-
-    protected ByteBuffer mBuffer;
-    protected int mWeight;
-    protected boolean mItalic;
-    protected int mTtcIndex;
-    protected String filePath;
-
-    @LayoutlibDelegate
-    /*package*/ static long nInitBuilder() {
-        return sBuilderManager.addNewDelegate(new Font_Builder_Delegate());
-    }
 
     @LayoutlibDelegate
     /*package*/ static long nGetNativeAsset(
@@ -74,12 +59,12 @@ public class Font_Builder_Delegate {
         if (fullPath == null) {
             return null;
         }
-        try {
-            byte[] byteArray = Files.readAllBytes(new File(fullPath).toPath());
-            return ByteBuffer.wrap(byteArray);
+        try (FileInputStream fis = new FileInputStream(fullPath)) {
+            final FileChannel fc = fis.getChannel();
+            return fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
         } catch (IOException e) {
             Bridge.getLog().error(LayoutLog.TAG_MISSING_ASSET,
-                    "Error mapping font file " + fullPath, null, null, null);
+                    "Error reading font file " + fullPath, null, null, null);
             return null;
         }
     }
@@ -93,36 +78,5 @@ public class Font_Builder_Delegate {
             }
         }
         return sAssetFinalizer;
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static void nAddAxis(long builderPtr, int tag, float value) {
-        Bridge.getLog().fidelityWarning(LayoutLog.TAG_UNSUPPORTED,
-                "Font$Builder.nAddAxis is not supported.", null, null, null);
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static long nBuild(long builderPtr, ByteBuffer buffer, String filePath, int weight,
-            boolean italic, int ttcIndex) {
-        Font_Builder_Delegate font = sBuilderManager.getDelegate(builderPtr);
-        if (font != null) {
-            font.mBuffer = buffer;
-            font.mWeight = weight;
-            font.mItalic = italic;
-            font.mTtcIndex = ttcIndex;
-            font.filePath = filePath;
-        }
-        return builderPtr;
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static long nGetReleaseNativeFont() {
-        synchronized (Font_Builder_Delegate.class) {
-            if (sFontFinalizer == -1) {
-                sFontFinalizer = NativeAllocationRegistry_Delegate.createFinalizer(
-                        sBuilderManager::removeJavaReferenceFor);
-            }
-        }
-        return sFontFinalizer;
     }
 }

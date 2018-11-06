@@ -52,6 +52,7 @@ public class AsmGenerator {
     private Map<String, ClassReader> mKeep;
     /** All dependencies that must be completely stubbed. */
     private Map<String, ClassReader> mDeps;
+    private Map<String, ClassWriter> mDelegates = new HashMap<>();
     /** All files that are to be copied as-is. */
     private Map<String, InputStream> mCopyFiles;
     /** All classes where certain method calls need to be rewritten. */
@@ -77,8 +78,14 @@ public class AsmGenerator {
     private final Map<String, ICreateInfo.InjectMethodRunnable> mInjectedMethodsMap;
     /** A map { FQCN => set { field names } } which should be promoted to public visibility */
     private final Map<String, Set<String>> mPromotedFields;
+    /** A map { FQCN => set { method names } } which should be promoted to public visibility */
+    private final Map<String, Set<String>> mPromotedMethods;
     /** A list of classes to be promoted to public visibility */
     private final Set<String> mPromotedClasses;
+    /** A set of classes for which NOT to delegate any native method */
+    private final Set<String> mKeepNativeClasses;
+
+    private final Set<String> mDelegateAllNative;
 
     /**
      * Creates a new generator that can generate the output JAR with the stubbed classes.
@@ -183,10 +190,19 @@ public class AsmGenerator {
         mPromotedFields = new HashMap<>();
         addToMap(createInfo.getPromotedFields(), mPromotedFields);
 
+        mPromotedMethods = new HashMap<>();
+        addToMap(createInfo.getPromotedMethods(), mPromotedMethods);
+
         mInjectedMethodsMap = createInfo.getInjectedMethodsMap();
 
         mPromotedClasses =
                 Arrays.stream(createInfo.getPromotedClasses()).collect(Collectors.toSet());
+
+        mKeepNativeClasses =
+                Arrays.stream(createInfo.getKeepClassNatives()).collect(Collectors.toSet());
+
+        mDelegateAllNative =
+                Arrays.stream(createInfo.getDelegateClassNativesToNatives()).collect(Collectors.toSet());
     }
 
     /**
@@ -257,6 +273,13 @@ public class AsmGenerator {
             byte[] b = transform(cr, true);
             String name = classNameToEntryPath(transformName(cr.getClassName()));
             all.put(name, b);
+        }
+
+        for (Entry<String, ClassWriter> entry : mDelegates.entrySet()) {
+            ClassWriter value = entry.getValue();
+            value.visitEnd();
+            String name = classNameToEntryPath(entry.getKey());
+            all.put(name, value.toByteArray());
         }
 
         for (Entry<String, InputStream> entry : mCopyFiles.entrySet()) {
@@ -346,11 +369,21 @@ public class AsmGenerator {
         if (mInjectedMethodsMap.keySet().contains(binaryNewName)) {
             cv = new InjectMethodsAdapter(cv, mInjectedMethodsMap.get(binaryNewName));
         }
-        cv = StubClassAdapter.builder(mLog, cv)
-                .withDeleteReturns(mDeleteReturns.get(className))
-                .withNewClassName(newName)
-                .useOnlyStubNative(stubNativesOnly)
-                .build();
+
+        if (mDelegateAllNative.contains(binaryNewName)) {
+            Set<String> delegateMethods = mDelegateMethods.remove(className);
+            if (delegateMethods != null && !delegateMethods.isEmpty()) {
+                cv = new DelegateClassAdapter(mLog, cv, className, delegateMethods);
+            }
+            cv = new DelegateToNativeAdapter(mLog, cv, className, mDelegates, delegateMethods);
+        }
+        else if (!mKeepNativeClasses.contains(binaryNewName)) {
+            cv = StubClassAdapter.builder(mLog, cv)
+                    .withDeleteReturns(mDeleteReturns.get(className))
+                    .withNewClassName(newName)
+                    .useOnlyStubNative(stubNativesOnly)
+                    .build();
+        }
 
         Set<String> delegateMethods = mDelegateMethods.get(className);
         if (delegateMethods != null && !delegateMethods.isEmpty()) {
@@ -366,6 +399,10 @@ public class AsmGenerator {
         Set<String> promoteFields = mPromotedFields.get(className);
         if (promoteFields != null && !promoteFields.isEmpty()) {
             cv = new PromoteFieldClassAdapter(cv, promoteFields);
+        }
+        Set<String> promoteMethods = mPromotedMethods.get(className);
+        if (promoteMethods != null && !promoteMethods.isEmpty()) {
+            cv = new PromoteMethodClassAdapter(cv, promoteMethods);
         }
         if (!mPromotedClasses.isEmpty()) {
             cv = new PromoteClassClassAdapter(cv, mPromotedClasses);

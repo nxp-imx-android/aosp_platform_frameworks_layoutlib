@@ -47,6 +47,16 @@ public final class CreateInfo implements ICreateInfo {
     }
 
     @Override
+    public String[] getDelegateClassNativesToNatives() {
+        return DELEGATE_CLASS_NATIVES_TO_NATIVES;
+    }
+
+    @Override
+    public String[] getKeepClassNatives() {
+        return KEEP_CLASS_NATIVES;
+    }
+
+    @Override
     public String[] getRenamedClasses() {
         return RENAMED_CLASSES;
     }
@@ -81,6 +91,11 @@ public final class CreateInfo implements ICreateInfo {
     @Override
     public String[] getPromotedFields() {
         return PROMOTED_FIELDS;
+    }
+
+    @Override
+    public String[] getPromotedMethods() {
+        return PROMOTED_METHODS;
     }
 
     @Override
@@ -161,13 +176,9 @@ public final class CreateInfo implements ICreateInfo {
         "android.content.res.AssetManager#nativeCreateIdmapsForStaticOverlaysTargetingAndroid",
         "android.content.res.TypedArray#getValueAt",
         "android.content.res.TypedArray#obtain",
-        "android.graphics.BitmapFactory#finishDecode",
-        "android.graphics.BitmapFactory#setDensityFromOptions",
-        "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorRT#useLastSeenTarget",
-        "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorRT#onDraw",
-        "android.graphics.drawable.GradientDrawable#buildRing",
+        "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI#onDraw",
         "android.graphics.drawable.AdaptiveIconDrawable#<init>",
-        "android.graphics.FontFamily#addFont",
+        "android.graphics.FontFamily#addFontFromAssetManager",
         "android.graphics.Typeface#create",
         "android.graphics.fonts.SystemFonts#buildSystemFallback",
         "android.os.Binder#getNativeBBinderHolder",
@@ -177,9 +188,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.preference.Preference#getView",
         "android.text.format.DateFormat#is24HourFormat",
         "android.util.Xml#newPullParser",
-        "android.view.Choreographer#getInstance",
         "android.view.Choreographer#getRefreshRate",
-        "android.view.Choreographer#scheduleVsyncLocked",
         "android.view.Display#updateDisplayInfoLocked",
         "android.view.Display#getWindowManager",
         "android.view.HandlerActionQueue#postDelayed",
@@ -221,11 +230,12 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.RenderNode#nSetScaleY",
         "android.graphics.RenderNode#nGetScaleY",
         "android.graphics.RenderNode#nIsPivotExplicitlySet",
+        "android.graphics.fonts.Font$Builder#nGetNativeAsset",
+        "android.graphics.fonts.Font$Builder#nGetAssetBuffer",
+        "android.graphics.fonts.Font$Builder#nGetReleaseNativeAssetFunc",
         "android.view.PointerIcon#loadResource",
         "android.view.PointerIcon#registerDisplayListener",
         "android.view.SurfaceControl#nativeCreateTransaction",
-        "android.view.SurfaceControl#nativeGetNativeTransactionFinalizer",
-        "android.view.ViewGroup#drawChild",
         "com.android.internal.view.menu.MenuBuilder#createNewMenuItem",
         "com.android.internal.util.XmlUtils#convertValueToInt",
         "dalvik.system.VMRuntime#getNotifyNativeInterval",
@@ -241,8 +251,31 @@ public final class CreateInfo implements ICreateInfo {
      * The list of classes on which to delegate all native methods.
      */
     public final static String[] DELEGATE_CLASS_NATIVES = new String[] {
+        "android.os.SystemClock",
+        "android.os.SystemProperties",
+        "android.view.Display",
+        "libcore.icu.ICU",
+    };
+
+    public final static String[] DELEGATE_CLASS_NATIVES_TO_NATIVES = new String [] {
+        "android.graphics.ColorSpace$Rgb",
+        "android.graphics.FontFamily",
+        "android.graphics.ImageDecoder",
+        "android.graphics.Matrix",
+        "android.graphics.Path",
+        "android.graphics.Typeface",
+        "android.graphics.fonts.Font$Builder",
+        "android.graphics.fonts.FontFamily$Builder",
+        "android.graphics.text.LineBreaker",
+    };
+
+    /**
+     * The list of classes on which NOT to delegate any native method.
+     */
+    public final static String[] KEEP_CLASS_NATIVES = new String[] {
         "android.animation.PropertyValuesHolder",
         "android.graphics.BaseCanvas",
+        "android.graphics.BaseRecordingCanvas",
         "android.graphics.Bitmap",
         "android.graphics.BitmapFactory",
         "android.graphics.BitmapShader",
@@ -254,45 +287,39 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.ColorMatrixColorFilter",
         "android.graphics.ColorSpace$Rgb",
         "android.graphics.ComposePathEffect",
-        "android.graphics.ComposeShader",
         "android.graphics.CornerPathEffect",
         "android.graphics.DashPathEffect",
-        "android.graphics.DiscretePathEffect",
         "android.graphics.DrawFilter",
+        "android.graphics.DiscretePathEffect",
+        "android.graphics.PathDashPathEffect",
+        "android.graphics.MaskFilter",
+        "android.graphics.TableMaskFilter",
         "android.graphics.EmbossMaskFilter",
-        "android.graphics.FontFamily",
+        "android.graphics.BlurMaskFilter",
+        "android.graphics.PathEffect",
+        "android.graphics.PaintFlagsDrawFilter",
+        "android.graphics.SumPathEffect",
+        "android.graphics.ComposeShader",
         "android.graphics.LightingColorFilter",
         "android.graphics.LinearGradient",
-        "android.graphics.MaskFilter",
-        "android.graphics.Matrix",
+        "android.graphics.PorterDuffColorFilter",
+        "android.graphics.PathMeasure",
+        "android.util.PathParser",
         "android.graphics.NinePatch",
         "android.graphics.Paint",
-        "android.graphics.PaintFlagsDrawFilter",
-        "android.graphics.Path",
-        "android.graphics.PathDashPathEffect",
-        "android.graphics.PathEffect",
-        "android.graphics.PathMeasure",
-        "android.graphics.PorterDuffColorFilter",
         "android.graphics.RadialGradient",
         "android.graphics.Region",
+        "android.graphics.RegionIterator",
         "android.graphics.Shader",
-        "android.graphics.SumPathEffect",
         "android.graphics.SweepGradient",
-        "android.graphics.Typeface",
         "android.graphics.drawable.AnimatedVectorDrawable",
         "android.graphics.drawable.VectorDrawable",
-        "android.graphics.fonts.Font$Builder",
-        "android.graphics.fonts.FontFamily$Builder",
+        "android.graphics.fonts.SystemFonts",
         "android.graphics.text.MeasuredText",
         "android.graphics.text.MeasuredText$Builder",
-        "android.graphics.text.LineBreaker",
-        "android.os.SystemClock",
-        "android.os.SystemProperties",
-        "android.util.PathParser",
-        "android.view.Display",
-        "com.android.internal.util.VirtualRefBasePtr",
+        "android.text.MeasuredParagraph",
         "com.android.internal.view.animation.NativeInterpolatorFactoryHelper",
-        "libcore.icu.ICU",
+        "com.android.internal.util.VirtualRefBasePtr",
     };
 
     /**
@@ -307,7 +334,6 @@ public final class CreateInfo implements ICreateInfo {
             "android.view.SurfaceView",                        "android.view._Original_SurfaceView",
             "android.view.accessibility.AccessibilityManager", "android.view.accessibility._Original_AccessibilityManager",
             "android.webkit.WebView",                          "android.webkit._Original_WebView",
-            "android.graphics.ImageDecoder",                   "android.graphics._Original_ImageDecoder",
         };
 
     /**
@@ -344,10 +370,8 @@ public final class CreateInfo implements ICreateInfo {
      * needed when access from the delegate classes is needed.
      */
     private final static String[] PROMOTED_FIELDS = new String[] {
-        "android.graphics.drawable.VectorDrawable#mVectorState",
-        "android.view.Choreographer#mLastFrameTimeNanos",
-        "android.graphics.FontFamily#mBuilderPtr",
-        "android.graphics.Typeface#sDynamicTypefaceCache",
+        "android.animation.AnimatorSet#mLastFrameTime",
+        "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI#mSet",
         "android.graphics.drawable.AdaptiveIconDrawable#sMask",
         "android.animation.PropertyValuesHolder#sSetterPropertyMap",
         "android.animation.PropertyValuesHolder#sGetterPropertyMap",
@@ -360,12 +384,20 @@ public final class CreateInfo implements ICreateInfo {
     };
 
     /**
+     * List of methods for which we will update the visibility to be public.
+     */
+    private final static String[] PROMOTED_METHODS = new String[] {
+        "android.animation.AnimationHandler#doAnimationFrame",
+    };
+
+    /**
      * List of classes to be promoted to public visibility. Prefer using PROMOTED_FIELDS to this
      * if possible.
      */
     private final static String[] PROMOTED_CLASSES = new String[] {
         "libcore.util.NativeAllocationRegistry$CleanerRunner",
         "libcore.util.NativeAllocationRegistry$CleanerThunk",
+        "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI",
     };
 
     /**

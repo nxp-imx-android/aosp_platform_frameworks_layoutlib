@@ -30,7 +30,6 @@ import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.layoutlib.bridge.impl.RenderDrawable;
 import com.android.layoutlib.bridge.impl.RenderSessionImpl;
 import com.android.layoutlib.bridge.util.DynamicIdMap;
-import com.android.ninepatch.NinePatchChunk;
 import com.android.resources.ResourceType;
 import com.android.tools.layoutlib.annotations.Nullable;
 import com.android.tools.layoutlib.create.MethodAdapter;
@@ -39,9 +38,7 @@ import com.android.util.Pair;
 
 import android.content.res.BridgeAssetManager;
 import android.graphics.Bitmap;
-import android.graphics.FontFamily_Delegate;
-import android.graphics.Typeface;
-import android.graphics.Typeface_Delegate;
+import android.graphics.fonts.SystemFonts_Delegate;
 import android.icu.util.ULocale;
 import android.os.Looper;
 import android.os.Looper_Accessor;
@@ -108,12 +105,8 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
 
     private final static Map<Object, Map<String, SoftReference<Bitmap>>> sProjectBitmapCache =
             new WeakHashMap<>();
-    private final static Map<Object, Map<String, SoftReference<NinePatchChunk>>> sProject9PatchCache =
-            new WeakHashMap<>();
 
     private final static Map<String, SoftReference<Bitmap>> sFrameworkBitmapCache = new HashMap<>();
-    private final static Map<String, SoftReference<NinePatchChunk>> sFramework9PatchCache =
-            new HashMap<>();
 
     private static Map<String, Map<String, Integer>> sEnumValueMap;
     private static Map<String, String> sPlatformProperties;
@@ -145,6 +138,8 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
 
     private static final int LAST_SUPPORTED_FEATURE = Features.THEME_PREVIEW_NAVIGATION_BAR;
 
+    private static String sIcuDataPath;
+
     @Override
     public int getApiLevel() {
         return com.android.ide.common.rendering.api.Bridge.API_CURRENT;
@@ -172,6 +167,11 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             LayoutLog log) {
         sPlatformProperties = platformProperties;
         sEnumValueMap = enumValueMap;
+        sIcuDataPath = icuDataPath;
+
+        if (!loadNativeLibraryIfNeeded(log)) {
+            return false;
+        }
 
         BridgeAssetManager.initSystem();
 
@@ -205,7 +205,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         }
 
         // load the fonts.
-        FontFamily_Delegate.setFontLocation(fontLocation.getAbsolutePath());
+        SystemFonts_Delegate.setFontLocation(fontLocation.getAbsolutePath() + File.separator);
         MemoryMappedFile_Delegate.setDataDir(fontLocation.getAbsoluteFile().getParentFile());
 
         // now parse com.android.internal.R (and only this one as android.R is a subset of
@@ -355,10 +355,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     public boolean dispose() {
         BridgeAssetManager.clearSystem();
 
-        // dispose of the default typeface.
-        Typeface_Delegate.resetDefaults();
-        Typeface.sDynamicTypefaceCache.evictAll();
-        sProject9PatchCache.clear();
         sProjectBitmapCache.clear();
 
         return true;
@@ -440,7 +436,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     public void clearCaches(Object projectKey) {
         if (projectKey != null) {
             sProjectBitmapCache.remove(projectKey);
-            sProject9PatchCache.remove(projectKey);
         }
     }
 
@@ -627,46 +622,39 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     }
 
     /**
-     * Returns the 9 patch chunk for a specific path, from a specific project cache, or from the
-     * framework cache.
-     * @param value the path of the 9 patch
-     * @param projectKey the key of the project, or null to query the framework cache.
-     * @return the cached 9 patch or null if not found.
+     * This is called by the native layoutlib loader.
      */
-    public static NinePatchChunk getCached9Patch(String value, Object projectKey) {
-        if (projectKey != null) {
-            Map<String, SoftReference<NinePatchChunk>> map = sProject9PatchCache.get(projectKey);
-
-            if (map != null) {
-                SoftReference<NinePatchChunk> ref = map.get(value);
-                if (ref != null) {
-                    return ref.get();
-                }
-            }
-        } else {
-            SoftReference<NinePatchChunk> ref = sFramework9PatchCache.get(value);
-            if (ref != null) {
-                return ref.get();
-            }
-        }
-
-        return null;
+    @SuppressWarnings("unused")
+    public static String getIcuDataPath() {
+        return sIcuDataPath;
     }
 
-    /**
-     * Sets a 9 patch chunk in a project cache or in the framework cache.
-     * @param value the path of the 9 patch
-     * @param ninePatch the 9 patch object
-     * @param projectKey the key of the project, or null to put the bitmap in the framework cache.
-     */
-    public static void setCached9Patch(String value, NinePatchChunk ninePatch, Object projectKey) {
-        if (projectKey != null) {
-            Map<String, SoftReference<NinePatchChunk>> map =
-                    sProject9PatchCache.computeIfAbsent(projectKey, k -> new HashMap<>());
+    private static boolean sJniLibLoadAttempted;
+    private static boolean sJniLibLoaded;
 
-            map.put(value, new SoftReference<>(ninePatch));
-        } else {
-            sFramework9PatchCache.put(value, new SoftReference<>(ninePatch));
+    private synchronized static boolean loadNativeLibraryIfNeeded(LayoutLog log) {
+        if (!sJniLibLoadAttempted) {
+            try {
+                loadNativeLibrary();
+            }
+            catch (UnsatisfiedLinkError e) {
+                log.error(LayoutLog.TAG_BROKEN, "Native layoutlib failed to load", e, null, null);
+            }
         }
+        return sJniLibLoaded;
+    }
+
+    private synchronized static void loadNativeLibrary() {
+        if (sJniLibLoadAttempted) {
+            // Already attempted to load, nothing to do here.
+            return;
+        }
+        try {
+            System.loadLibrary("android-host");
+        }
+        finally {
+            sJniLibLoadAttempted = true;
+        }
+        sJniLibLoaded = true;
     }
 }

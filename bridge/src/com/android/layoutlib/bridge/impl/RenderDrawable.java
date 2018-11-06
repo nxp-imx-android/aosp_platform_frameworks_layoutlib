@@ -26,7 +26,7 @@ import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.resources.ResourceType;
 
 import android.graphics.Bitmap;
-import android.graphics.Bitmap_Delegate;
+import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
@@ -150,8 +150,11 @@ public class RenderDrawable extends RenderAction<DrawableParams> {
         BufferedImage image = getImage(w, h);
 
         // create an Android bitmap around the BufferedImage
-        Bitmap bitmap = Bitmap_Delegate.createBitmap(image,
-                true /*isMutable*/, hardwareConfig.getDensity());
+        Bitmap bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),
+                Config.ARGB_8888);
+        bitmap.setPixels(image.getRGB(0, 0, image.getWidth(), image.getHeight(),
+                null, 0, image.getWidth()), 0, image.getWidth(), 0, 0, image
+                .getWidth(), image.getHeight());
 
         // create a Canvas around the Android bitmap
         Canvas canvas = new Canvas(bitmap);
@@ -159,6 +162,10 @@ public class RenderDrawable extends RenderAction<DrawableParams> {
 
         // and draw
         content.draw(canvas);
+        int[] pixels = new int[image.getWidth() * image.getHeight()];
+        bitmap.getPixels(pixels, 0, image.getWidth(), 0, 0, image.getWidth(),
+                image.getHeight());
+        image.setRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
         return image;
     }
 
