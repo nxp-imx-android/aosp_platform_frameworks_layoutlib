@@ -762,6 +762,8 @@ public class RenderTests extends RenderTestBase {
     public void testFonts() throws ClassNotFoundException, FileNotFoundException {
         // TODO: styles seem to be broken in TextView
         renderAndVerify("fonts_test.xml", "font_test.png");
+        sRenderMessages.removeIf(
+                message -> message.equals("Font$Builder.nAddAxis is not supported."));
     }
 
     @Test
