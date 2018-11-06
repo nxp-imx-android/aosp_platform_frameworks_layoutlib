@@ -396,6 +396,11 @@ public class AsmGenerator {
         if (!mPromotedClasses.isEmpty()) {
             cv = new PromoteClassClassAdapter(cv, mPromotedClasses);
         }
+
+        // Make sure no class file has a version above 52 (corresponding to Java 8),
+        // so that layoutlib can be run with JDK 8.
+        cv = new ChangeFileVersionAdapter(mLog, 52, cv);
+
         cr.accept(cv, 0);
 
         return cw.toByteArray();
