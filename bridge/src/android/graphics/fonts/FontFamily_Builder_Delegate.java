@@ -68,6 +68,7 @@ public class FontFamily_Builder_Delegate {
      * @see Paint#setElegantTextHeight(boolean)
      */
     private FontVariant mVariant;
+    private boolean mIsCustomFallback;
 
     @LayoutlibDelegate
     /*package*/ static long nInitBuilder() {
@@ -84,11 +85,13 @@ public class FontFamily_Builder_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static long nBuild(long builderPtr, String langTags, int variant) {
+    /*package*/ static long nBuild(long builderPtr, String langTags, int variant,
+            boolean isCustomFallback) {
         FontFamily_Builder_Delegate builder = sBuilderManager.getDelegate(builderPtr);
         if (builder != null) {
             assert variant < 3;
             builder.mVariant = FontVariant.values()[variant];
+            builder.mIsCustomFallback = isCustomFallback;
         }
         return builderPtr;
     }
