@@ -276,13 +276,6 @@ public class IWindowManagerImpl implements IWindowManager {
     }
 
     @Override
-    public int[] setNewDisplayOverrideConfiguration(Configuration arg0, int displayId)
-            throws RemoteException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public void refreshScreenCaptureDisabled(int userId) {
         // TODO Auto-generated method stub
     }
