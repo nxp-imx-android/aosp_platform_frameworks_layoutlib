@@ -509,4 +509,49 @@ public class IWindowManagerImpl implements IWindowManager {
     public boolean isDisplayRotationFrozen(int displayId) throws RemoteException {
         return false;
     }
+
+    @Override
+    public int getWindowingMode(int displayId) throws android.os.RemoteException {
+        return 0;
+    }
+
+    @Override
+    public void setWindowingMode(int displayId, int mode) {
+    }
+
+    @Override
+    public int getRemoveContentMode(int displayId) {
+        return 0;
+    }
+
+    @Override
+    public void setRemoveContentMode(int displayId, int mode) {
+    }
+
+    @Override
+    public boolean shouldShowWithInsecureKeyguard(int displayId) {
+        return false;
+    }
+
+    @Override
+    public void setShouldShowWithInsecureKeyguard(int displayId, boolean shouldShow) {
+    }
+
+    @Override
+    public boolean shouldShowSystemDecors(int displayId) {
+        return false;
+    }
+
+    @Override
+    public void setShouldShowSystemDecors(int displayId, boolean shouldShow) {
+    }
+
+    @Override
+    public boolean shouldShowIme(int displayId) {
+        return false;
+    }
+
+    @Override
+    public void setShouldShowIme(int displayId, boolean shouldShow) {
+    }
 }
