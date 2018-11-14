@@ -521,9 +521,10 @@ public class RenderTestBase {
      * doesn't throw any exceptions and matches the provided image.
      */
     @Nullable
-    protected RenderResult renderAndVerify(String layoutFileName, String goldenFileName)
+    protected RenderResult renderAndVerify(String layoutFileName, String goldenFileName,
+            boolean decoration)
             throws ClassNotFoundException, FileNotFoundException {
-        return renderAndVerify(layoutFileName, goldenFileName, ConfigGenerator.NEXUS_5);
+        return renderAndVerify(layoutFileName, goldenFileName, ConfigGenerator.NEXUS_5, decoration);
     }
 
     /**
@@ -532,8 +533,12 @@ public class RenderTestBase {
      */
     @Nullable
     protected RenderResult renderAndVerify(String layoutFileName, String goldenFileName,
-            ConfigGenerator deviceConfig) throws ClassNotFoundException, FileNotFoundException {
+            ConfigGenerator deviceConfig, boolean decoration) throws ClassNotFoundException,
+            FileNotFoundException {
         SessionParams params = createSessionParams(layoutFileName, deviceConfig);
+        if (!decoration) {
+            params.setForceNoDecor();
+        }
         return renderAndVerify(params, goldenFileName);
     }
 

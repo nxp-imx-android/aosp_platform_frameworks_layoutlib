@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Android Open Source Project
+ * Copyright (C) 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.layoutlib.bridge.bars;
+package com.android.layoutlib.bridge.resources;
 
+import com.android.layoutlib.bridge.bars.Config;
 import com.android.resources.Density;
 import com.android.resources.LayoutDirection;
 
@@ -31,7 +32,8 @@ public class IconLoader {
     private Density mCurrentDensity;
     private StringBuilder mCurrentPath;
 
-    IconLoader(String iconName, Density density, int platformVersion, LayoutDirection direction) {
+    public IconLoader(String iconName, Density density, int platformVersion, LayoutDirection
+            direction) {
         mIconName = iconName;
         mDesiredDensity = density;
         mPlatformVersion = platformVersion;
