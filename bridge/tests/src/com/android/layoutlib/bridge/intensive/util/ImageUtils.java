@@ -182,7 +182,7 @@ public class ImageUtils {
                 assertTrue(deleted);
             }
             ImageIO.write(deltaImage, "PNG", output);
-            error += " - see details in " + output.getPath() + "\n";
+            error += " - see details in file://" + output.getPath() + "\n";
             error = saveImageAndAppendMessage(image, error, relativePath);
             System.out.println(error);
             fail(error);
