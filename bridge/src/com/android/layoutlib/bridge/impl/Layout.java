@@ -37,6 +37,8 @@ import com.android.resources.ResourceType;
 import com.android.resources.ScreenOrientation;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -88,7 +90,7 @@ import static com.android.layoutlib.bridge.impl.ResourceHelper.getBooleanThemeVa
  *  +--------------------------------------+
  * </pre>
  */
-class Layout extends RelativeLayout {
+class Layout extends FrameLayout {
 
     // Theme attributes used for configuring appearance of the system decor.
     private static final String ATTR_WINDOW_FLOATING = "windowIsFloating";
@@ -125,6 +127,11 @@ class Layout extends RelativeLayout {
     private Builder mBuilder;
 
     /**
+     * SysUI layout
+     */
+    private RelativeLayout mSysUiRoot;
+
+    /**
      * This holds user's layout.
      */
     private FrameLayout mContentRoot;
@@ -152,7 +159,7 @@ class Layout extends RelativeLayout {
 
         if (mBuilder.hasNavBar()) {
             navBar = createNavBar(getContext(), density, isRtl, getParams().isRtlSupported(),
-                    simulatedPlatformVersion);
+                    simulatedPlatformVersion, false);
         }
 
         if (builder.hasStatusBar()) {
@@ -180,17 +187,28 @@ class Layout extends RelativeLayout {
             frameworkActionBar = bar.getRootView();
         }
 
-        addViews(titleBar, mContentRoot == null ? (mContentRoot = createContentFrame()) : frameworkActionBar,
+        mSysUiRoot = new RelativeLayout(builder.mContext);
+        addSystemUiViews(titleBar, mContentRoot == null ? (mContentRoot = createContentFrame()) : frameworkActionBar,
                 statusBar, navBar, appCompatActionBar);
+        addView(mSysUiRoot);
+        //addView(createSysUiOverlay(mBuilder.mContext));
         // Done with the builder. Don't hold a reference to it.
         mBuilder = null;
     }
 
     @NonNull
+    private static View createSysUiOverlay(@NonNull BridgeContext context) {
+        SysUiOverlay overlay =  new SysUiOverlay(context, 20, 10, 50, 40, 60);
+        overlay.setNotchColor(Color.BLACK);
+        overlay.setLayoutParams(new FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT));
+        return overlay;
+    }
+
+    @NonNull
     private FrameLayout createContentFrame() {
         FrameLayout contentRoot = new FrameLayout(getContext());
-        LayoutParams params = createLayoutParams(MATCH_PARENT, MATCH_PARENT);
-        int rule = mBuilder.isNavBarVertical() ? START_OF : ABOVE;
+        RelativeLayout.LayoutParams params = createSysUiLayoutParams(MATCH_PARENT, MATCH_PARENT);
+        int rule = mBuilder.isNavBarVertical() ? RelativeLayout.START_OF : RelativeLayout.ABOVE;
         if (mBuilder.hasSolidNavBar()) {
             params.addRule(rule, getId(ID_NAV_BAR));
         }
@@ -203,14 +221,14 @@ class Layout extends RelativeLayout {
             below = getId(ID_STATUS_BAR);
         }
         if (below != -1) {
-            params.addRule(BELOW, below);
+            params.addRule(RelativeLayout.BELOW, below);
         }
         contentRoot.setLayoutParams(params);
         return contentRoot;
     }
 
     @NonNull
-    private LayoutParams createLayoutParams(int width, int height) {
+    private RelativeLayout.LayoutParams createSysUiLayoutParams(int width, int height) {
         DisplayMetrics metrics = getContext().getResources().getDisplayMetrics();
         if (width > 0) {
             width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width, metrics);
@@ -218,7 +236,7 @@ class Layout extends RelativeLayout {
         if (height > 0) {
             height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, height, metrics);
         }
-        return new LayoutParams(width, height);
+        return new RelativeLayout.LayoutParams(width, height);
     }
 
     @NonNull
@@ -247,9 +265,10 @@ class Layout extends RelativeLayout {
             boolean isRtlSupported, int simulatedPlatformVersion) {
         StatusBar statusBar =
                 new StatusBar(context, density, isRtl, isRtlSupported, simulatedPlatformVersion);
-        LayoutParams params = createLayoutParams(MATCH_PARENT, mBuilder.mStatusBarSize);
+        RelativeLayout.LayoutParams params = createSysUiLayoutParams(MATCH_PARENT, mBuilder
+                .mStatusBarSize);
         if (mBuilder.isNavBarVertical()) {
-            params.addRule(START_OF, getId(ID_NAV_BAR));
+            params.addRule(RelativeLayout.START_OF, getId(ID_NAV_BAR));
         }
         statusBar.setLayoutParams(params);
         statusBar.setId(getId(ID_STATUS_BAR));
@@ -265,11 +284,11 @@ class Layout extends RelativeLayout {
         // AppCompat ActionBar below it
         int heightRule = appCompatActionBar || !mBuilder.hasAppCompatActionBar() ? MATCH_PARENT :
           WRAP_CONTENT;
-        LayoutParams layoutParams = createLayoutParams(MATCH_PARENT, heightRule);
-        int rule = mBuilder.isNavBarVertical() ? START_OF : ABOVE;
+        RelativeLayout.LayoutParams layoutParams = createSysUiLayoutParams(MATCH_PARENT, heightRule);
+        int rule = mBuilder.isNavBarVertical() ? RelativeLayout.START_OF : RelativeLayout.ABOVE;
         if (mBuilder.hasSolidNavBar()) {
             // If there
-            if(rule == START_OF || appCompatActionBar || !mBuilder.hasAppCompatActionBar()) {
+            if(rule == RelativeLayout.START_OF || appCompatActionBar || !mBuilder.hasAppCompatActionBar()) {
                 layoutParams.addRule(rule, getId(ID_NAV_BAR));
             }
         }
@@ -281,15 +300,15 @@ class Layout extends RelativeLayout {
             id = ID_APP_COMPAT_ACTION_BAR;
 
             if (mBuilder.hasTitleBar() || mBuilder.hasFrameworkActionBar()) {
-                layoutParams.addRule(BELOW, getId(ID_FRAMEWORK_BAR));
+                layoutParams.addRule(RelativeLayout.BELOW, getId(ID_FRAMEWORK_BAR));
             } else if (mBuilder.hasSolidStatusBar()) {
-                layoutParams.addRule(BELOW, getId(ID_STATUS_BAR));
+                layoutParams.addRule(RelativeLayout.BELOW, getId(ID_STATUS_BAR));
             }
         } else {
             actionBar = new FrameworkActionBar(context, params);
             id = ID_FRAMEWORK_BAR;
             if (mBuilder.hasSolidStatusBar()) {
-                layoutParams.addRule(BELOW, getId(ID_STATUS_BAR));
+                layoutParams.addRule(RelativeLayout.BELOW, getId(ID_STATUS_BAR));
             }
         }
 
@@ -303,12 +322,12 @@ class Layout extends RelativeLayout {
     private TitleBar createTitleBar(BridgeContext context, String title,
             int simulatedPlatformVersion) {
         TitleBar titleBar = new TitleBar(context, title, simulatedPlatformVersion);
-        LayoutParams params = createLayoutParams(MATCH_PARENT, mBuilder.mTitleBarSize);
+        RelativeLayout.LayoutParams params = createSysUiLayoutParams(MATCH_PARENT, mBuilder.mTitleBarSize);
         if (mBuilder.hasSolidStatusBar()) {
-            params.addRule(BELOW, getId(ID_STATUS_BAR));
+            params.addRule(RelativeLayout.BELOW, getId(ID_STATUS_BAR));
         }
         if (mBuilder.isNavBarVertical() && mBuilder.hasSolidNavBar()) {
-            params.addRule(START_OF, getId(ID_NAV_BAR));
+            params.addRule(RelativeLayout.START_OF, getId(ID_NAV_BAR));
         }
         titleBar.setLayoutParams(params);
         titleBar.setId(getId(ID_FRAMEWORK_BAR));
@@ -322,26 +341,29 @@ class Layout extends RelativeLayout {
      */
     @NonNull
     private NavigationBar createNavBar(BridgeContext context, Density density, boolean isRtl,
-            boolean isRtlSupported, int simulatedPlatformVersion) {
+            boolean isRtlSupported, int simulatedPlatformVersion, boolean isQuickStepEnabled) {
         int orientation = mBuilder.mNavBarOrientation;
         int size = mBuilder.mNavBarSize;
+        // Only allow quickstep in the latest version or >= 28
+        isQuickStepEnabled = isQuickStepEnabled &&
+                (simulatedPlatformVersion == 0 || simulatedPlatformVersion >= 28);
         NavigationBar navBar =
                 new NavigationBar(context, density, orientation, isRtl, isRtlSupported,
-                        simulatedPlatformVersion);
+                        simulatedPlatformVersion, isQuickStepEnabled);
         boolean isVertical = mBuilder.isNavBarVertical();
         int w = isVertical ? size : MATCH_PARENT;
         int h = isVertical ? MATCH_PARENT : size;
-        LayoutParams params = createLayoutParams(w, h);
-        params.addRule(isVertical ? ALIGN_PARENT_END : ALIGN_PARENT_BOTTOM);
+        RelativeLayout.LayoutParams params = createSysUiLayoutParams(w, h);
+        params.addRule(isVertical ? RelativeLayout.ALIGN_PARENT_END : RelativeLayout.ALIGN_PARENT_BOTTOM);
         navBar.setLayoutParams(params);
         navBar.setId(getId(ID_NAV_BAR));
         return navBar;
     }
 
-    private void addViews(@NonNull View... views) {
+    private void addSystemUiViews(@NonNull View... views) {
         for (View view : views) {
             if (view != null) {
-                addView(view);
+                mSysUiRoot.addView(view);
             }
         }
     }
@@ -582,6 +604,10 @@ class Layout extends RelativeLayout {
 
         private boolean hasFrameworkActionBar() {
             return mFrameworkActionBarSize > 0;
+        }
+
+        private boolean hasNotch() {
+            return !mParams.isForceNoDecor();
         }
     }
 }

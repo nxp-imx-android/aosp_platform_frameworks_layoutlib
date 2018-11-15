@@ -1205,6 +1205,12 @@ public class BridgeContext extends Context {
     }
 
     @Override
+    public boolean bindIsolatedService(Intent arg0,
+            ServiceConnection arg1, int arg2, String arg3) {
+        return false;
+    }
+
+    @Override
     public int checkCallingOrSelfPermission(String arg0) {
         // pass
         return 0;
