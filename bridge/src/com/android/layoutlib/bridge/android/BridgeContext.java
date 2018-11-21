@@ -1872,6 +1872,12 @@ public class BridgeContext extends Context {
     }
 
     @Override
+    public void updateServiceGroup(@NonNull ServiceConnection conn, int group,
+            int importance) {
+        // pass
+    }
+
+    @Override
     public void unbindService(ServiceConnection arg0) {
         // pass
 
