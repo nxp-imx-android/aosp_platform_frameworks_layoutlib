@@ -302,7 +302,7 @@ public class IWindowManagerImpl implements IWindowManager {
     }
 
     @Override
-    public void statusBarVisibilityChanged(int arg0) throws RemoteException {
+    public void statusBarVisibilityChanged(int arg0, int arg1) throws RemoteException {
         // TODO Auto-generated method stub
     }
 
