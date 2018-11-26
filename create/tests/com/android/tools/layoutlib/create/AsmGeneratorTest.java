@@ -29,6 +29,7 @@ import org.objectweb.asm.Type;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -37,11 +38,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -69,7 +68,6 @@ public class AsmGeneratorTest {
         URL url = this.getClass().getClassLoader().getResource("data/mock_android.jar");
 
         mOsJarPath = new ArrayList<>();
-        //noinspection ConstantConditions
         mOsJarPath.add(url.getFile());
 
         mTempFile = File.createTempFile("mock", ".jar");
@@ -100,7 +98,7 @@ public class AsmGeneratorTest {
             }
         };
 
-        AsmGenerator agen = new AsmGenerator(mLog, mOsDestJar, ci);
+        AsmGenerator agen = new AsmGenerator(mLog, ci);
 
         AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath,
                 null,                 // derived from
@@ -142,7 +140,7 @@ public class AsmGeneratorTest {
             }
         };
 
-        AsmGenerator agen = new AsmGenerator(mLog, mOsDestJar, ci);
+        AsmGenerator agen = new AsmGenerator(mLog, ci);
 
         AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath,
                 null,                 // derived from
@@ -154,12 +152,11 @@ public class AsmGeneratorTest {
                     "mock_android/data/data*"
                 });
         agen.setAnalysisResult(aa.analyze());
-        agen.generate();
-        Map<String, ClassReader> output = new TreeMap<>();
-        Map<String, InputStream> filesFound = new TreeMap<>();
-        parseZip(mOsDestJar, output, filesFound);
+        Map<String, byte[]> output = agen.generate();
         RecordingClassVisitor cv = new RecordingClassVisitor();
-        for (ClassReader cr: output.values()) {
+        for (Map.Entry<String, byte[]> entry: output.entrySet()) {
+            if (!entry.getKey().endsWith(".class")) continue;
+            ClassReader cr = new ClassReader(entry.getValue());
             cr.accept(cv, 0);
         }
         assertTrue(cv.mVisitedClasses.contains(
@@ -167,7 +164,7 @@ public class AsmGeneratorTest {
         assertFalse(cv.mVisitedClasses.contains(
                 JAVA_CLASS_NAME));
         assertArrayEquals(new String[] {"mock_android/data/dataFile"},
-                filesFound.keySet().toArray());
+                findFileNames(output));
     }
 
     @Test
@@ -190,7 +187,7 @@ public class AsmGeneratorTest {
             }
         };
 
-        AsmGenerator agen = new AsmGenerator(mLog, mOsDestJar, ci);
+        AsmGenerator agen = new AsmGenerator(mLog, ci);
 
         AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath,
                 null,                 // derived from
@@ -200,11 +197,10 @@ public class AsmGeneratorTest {
                 new String[]{},
                 new String[] {});
         agen.setAnalysisResult(aa.analyze());
-        agen.generate();
-        Map<String, ClassReader> output = new TreeMap<>();
-        parseZip(mOsDestJar, output, new TreeMap<>());
+        Map<String, byte[]> output = agen.generate();
         RecordingClassVisitor cv = new RecordingClassVisitor();
-        for (ClassReader cr: output.values()) {
+        for (byte[] classContent: output.values()) {
+            ClassReader cr = new ClassReader(classContent);
             cr.accept(cv, 0);
         }
         assertTrue(cv.mVisitedClasses.contains(
@@ -227,7 +223,7 @@ public class AsmGeneratorTest {
             }
         };
 
-        AsmGenerator agen = new AsmGenerator(mLog, mOsDestJar, ci);
+        AsmGenerator agen = new AsmGenerator(mLog, ci);
         AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath,
                 null,                 // derived from
                 new String[] {        // include classes
@@ -238,10 +234,7 @@ public class AsmGeneratorTest {
                         "mock_android/data/data*"
                 });
         agen.setAnalysisResult(aa.analyze());
-        agen.generate();
-        Map<String, ClassReader> output = new TreeMap<>();
-        Map<String, InputStream> filesFound = new TreeMap<>();
-        parseZip(mOsDestJar, output, filesFound);
+        Map<String, byte[]> output = agen.generate();
         // Everything in .dummy.** should be filtered
         // Only things is .dummy2.* should be filtered
         assertArrayEquals(new String[] {
@@ -255,10 +248,10 @@ public class AsmGeneratorTest {
                 "mock_android.widget.LinearLayout$LayoutParams",
                 "mock_android.widget.TableLayout",
                 "mock_android.widget.TableLayout$LayoutParams"},
-                output.keySet().toArray()
+                findClassNames(output)
         );
         assertArrayEquals(new String[] {"mock_android/data/dataFile"},
-                filesFound.keySet().toArray());
+                findFileNames(output));
     }
 
     @Test
@@ -273,7 +266,7 @@ public class AsmGeneratorTest {
             }
         };
 
-        AsmGenerator agen = new AsmGenerator(mLog, mOsDestJar, ci);
+        AsmGenerator agen = new AsmGenerator(mLog, ci);
         AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath,
                 null,                 // derived from
                 new String[] {        // include classes
@@ -284,10 +277,8 @@ public class AsmGeneratorTest {
                         "mock_android/data/data*"
                 });
         agen.setAnalysisResult(aa.analyze());
-        agen.generate();
-        Map<String, ClassReader> output = new TreeMap<>();
-        Map<String, InputStream> filesFound = new TreeMap<>();
-        parseZip(mOsDestJar, output, filesFound);
+        JarUtil.createJar(new FileOutputStream(mOsDestJar), agen.generate());
+
         final String modifiedClass = "mock_android.util.EmptyArray";
         final String modifiedClassPath = modifiedClass.replace('.', '/').concat(".class");
         ZipFile zipFile = new ZipFile(mOsDestJar);
@@ -323,27 +314,23 @@ public class AsmGeneratorTest {
         return bos.toByteArray();
     }
 
-    private void parseZip(String jarPath,
-            Map<String, ClassReader> classes,
-            Map<String, InputStream> filesFound) throws IOException {
 
-            ZipFile zip = new ZipFile(jarPath);
-            Enumeration<? extends ZipEntry> entries = zip.entries();
-            ZipEntry entry;
-            while (entries.hasMoreElements()) {
-                entry = entries.nextElement();
-                if (entry.getName().endsWith(".class")) {
-                    ClassReader cr = new ClassReader(zip.getInputStream(entry));
-                    String className = classReaderToClassName(cr);
-                    classes.put(className, cr);
-                } else {
-                    filesFound.put(entry.getName(), zip.getInputStream(entry));
-                }
-            }
-
+    private static String[] findClassNames(Map<String, byte[]> content) {
+        return content.entrySet().stream()
+                .filter(entry -> entry.getKey().endsWith(".class"))
+                .map(entry -> classReaderToClassName(new ClassReader(entry.getValue())))
+                .sorted()
+                .toArray(String[]::new);
     }
 
-    private String classReaderToClassName(ClassReader classReader) {
+    private static String[] findFileNames(Map<String, byte[]> content) {
+        return content.keySet().stream()
+                .filter(entry -> !entry.endsWith(".class"))
+                .sorted()
+                .toArray(String[]::new);
+    }
+
+    private static String classReaderToClassName(ClassReader classReader) {
         if (classReader == null) {
             return null;
         } else {

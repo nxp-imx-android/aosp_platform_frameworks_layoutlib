@@ -16,13 +16,22 @@
 
 package com.android.tools.layoutlib.create;
 
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.google.common.io.Files;
 
 
 /**
@@ -49,14 +58,15 @@ import java.util.Set;
  */
 public class Main {
 
-    public static class Options {
-        public boolean listAllDeps = false;
-        public boolean listOnlyMissingDeps = false;
+    private static class Options {
+        private boolean listAllDeps = false;
+        private boolean listOnlyMissingDeps = false;
+        private boolean createStubLib = false;
     }
 
     public static final int ASM_VERSION = Opcodes.ASM6;
 
-    public static final Options sOptions = new Options();
+    private static final Options sOptions = new Options();
 
     public static void main(String[] args) {
 
@@ -66,7 +76,7 @@ public class Main {
         String[] osDestJar = { null };
 
         if (!processArgs(log, args, osJarPath, osDestJar)) {
-            log.error("Usage: layoutlib_create [-v] output.jar input.jar ...");
+            log.error("Usage: layoutlib_create [-v] [--create-stub] output.jar input.jar ...");
             log.error("Usage: layoutlib_create [-v] [--list-deps|--missing-deps] input.jar ...");
             System.exit(1);
         }
@@ -90,7 +100,7 @@ public class Main {
 
         try {
             CreateInfo info = new CreateInfo();
-            AsmGenerator agen = new AsmGenerator(log, osDestJar, info);
+            AsmGenerator agen = new AsmGenerator(log, info);
 
             AsmAnalyzer aa = new AsmAnalyzer(log, osJarPath,
                     new String[] {                          // derived from
@@ -131,7 +141,27 @@ public class Main {
                         "android/icu/impl/data/**"
                     });
             agen.setAnalysisResult(aa.analyze());
-            agen.generate();
+
+            Map<String, byte[]> outputClasses = agen.generate();
+            JarUtil.createJar(new FileOutputStream(osDestJar), outputClasses);
+            log.info("Created JAR file %s", osDestJar);
+
+            if (sOptions.createStubLib) {
+                File osDestJarFile = new File(osDestJar);
+                String extension = Files.getFileExtension(osDestJarFile.getName());
+                if (!extension.isEmpty()) {
+                    extension = '.' + extension;
+                }
+                String stubDestJarFile = osDestJarFile.getParent() + File.separatorChar +
+                        Files.getNameWithoutExtension(osDestJarFile.getName()) + "-stubs" +
+                        extension;
+
+                Map<String, byte[]> toStubClasses = outputClasses.entrySet().stream().filter(entry -> entry.getKey().startsWith("android/")).collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+                JarUtil.createJar(new FileOutputStream(stubDestJarFile), toStubClasses,
+                        input -> StubClassAdapter.stubClass(log, input));
+                log.info("Created stub JAR file %s", stubDestJarFile);
+            }
+
 
             // Throw an error if any class failed to get renamed by the generator
             //
@@ -198,6 +228,8 @@ public class Main {
             } else if (s.equals("--missing-deps")) {
                 sOptions.listOnlyMissingDeps = true;
                 needs_dest = false;
+            } else if (s.equals("--create-stub")) {
+                sOptions.createStubLib = true;
             } else if (!s.startsWith("-")) {
                 if (needs_dest && osDestJar[0] == null) {
                     osDestJar[0] = s;
