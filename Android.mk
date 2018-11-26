@@ -63,6 +63,7 @@ $(LOCAL_BUILT_MODULE): $(built_core_dep) \
 	$(hide) rm -f $@
 	$(hide) ls -l $(built_framework_classes)
 	$(hide) java -ea -jar $(built_layoutlib_create_jar) \
+		     --create-stub \
 	             $@ \
 	             $(built_core_classes) \
 	             $(built_framework_classes) \
