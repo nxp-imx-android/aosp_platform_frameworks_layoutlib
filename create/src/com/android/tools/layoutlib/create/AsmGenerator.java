@@ -24,12 +24,10 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ListIterator;
@@ -37,8 +35,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,8 +46,6 @@ public class AsmGenerator {
 
     /** Output logger. */
     private final Log mLog;
-    /** The path of the destination JAR to create. */
-    private final String mOsDestJar;
     /** List of classes to inject in the final JAR from _this_ archive. */
     private final Class<?>[] mInjectClasses;
     /** All classes to output as-is, except if they have native methods. */
@@ -90,12 +84,10 @@ public class AsmGenerator {
      * Creates a new generator that can generate the output JAR with the stubbed classes.
      *
      * @param log Output logger.
-     * @param osDestJar The path of the destination JAR to create.
      * @param createInfo Creation parameters. Must not be null.
      */
-    public AsmGenerator(Log log, String osDestJar, ICreateInfo createInfo) {
+    public AsmGenerator(Log log, ICreateInfo createInfo) {
         mLog = log;
-        mOsDestJar = osDestJar;
         ArrayList<Class<?>> injectedClasses =
                 new ArrayList<>(Arrays.asList(createInfo.getInjectedClasses()));
         // Search for and add anonymous inner classes also.
@@ -241,7 +233,7 @@ public class AsmGenerator {
     }
 
     /** Generates the final JAR */
-    public void generate() throws IOException {
+    public Map<String, byte[]> generate() throws IOException {
         TreeMap<String, byte[]> all = new TreeMap<>();
 
         for (Class<?> clazz : mInjectClasses) {
@@ -280,28 +272,7 @@ public class AsmGenerator {
         mLog.info("# keep classes: %d", mKeep.size());
         mLog.info("# renamed     : %d", mRenameCount);
 
-        createJar(new FileOutputStream(mOsDestJar), all);
-        mLog.info("Created JAR file %s", mOsDestJar);
-    }
-
-    /**
-     * Writes the JAR file.
-     *
-     * @param outStream The file output stream were to write the JAR.
-     * @param all The map of all classes to output.
-     * @throws IOException if an I/O error has occurred
-     */
-    void createJar(FileOutputStream outStream, Map<String,byte[]> all) throws IOException {
-        JarOutputStream jar = new JarOutputStream(outStream);
-        for (Entry<String, byte[]> entry : all.entrySet()) {
-            String name = entry.getKey();
-            JarEntry jar_entry = new JarEntry(name);
-            jar.putNextEntry(jar_entry);
-            jar.write(entry.getValue());
-            jar.closeEntry();
-        }
-        jar.flush();
-        jar.close();
+        return all;
     }
 
     /**
@@ -375,8 +346,11 @@ public class AsmGenerator {
         if (mInjectedMethodsMap.keySet().contains(binaryNewName)) {
             cv = new InjectMethodsAdapter(cv, mInjectedMethodsMap.get(binaryNewName));
         }
-        cv = new TransformClassAdapter(mLog, Collections.emptySet(), mDeleteReturns.get(className),
-                newName, cv, stubNativesOnly);
+        cv = StubClassAdapter.builder(mLog, cv)
+                .withDeleteReturns(mDeleteReturns.get(className))
+                .withNewClassName(newName)
+                .useOnlyStubNative(stubNativesOnly)
+                .build();
 
         Set<String> delegateMethods = mDelegateMethods.get(className);
         if (delegateMethods != null && !delegateMethods.isEmpty()) {

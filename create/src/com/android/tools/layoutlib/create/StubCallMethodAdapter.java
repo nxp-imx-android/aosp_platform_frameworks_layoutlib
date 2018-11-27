@@ -27,7 +27,7 @@ import org.objectweb.asm.Type;
  * This method adapter rewrites a method by discarding the original code and generating
  * a stub depending on the return type. Original annotations are passed along unchanged.
  */
-class StubMethodAdapter extends MethodVisitor {
+class StubCallMethodAdapter extends MethodVisitor {
 
     private static final String CONSTRUCTOR = "<init>";
     private static final String CLASS_INIT = "<clinit>";
@@ -48,7 +48,7 @@ class StubMethodAdapter extends MethodVisitor {
     private final boolean mIsStatic;
     private final boolean mIsNative;
 
-    public StubMethodAdapter(MethodVisitor mv, String methodName, Type returnType,
+    public StubCallMethodAdapter(MethodVisitor mv, String methodName, Type returnType,
             String invokeSignature, boolean isStatic, boolean isNative) {
         super(Main.ASM_VERSION);
         mParentVisitor = mv;
