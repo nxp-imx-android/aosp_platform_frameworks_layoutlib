@@ -158,6 +158,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.content.res.AssetManager#nativeThemeCreate",
         "android.content.res.AssetManager#nativeThemeDestroy",
         "android.content.res.AssetManager#getAssignedPackageIdentifiers",
+        "android.content.res.AssetManager#nativeCreateIdmapsForStaticOverlaysTargetingAndroid",
         "android.content.res.TypedArray#getValueAt",
         "android.content.res.TypedArray#obtain",
         "android.graphics.BitmapFactory#finishDecode",
