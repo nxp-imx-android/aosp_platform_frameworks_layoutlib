@@ -84,4 +84,10 @@ public class AssetManager_Delegate {
     /*package*/ static SparseArray<String> getAssignedPackageIdentifiers(AssetManager manager) {
         return new SparseArray<>();
     }
+
+    @LayoutlibDelegate
+    /*package*/ static String[] nativeCreateIdmapsForStaticOverlaysTargetingAndroid() {
+        // AssetManager requires this not to be null
+        return new String[0];
+    }
 }
