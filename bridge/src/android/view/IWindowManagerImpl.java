@@ -53,7 +53,8 @@ public class IWindowManagerImpl extends IWindowManager.Default {
     }
 
     @Override
-    public boolean hasNavigationBar() {
+    public boolean hasNavigationBar(int displayId) {
+        // TODO(multi-display): Change it once we need it per display.
         return mHasNavigationBar;
     }
 }
