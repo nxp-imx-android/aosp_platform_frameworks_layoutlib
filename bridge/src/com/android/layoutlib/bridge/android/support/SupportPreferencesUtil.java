@@ -304,4 +304,20 @@ public class SupportPreferencesUtil {
             return null;
         }
     }
+
+    /**
+     * Returns true if the given root tag is any of the support library {@code PreferenceScreen}
+     * tags.
+     */
+    public static boolean isSupportRootTag(@Nullable String rootTag) {
+        if (rootTag != null) {
+            for (String supportPrefix : PREFERENCES_PKG_NAMES) {
+                if (rootTag.equals(supportPrefix + ".PreferenceScreen")) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }
