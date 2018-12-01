@@ -25,6 +25,7 @@ LOCAL_JAVA_LIBRARIES := \
 
 LOCAL_STATIC_JAVA_LIBRARIES := \
 	temp_layoutlib \
+	guava-prebuilt-host-jar \
 	ninepatch-prebuilt \
 	layoutlib-common
 
@@ -39,7 +40,8 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(call all-java-files-under,src)
 LOCAL_JAVA_RESOURCE_DIRS := resources
 
-LOCAL_JAVA_LIBRARIES := temp_layoutlib
+LOCAL_JAVA_LIBRARIES := temp_layoutlib \
+	guava-prebuilt-host-jar \
 
 LOCAL_STATIC_JAVA_LIBRARIES := \
 	layoutlib_create \
