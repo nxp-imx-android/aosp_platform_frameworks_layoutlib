@@ -604,7 +604,7 @@ public class BridgeContext extends Context {
             case AUTOFILL_MANAGER_SERVICE:
             case AUDIO_SERVICE:
             case TEXT_CLASSIFICATION_SERVICE:
-            case INTELLIGENCE_MANAGER_SERVICE:
+            case CONTENT_CAPTURE_MANAGER_SERVICE:
                 return null;
             default:
                 assert false : "Unsupported Service: " + service;
