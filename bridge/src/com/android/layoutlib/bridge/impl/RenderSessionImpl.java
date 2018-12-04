@@ -311,7 +311,8 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             Fragment_Delegate.setLayoutlibCallback(params.getLayoutlibCallback());
 
             String rootTag = params.getFlag(RenderParamsFlags.FLAG_KEY_ROOT_TAG);
-            boolean isPreference = "PreferenceScreen".equals(rootTag);
+            boolean isPreference = "PreferenceScreen".equals(rootTag) ||
+                    SupportPreferencesUtil.isSupportRootTag(rootTag);
             View view;
             if (isPreference) {
                 // First try to use the support library inflater. If something fails, fallback
