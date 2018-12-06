@@ -149,6 +149,8 @@ public class OptimizingLineBreaker extends LineBreaker {
         lineBreaks.breaks = breaks;
         lineBreaks.widths = widths;
         lineBreaks.flags = flags;
+        lineBreaks.ascents = new float[size];
+        lineBreaks.descents = new float[size];
     }
 
     @NonNull

@@ -18,11 +18,15 @@ package com.android.layoutlib.bridge.android.support;
 
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.RenderResources;
+import com.android.ide.common.rendering.api.ResourceNamespace;
+import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.StyleResourceValue;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
 import com.android.layoutlib.bridge.util.ReflectionUtils.ReflectionException;
+import com.android.resources.ResourceType;
+import com.android.tools.layoutlib.annotations.NotNull;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -114,7 +118,7 @@ public class SupportPreferencesUtil {
      * Returns a themed wrapper context of {@link BridgeContext} with the theme specified in
      * ?attr/preferenceTheme applied to it.
      */
-    @Nullable
+    @NotNull
     private static Context getThemedContext(@NonNull BridgeContext bridgeContext) {
         RenderResources resources = bridgeContext.getRenderResources();
         ResourceValue preferenceTheme = resources.findItemInTheme(
@@ -123,6 +127,12 @@ public class SupportPreferencesUtil {
         if (preferenceTheme != null) {
             // resolve it, if needed.
             preferenceTheme = resources.resolveResValue(preferenceTheme);
+        } else {
+            // The current theme does not define "preferenceTheme" so we will use the default
+            // "PreferenceThemeOverlay" if available.
+            preferenceTheme = resources.getStyle(
+                    bridgeContext.createAppCompatResourceReference(ResourceType.STYLE,
+                            "PreferenceThemeOverlay"));
         }
         if (preferenceTheme instanceof StyleResourceValue) {
             int styleId = bridgeContext.getDynamicIdByStyle(((StyleResourceValue) preferenceTheme));
@@ -131,7 +141,9 @@ public class SupportPreferencesUtil {
             }
         }
 
-        return null;
+        // We were not able to find any preferences theme so return the original Context without
+        // any theme wrapping
+        return bridgeContext;
     }
 
     /**
@@ -224,12 +236,7 @@ public class SupportPreferencesUtil {
 
         try {
             LayoutlibCallback callback = bridgeContext.getLayoutlibCallback();
-
             Context context = getThemedContext(bridgeContext);
-            if (context == null) {
-                // Probably we couldn't find the "preferenceTheme" in the theme
-                return null;
-            }
 
             // Create PreferenceManager
             Object preferenceManager = instantiateClass(callback, preferenceManagerClassName,
@@ -303,5 +310,21 @@ public class SupportPreferencesUtil {
         } catch (ReflectionException e) {
             return null;
         }
+    }
+
+    /**
+     * Returns true if the given root tag is any of the support library {@code PreferenceScreen}
+     * tags.
+     */
+    public static boolean isSupportRootTag(@Nullable String rootTag) {
+        if (rootTag != null) {
+            for (String supportPrefix : PREFERENCES_PKG_NAMES) {
+                if (rootTag.equals(supportPrefix + ".PreferenceScreen")) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

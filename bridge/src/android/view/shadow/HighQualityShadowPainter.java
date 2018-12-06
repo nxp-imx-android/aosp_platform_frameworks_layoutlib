@@ -23,6 +23,9 @@ import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static android.view.shadow.ShadowConstants.SCALE_DOWN;
 
 public class HighQualityShadowPainter {
@@ -51,8 +54,14 @@ public class HighQualityShadowPainter {
         rectBound.right /= SCALE_DOWN;
         rectBound.top /= SCALE_DOWN;
         rectBound.bottom /= SCALE_DOWN;
+        float radius = outline.getRadius() / SCALE_DOWN;
 
-        float[] poly = getPoly(rectBound, elevation / SCALE_DOWN);
+        if (radius > rectBound.width() || radius > rectBound.height()) {
+            // Rounded edge generation fails if radius is bigger than drawing box.
+            return;
+        }
+
+        float[] poly = getPoly(rectBound, elevation / SCALE_DOWN, radius);
 
         paintAmbientShadow(poly, canvas, width, height);
         paintSpotShadow(poly, rectBound, elevation / SCALE_DOWN,
@@ -122,7 +131,7 @@ public class HighQualityShadowPainter {
                 .setLightRadius(ShadowConstants.SPOT_SHADOW_LIGHT_RADIUS)
                 .setLightSourcePoints(ShadowConstants.SPOT_SHADOW_LIGHT_SOURCE_POINTS)
                 .setShadowStrength(ShadowConstants.SPOT_SHADOW_STRENGTH)
-                .setPolygon(poly, ShadowConstants.RECT_VERTICES_SIZE)
+                .setPolygon(poly, poly.length / ShadowConstants.COORDINATE_SIZE)
                 .build();
 
         SpotShadowBitmapGenerator generator = new SpotShadowBitmapGenerator(config);
@@ -154,16 +163,67 @@ public class HighQualityShadowPainter {
         canvas.restoreToCount(save);
     }
 
-    private static float[] getPoly(Rect rect, float elevation) {
-        float[] poly = new float[ShadowConstants.RECT_VERTICES_SIZE *
-                ShadowConstants.COORDINATE_SIZE];
+    private static float[] getPoly(Rect rect, float elevation, float radius) {
+        if (radius <= 0) {
+            float[] poly = new float[ShadowConstants.RECT_VERTICES_SIZE * ShadowConstants.COORDINATE_SIZE];
 
-        poly[0] = poly[9] = rect.left;
-        poly[1] = poly[4] = rect.top;
-        poly[3] = poly[6] = rect.right;
-        poly[7] = poly[10] = rect.bottom;
-        poly[2] = poly[5] = poly[8] = poly[11] = elevation;
+            poly[0] = poly[9] = rect.left;
+            poly[1] = poly[4] = rect.top;
+            poly[3] = poly[6] = rect.right;
+            poly[7] = poly[10] = rect.bottom;
+            poly[2] = poly[5] = poly[8] = poly[11] = elevation;
 
-        return poly;
+            return poly;
+        }
+
+        return buildRoundedEdges(rect, elevation, radius);
+    }
+
+    private static float[] buildRoundedEdges(
+            Rect rect, float elevation, float radius) {
+
+        float[] roundedEdgeVertices = new float[(ShadowConstants.SPLICE_ROUNDED_EDGE + 1) * 4 * 3];
+        int index = 0;
+        // 1.0 LT. From theta 0 to pi/2 in K division.
+        for (int i = 0; i <= ShadowConstants.SPLICE_ROUNDED_EDGE; i++) {
+            double theta = (Math.PI / 2.0d) * ((double) i / ShadowConstants.SPLICE_ROUNDED_EDGE);
+            float x = (float) (rect.left + (radius - radius * Math.cos(theta)));
+            float y = (float) (rect.top + (radius - radius * Math.sin(theta)));
+            roundedEdgeVertices[index++] = x;
+            roundedEdgeVertices[index++] = y;
+            roundedEdgeVertices[index++] = elevation;
+        }
+
+        // 2.0 RT
+        for (int i = ShadowConstants.SPLICE_ROUNDED_EDGE; i >= 0; i--) {
+            double theta = (Math.PI / 2.0d) * ((double) i / ShadowConstants.SPLICE_ROUNDED_EDGE);
+            float x = (float) (rect.right - (radius - radius * Math.cos(theta)));
+            float y = (float) (rect.top + (radius - radius * Math.sin(theta)));
+            roundedEdgeVertices[index++] = x;
+            roundedEdgeVertices[index++] = y;
+            roundedEdgeVertices[index++] = elevation;
+        }
+
+        // 3.0 RB
+        for (int i = 0; i <= ShadowConstants.SPLICE_ROUNDED_EDGE; i++) {
+            double theta = (Math.PI / 2.0d) * ((double) i / ShadowConstants.SPLICE_ROUNDED_EDGE);
+            float x = (float) (rect.right - (radius - radius * Math.cos(theta)));
+            float y = (float) (rect.bottom - (radius - radius * Math.sin(theta)));
+            roundedEdgeVertices[index++] = x;
+            roundedEdgeVertices[index++] = y;
+            roundedEdgeVertices[index++] = elevation;
+        }
+
+        // 4.0 LB
+        for (int i = ShadowConstants.SPLICE_ROUNDED_EDGE; i >= 0; i--) {
+            double theta = (Math.PI / 2.0d) * ((double) i / ShadowConstants.SPLICE_ROUNDED_EDGE);
+            float x = (float) (rect.left + (radius - radius * Math.cos(theta)));
+            float y = (float) (rect.bottom - (radius - radius * Math.sin(theta)));
+            roundedEdgeVertices[index++] = x;
+            roundedEdgeVertices[index++] = y;
+            roundedEdgeVertices[index++] = elevation;
+        }
+
+        return roundedEdgeVertices;
     }
 }
