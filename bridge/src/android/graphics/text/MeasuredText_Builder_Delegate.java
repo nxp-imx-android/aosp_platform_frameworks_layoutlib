@@ -90,7 +90,7 @@ public class MeasuredText_Builder_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static long nBuildMeasuredText(long nativeBuilderPtr,
+    /*package*/ static long nBuildMeasuredText(long nativeBuilderPtr, long hintMtPtr,
             @NonNull char[] text, boolean computeHyphenation, boolean computeLayout) {
         MeasuredText_Delegate delegate = new MeasuredText_Delegate();
         delegate.mNativeBuilderPtr = nativeBuilderPtr;
