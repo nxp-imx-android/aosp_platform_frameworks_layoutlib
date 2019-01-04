@@ -532,7 +532,8 @@ public class AsmAnalyzer {
 
         /**
          * Considers this {@link Type}. For arrays, the element type is considered.
-         * If the type is an object, it's internal name is considered.
+         * If the type is an object, its internal name is considered. If it is a method type,
+         * iterate through the argument and return types.
          */
         public void considerType(Type t) {
             if (t != null) {
@@ -541,6 +542,12 @@ public class AsmAnalyzer {
                 }
                 if (t.getSort() == Type.OBJECT) {
                     considerName(t.getInternalName());
+                }
+                if (t.getSort() == Type.METHOD) {
+                    for (Type type : t.getArgumentTypes()) {
+                        considerType(type);
+                    }
+                    considerType(t.getReturnType());
                 }
             }
         }
