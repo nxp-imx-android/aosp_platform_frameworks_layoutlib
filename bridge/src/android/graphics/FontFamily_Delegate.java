@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import libcore.util.NativeAllocationRegistry_Delegate;
+import sun.font.FontUtilities;
 
 import static android.graphics.Typeface.RESOLVE_BY_FONT_TABLE;
 import static android.graphics.Typeface_Delegate.SYSTEM_FONTS;
@@ -414,12 +415,16 @@ public class FontFamily_Delegate {
                 fontInfo = new FontInfo();
                 fontInfo.mFont = font;
                 if (weight == RESOLVE_BY_FONT_TABLE) {
-                    fontInfo.mWeight = font.isBold() ? BOLD_FONT_WEIGHT : DEFAULT_FONT_WEIGHT;
+                    fontInfo.mWeight = FontUtilities.getFont2D(font).getWeight();
                 } else {
                     fontInfo.mWeight = weight;
                 }
-                fontInfo.mIsItalic = isItalic == RESOLVE_BY_FONT_TABLE ? font.isItalic() :
-                        isItalic == 1;
+                if (isItalic == RESOLVE_BY_FONT_TABLE) {
+                    fontInfo.mIsItalic =
+                            (FontUtilities.getFont2D(font).getStyle() & Font.ITALIC) != 0;
+                } else {
+                    fontInfo.mIsItalic = isItalic == 1;
+                }
                 ffd.addFont(fontInfo);
                 return true;
             } catch (IOException e) {
