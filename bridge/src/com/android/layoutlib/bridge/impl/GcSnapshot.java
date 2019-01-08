@@ -815,6 +815,10 @@ public class GcSnapshot {
         // the alpha for the composite. Always opaque if the normal paint color is used since
         // it contains the alpha
         int alpha = usePaintAlpha ? paint.getAlpha() : 0xFF;
+        Shader_Delegate shader = paint.getShader();
+        if (shader != null) {
+            alpha = (int)(alpha * shader.getAlpha());
+        }
         if (forceMode != 0) {
             g.setComposite(AlphaComposite.getInstance(forceMode, (float) alpha / 255.f));
             return;
