@@ -623,6 +623,42 @@ public class RenderTests extends RenderTestBase {
                 TimeUnit.SECONDS.toNanos(2));
     }
 
+    /**
+     * Tests that the gradients are correctly combined with alpha values.
+     * <p/>
+     * http://b/122260583
+     */
+    @Test
+    public void testGradientAlphaDrawable() throws ClassNotFoundException {
+        // Create the layout pull parser.
+        LayoutPullParser parser = LayoutPullParser.createFromString(
+                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "              android:padding=\"16dp\"\n" +
+                        "              android:orientation=\"horizontal\"\n" +
+                        "              android:layout_width=\"match_parent\"\n" +
+                        "              android:layout_height=\"match_parent\">\n" +
+                        "    <ImageView\n" +
+                        "             android:layout_height=\"match_parent\"\n" +
+                        "             android:layout_width=\"match_parent\"\n" +
+                        "             android:src=\"@drawable/vector_gradient_alpha\" />\n\n" +
+                        "</LinearLayout>");
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .disableDecoration()
+                .build();
+
+        renderAndVerify(params, "gradient_alpha_drawable.png",
+                TimeUnit.SECONDS.toNanos(2));
+    }
+
     /** Test activity.xml */
     @Test
     public void testScrollingAndMeasure() throws ClassNotFoundException, FileNotFoundException {

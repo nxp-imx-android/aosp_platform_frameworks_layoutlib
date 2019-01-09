@@ -1196,6 +1196,7 @@ public class VectorDrawable_Delegate {
                         // If there is a shader, apply the local transformation to make sure
                         // the gradient is transformed to match the viewport
                         shaderDelegate.setLocalMatrix(mFinalPathMatrix.native_instance);
+                        shaderDelegate.setAlpha(fullPath.mFillAlpha);
                     }
 
                     fillPaintDelegate.setShader(fullPath.mFillGradient);
@@ -1234,6 +1235,11 @@ public class VectorDrawable_Delegate {
                     strokePaintDelegate.setColorFilter(filterPtr);
                     final float finalStrokeScale = minScale * matrixScale;
                     strokePaint.setStrokeWidth(fullPath.mStrokeWidth * finalStrokeScale);
+                    Shader_Delegate strokeShaderDelegate =
+                            Shader_Delegate.getDelegate(fullPath.mStrokeGradient);
+                    if (strokeShaderDelegate != null) {
+                        strokeShaderDelegate.setAlpha(fullPath.mStrokeAlpha);
+                    }
                     strokePaintDelegate.setShader(fullPath.mStrokeGradient);
                     BaseCanvas_Delegate.nDrawPath(canvasPtr, mRenderPath.mNativePath, strokePaint
                             .getNativeInstance());
