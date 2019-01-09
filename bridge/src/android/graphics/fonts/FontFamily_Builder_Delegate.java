@@ -130,17 +130,16 @@ public class FontFamily_Builder_Delegate {
         } else {
             int bestMatch = Integer.MAX_VALUE;
 
-            //noinspection ForLoopReplaceableByForEach (avoid iterator instantiation)
             for (FontInfo font : mFonts.keySet()) {
                 int match = computeMatch(font, desiredStyle);
                 if (match < bestMatch) {
                     bestMatch = match;
                     bestFont = font;
+                    if (bestMatch == 0) {
+                        break;
+                    }
                 }
             }
-
-            // This would mean that we already had the font so it should be in the set
-            assert bestMatch != 0;
         }
 
         if (bestFont == null) {

@@ -223,17 +223,16 @@ public class FontFamily_Delegate {
         } else {
             int bestMatch = Integer.MAX_VALUE;
 
-            //noinspection ForLoopReplaceableByForEach (avoid iterator instantiation)
             for (FontInfo font : mFonts.keySet()) {
                 int match = computeMatch(font, desiredStyle);
                 if (match < bestMatch) {
                     bestMatch = match;
                     bestFont = font;
+                    if (bestMatch == 0) {
+                        break;
+                    }
                 }
             }
-
-            // This would mean that we already had the font so it should be in the set
-            assert bestMatch != 0;
         }
 
         if (bestFont == null) {
@@ -516,9 +515,9 @@ public class FontFamily_Delegate {
      * Compute matching metric between two styles - 0 is an exact match.
      */
     public static int computeMatch(@NonNull FontInfo font1, @NonNull FontInfo font2) {
-        int score = Math.abs(font1.mWeight - font2.mWeight);
+        int score = Math.abs(font1.mWeight / 100 - font2.mWeight / 100);
         if (font1.mIsItalic != font2.mIsItalic) {
-            score += 200;
+            score += 2;
         }
         return score;
     }
