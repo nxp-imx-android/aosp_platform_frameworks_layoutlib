@@ -17,6 +17,7 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := $(call all-java-files-under,src)
+LOCAL_JAVA_LANGUAGE_VERSION := 1.8
 LOCAL_JAVA_RESOURCE_DIRS := resources
 
 LOCAL_JAVA_LIBRARIES := \
@@ -27,6 +28,7 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
 	temp_layoutlib \
 	ninepatch-prebuilt \
 	layoutlib-common
+
 
 LOCAL_MODULE := layoutlib
 
