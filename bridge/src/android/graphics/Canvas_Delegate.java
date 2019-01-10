@@ -190,6 +190,11 @@ public final class Canvas_Delegate extends BaseCanvas_Delegate {
     }
 
     @LayoutlibDelegate
+    public static int nSaveUnclippedLayer(long nativeCanvas, int l, int t, int r, int b) {
+        return nSaveLayer(nativeCanvas, l, t, r, b, 0, 0);
+    }
+
+    @LayoutlibDelegate
     public static int nSaveLayerAlpha(long nativeCanvas, float l,
                                                     float t, float r, float b,
                                                     int alpha, int layerFlags) {
