@@ -438,7 +438,7 @@ public class AsmAnalyzer {
 
             try {
                 // exclude classes that are part of the default JRE (the one executing this program)
-                if (className.startsWith("java.") ||
+                if (className.startsWith("java.") || className.startsWith("sun.") ||
                         getClass().getClassLoader().loadClass(className) != null) {
                     return;
                 }
