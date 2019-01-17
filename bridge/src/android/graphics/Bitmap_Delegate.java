@@ -338,6 +338,12 @@ public final class Bitmap_Delegate {
     }
 
     @LayoutlibDelegate
+    /*package*/ static void nativeErase(long nativeBitmap, ColorSpace cs,
+            float r, float g, float b, float a) {
+        nativeErase(nativeBitmap, Color.argb(a, r, g, b));
+    }
+
+    @LayoutlibDelegate
     /*package*/ static int nativeRowBytes(long nativeBitmap) {
         // get the delegate from the native int.
         Bitmap_Delegate delegate = sManager.getDelegate(nativeBitmap);
