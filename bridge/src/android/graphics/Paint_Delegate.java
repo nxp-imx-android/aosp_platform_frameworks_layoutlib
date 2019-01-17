@@ -398,6 +398,12 @@ public class Paint_Delegate {
     }
 
     @LayoutlibDelegate
+    /*package*/ static void nSetColor(long paintPtr, ColorSpace cs,
+            float r, float g, float b, float a) {
+        nSetColor(paintPtr, Color.argb(a, r, g, b));
+    }
+
+    @LayoutlibDelegate
     /*package*/ static int nGetAlpha(long nativePaint) {
         // get the delegate from the native int.
         Paint_Delegate delegate = sManager.getDelegate(nativePaint);
@@ -467,6 +473,14 @@ public class Paint_Delegate {
     /*package*/ static void nSetShadowLayer(long paint, float radius, float dx, float dy,
             int color) {
         // FIXME
+        Bridge.getLog().fidelityWarning(LayoutLog.TAG_UNSUPPORTED,
+                "Paint.setShadowLayer is not supported.", null, null /*data*/);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static void nSetShadowLayer(long paintPtr,
+            float radius, float dx, float dy, ColorSpace cs,
+            float r, float g, float b, float a) {
         Bridge.getLog().fidelityWarning(LayoutLog.TAG_UNSUPPORTED,
                 "Paint.setShadowLayer is not supported.", null, null /*data*/);
     }
