@@ -222,6 +222,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.RenderNode#nGetScaleY",
         "android.graphics.RenderNode#nIsPivotExplicitlySet",
         "android.view.PointerIcon#loadResource",
+        "android.view.PointerIcon#registerDisplayListener",
         "android.view.SurfaceControl#nativeCreateTransaction",
         "android.view.SurfaceControl#nativeGetNativeTransactionFinalizer",
         "android.view.ViewGroup#drawChild",
