@@ -376,42 +376,14 @@ public class Paint_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static int nGetColor(long nativePaint) {
-        // get the delegate from the native int.
-        Paint_Delegate delegate = sManager.getDelegate(nativePaint);
-        if (delegate == null) {
-            return 0;
-        }
-
-        return delegate.mColor;
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static void nSetColor(long nativePaint, int color) {
-        // get the delegate from the native int.
-        Paint_Delegate delegate = sManager.getDelegate(nativePaint);
+    /*package*/ static void nSetColor(long paintPtr, ColorSpace cs,
+            float r, float g, float b, float a) {
+        Paint_Delegate delegate = sManager.getDelegate(paintPtr);
         if (delegate == null) {
             return;
         }
 
-        delegate.mColor = color;
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static void nSetColor(long paintPtr, ColorSpace cs,
-            float r, float g, float b, float a) {
-        nSetColor(paintPtr, Color.argb(a, r, g, b));
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static int nGetAlpha(long nativePaint) {
-        // get the delegate from the native int.
-        Paint_Delegate delegate = sManager.getDelegate(nativePaint);
-        if (delegate == null) {
-            return 0;
-        }
-
-        return delegate.getAlpha();
+        delegate.mColor = Color.argb(a, r, g, b);
     }
 
     @LayoutlibDelegate
