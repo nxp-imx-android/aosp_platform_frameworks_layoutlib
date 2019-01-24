@@ -10,4 +10,9 @@ cc_library_host_static {
     export_include_dirs: [
         "include",
     ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
