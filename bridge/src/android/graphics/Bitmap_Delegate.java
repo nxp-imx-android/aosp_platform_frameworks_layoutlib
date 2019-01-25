@@ -47,6 +47,7 @@ import javax.imageio.ImageIO;
 import libcore.util.NativeAllocationRegistry_Delegate;
 
 import static android.content.res.AssetManager.ACCESS_STREAMING;
+import static android.graphics.Bitmap.Config.RGBA_F16;
 
 /**
  * Delegate implementing the native methods of android.graphics.Bitmap
@@ -361,6 +362,16 @@ public final class Bitmap_Delegate {
         }
 
         return delegate.mConfig.nativeInt;
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static boolean nativeIsConfigF16(long nativeBitmap) {
+        Bitmap_Delegate delegate = sManager.getDelegate(nativeBitmap);
+        if (delegate == null) {
+            return false;
+        }
+
+        return delegate.mConfig == RGBA_F16;
     }
 
     @LayoutlibDelegate
