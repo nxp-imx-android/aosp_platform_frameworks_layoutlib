@@ -224,8 +224,7 @@ public final class Bitmap_Delegate {
 
     @LayoutlibDelegate
     /*package*/ static Bitmap nativeCreate(int[] colors, int offset, int stride, int width,
-            int height, int nativeConfig, boolean isMutable, @Nullable float[] xyzD50,
-            @Nullable ColorSpace.Rgb.TransferParameters p) {
+            int height, int nativeConfig, boolean isMutable, long nativeColorSpace) {
         int imageType = getBufferedImageType();
 
         // create the image
@@ -338,9 +337,8 @@ public final class Bitmap_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static void nativeErase(long nativeBitmap, ColorSpace cs,
-            float r, float g, float b, float a) {
-        nativeErase(nativeBitmap, Color.argb(a, r, g, b));
+    /*package*/ static void nativeErase(long nativeBitmap, long colorSpacePtr, long color) {
+        nativeErase(nativeBitmap, Color.toArgb(color));
     }
 
     @LayoutlibDelegate
@@ -632,7 +630,7 @@ public final class Bitmap_Delegate {
 
     @LayoutlibDelegate
     /*package*/ static Bitmap nativeWrapHardwareBufferBitmap(HardwareBuffer buffer,
-            float[] xyzD50, ColorSpace.Rgb.TransferParameters p) {
+            long nativeColorSpace) {
         Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED,
                 "Bitmap.nativeWrapHardwareBufferBitmap() is not supported", null, null, null);
         return null;
