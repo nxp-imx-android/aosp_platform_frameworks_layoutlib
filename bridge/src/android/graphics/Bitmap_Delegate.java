@@ -669,6 +669,12 @@ public final class Bitmap_Delegate {
     }
 
     @LayoutlibDelegate
+    /*package*/ static void nativeSetColorSpace(long nativePtr, long nativeColorSpace) {
+        Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED,
+                "Color spaces are not supported", null /*data*/);
+    }
+
+    @LayoutlibDelegate
     /*package*/ static void nativeCopyColorSpace(long srcBitmap, long dstBitmap) {
         Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED,
                 "Color spaces are not supported", null /*data*/);
