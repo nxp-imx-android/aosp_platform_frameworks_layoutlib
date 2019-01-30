@@ -245,6 +245,7 @@ public final class ResourceHelper {
      * or an hexadecimal color
      * @param context the current context
      */
+    @Nullable
     public static Drawable getDrawable(ResourceValue value, BridgeContext context) {
         return getDrawable(value, context, null);
     }
@@ -290,6 +291,7 @@ public final class ResourceHelper {
      * @param context the current context
      * @param theme the theme to be used to inflate the drawable.
      */
+    @Nullable
     public static Drawable getDrawable(ResourceValue value, BridgeContext context, Theme theme) {
         if (value == null) {
             return null;
