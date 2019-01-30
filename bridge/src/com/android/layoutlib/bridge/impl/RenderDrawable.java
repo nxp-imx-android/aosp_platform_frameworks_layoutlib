@@ -78,17 +78,19 @@ public class RenderDrawable extends RenderAction<DrawableParams> {
         }
 
         Drawable d = ResourceHelper.getDrawable(drawableResource, context);
+        if (d == null) {
+            return Status.ERROR_RENDER.createResult();
+        }
 
-        final Boolean allStates =
-                params.getFlag(RenderParamsFlags.FLAG_KEY_RENDER_ALL_DRAWABLE_STATES);
+        Boolean allStates = params.getFlag(RenderParamsFlags.FLAG_KEY_RENDER_ALL_DRAWABLE_STATES);
         if (allStates == Boolean.TRUE) {
-            final List<BufferedImage> result;
+            List<BufferedImage> result;
 
             if (d instanceof StateListDrawable) {
                 result = new ArrayList<BufferedImage>();
-                final StateListDrawable stateList = (StateListDrawable) d;
+                StateListDrawable stateList = (StateListDrawable) d;
                 for (int i = 0; i < stateList.getStateCount(); i++) {
-                    final Drawable stateDrawable = stateList.getStateDrawable(i);
+                    Drawable stateDrawable = stateList.getStateDrawable(i);
                     result.add(renderImage(hardwareConfig, stateDrawable, context));
                 }
             } else {
