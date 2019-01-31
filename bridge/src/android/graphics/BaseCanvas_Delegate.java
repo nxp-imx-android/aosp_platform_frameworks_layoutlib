@@ -156,6 +156,12 @@ public class BaseCanvas_Delegate {
     }
 
     @LayoutlibDelegate
+    /*package*/ static void nDrawColor(long nativeCanvas, long nativeColorSpace, long color,
+            int mode) {
+        nDrawColor(nativeCanvas, Color.toArgb(color), mode);
+    }
+
+    @LayoutlibDelegate
     /*package*/ static void nDrawPaint(long nativeCanvas, long paint) {
         // FIXME
         Bridge.getLog().fidelityWarning(LayoutLog.TAG_UNSUPPORTED,
