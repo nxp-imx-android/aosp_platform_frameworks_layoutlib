@@ -402,6 +402,11 @@ public final class Bitmap_Delegate {
     }
 
     @LayoutlibDelegate
+    /*package*/ static long nativeGetColor(long nativeBitmap, int x, int y) {
+        return nativeGetPixel(nativeBitmap, x, y);
+    }
+
+    @LayoutlibDelegate
     /*package*/ static void nativeGetPixels(long nativeBitmap, int[] pixels, int offset,
             int stride, int x, int y, int width, int height) {
         Bitmap_Delegate delegate = sManager.getDelegate(nativeBitmap);
