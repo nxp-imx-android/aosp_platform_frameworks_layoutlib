@@ -16,6 +16,7 @@
 
 package com.android.layoutlib.bridge.android;
 
+import android.os.BatterySaverPolicyConfig;
 import android.os.IBinder;
 import android.os.IPowerManager;
 import android.os.PowerManager;
@@ -25,7 +26,6 @@ import android.os.WorkSource;
 
 /**
  * Fake implementation of IPowerManager.
- *
  */
 public class BridgePowerManager implements IPowerManager {
 
@@ -47,6 +47,17 @@ public class BridgePowerManager implements IPowerManager {
     @Override
     public boolean setDynamicPowerSavings(boolean dynamicPowerSavingsEnabled, int disableThreshold)
             throws RemoteException {
+        return false;
+    }
+
+    @Override
+    public boolean setAdaptivePowerSavePolicy(BatterySaverPolicyConfig config)
+            throws RemoteException {
+        return false;
+    }
+
+    @Override
+    public boolean setAdaptivePowerSaveEnabled(boolean enabled) throws RemoteException {
         return false;
     }
 
