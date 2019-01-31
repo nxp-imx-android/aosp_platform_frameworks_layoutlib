@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import libcore.util.NativeAllocationRegistry_Delegate;
+import sun.font.FontUtilities;
 
 import static android.graphics.Typeface.RESOLVE_BY_FONT_TABLE;
 import static android.graphics.Typeface_Delegate.SYSTEM_FONTS;
@@ -222,17 +223,16 @@ public class FontFamily_Delegate {
         } else {
             int bestMatch = Integer.MAX_VALUE;
 
-            //noinspection ForLoopReplaceableByForEach (avoid iterator instantiation)
             for (FontInfo font : mFonts.keySet()) {
                 int match = computeMatch(font, desiredStyle);
                 if (match < bestMatch) {
                     bestMatch = match;
                     bestFont = font;
+                    if (bestMatch == 0) {
+                        break;
+                    }
                 }
             }
-
-            // This would mean that we already had the font so it should be in the set
-            assert bestMatch != 0;
         }
 
         if (bestFont == null) {
@@ -414,12 +414,16 @@ public class FontFamily_Delegate {
                 fontInfo = new FontInfo();
                 fontInfo.mFont = font;
                 if (weight == RESOLVE_BY_FONT_TABLE) {
-                    fontInfo.mWeight = font.isBold() ? BOLD_FONT_WEIGHT : DEFAULT_FONT_WEIGHT;
+                    fontInfo.mWeight = FontUtilities.getFont2D(font).getWeight();
                 } else {
                     fontInfo.mWeight = weight;
                 }
-                fontInfo.mIsItalic = isItalic == RESOLVE_BY_FONT_TABLE ? font.isItalic() :
-                        isItalic == 1;
+                if (isItalic == RESOLVE_BY_FONT_TABLE) {
+                    fontInfo.mIsItalic =
+                            (FontUtilities.getFont2D(font).getStyle() & Font.ITALIC) != 0;
+                } else {
+                    fontInfo.mIsItalic = isItalic == 1;
+                }
                 ffd.addFont(fontInfo);
                 return true;
             } catch (IOException e) {
@@ -511,9 +515,9 @@ public class FontFamily_Delegate {
      * Compute matching metric between two styles - 0 is an exact match.
      */
     private static int computeMatch(@NonNull FontInfo font1, @NonNull FontInfo font2) {
-        int score = Math.abs(font1.mWeight - font2.mWeight);
+        int score = Math.abs(font1.mWeight / 100 - font2.mWeight / 100);
         if (font1.mIsItalic != font2.mIsItalic) {
-            score += 200;
+            score += 2;
         }
         return score;
     }
