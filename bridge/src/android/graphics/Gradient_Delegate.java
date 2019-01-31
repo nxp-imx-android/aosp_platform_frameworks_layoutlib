@@ -18,6 +18,8 @@ package android.graphics;
 
 import android.graphics.Shader.TileMode;
 
+import java.util.Arrays;
+
 /**
  * Base class for true Gradient shader delegate.
  */
@@ -47,7 +49,7 @@ public abstract class Gradient_Delegate extends Shader_Delegate {
      *            corresponding color in the colors array. If this is null, the
      *            the colors are distributed evenly along the gradient line.
      */
-    protected Gradient_Delegate(long nativeMatrix, int colors[], float positions[]) {
+    protected Gradient_Delegate(long nativeMatrix, long[] colors, float[] positions) {
         super(nativeMatrix);
         assert colors.length >= 2 : "needs >= 2 number of colors";
 
@@ -68,7 +70,7 @@ public abstract class Gradient_Delegate extends Shader_Delegate {
             }
         }
 
-        mColors = colors;
+        mColors = Arrays.stream(colors).mapToInt(Color::toArgb).toArray();
         mPositions = positions;
     }
 
