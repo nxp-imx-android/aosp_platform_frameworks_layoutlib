@@ -224,6 +224,7 @@ public final class Typeface_Delegate {
             ArrayMap<String, Typeface> fontMap, ArrayMap<String, FontFamily[]> fallbackMap) {
         Typeface.buildSystemFallback_Original(getFontLocation() + "/fonts.xml", fontDir, fontMap,
                 fallbackMap);
+        Bridge.sIsTypefaceInitialized = true;
     }
 
     @LayoutlibDelegate
