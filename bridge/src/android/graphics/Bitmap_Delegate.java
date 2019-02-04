@@ -638,13 +638,6 @@ public final class Bitmap_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static Bitmap nativeCreateHardwareBitmap(GraphicBuffer buffer) {
-        Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED,
-                "Bitmap.nativeCreateHardwareBitmap() is not supported", null /*data*/);
-        return null;
-    }
-
-    @LayoutlibDelegate
     /*package*/ static Bitmap nativeWrapHardwareBufferBitmap(HardwareBuffer buffer,
             long nativeColorSpace) {
         Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED,
