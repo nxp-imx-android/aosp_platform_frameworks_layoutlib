@@ -38,6 +38,8 @@ import com.android.util.Pair;
 
 import android.content.res.BridgeAssetManager;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
+import android.graphics.Typeface_Builder_Delegate;
 import android.graphics.fonts.SystemFonts_Delegate;
 import android.icu.util.ULocale;
 import android.os.Looper;
@@ -60,6 +62,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import libcore.io.MemoryMappedFile_Delegate;
 
+import static android.graphics.Typeface.DEFAULT_FAMILY;
+import static android.graphics.Typeface.RESOLVE_BY_FONT_TABLE;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN;
 
 /**
@@ -656,5 +660,14 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             sJniLibLoadAttempted = true;
         }
         sJniLibLoaded = true;
+    }
+
+    @Override
+    public void clearFontCache(String path) {
+        final String key = Typeface_Builder_Delegate.createAssetUid(
+                BridgeAssetManager.initSystem(), path, 0, null,
+                RESOLVE_BY_FONT_TABLE, RESOLVE_BY_FONT_TABLE,
+                DEFAULT_FAMILY);
+        Typeface.sDynamicTypefaceCache.remove(key);
     }
 }

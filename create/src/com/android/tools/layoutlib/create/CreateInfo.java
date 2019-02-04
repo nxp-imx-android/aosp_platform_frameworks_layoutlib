@@ -180,6 +180,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.drawable.AdaptiveIconDrawable#<init>",
         "android.graphics.FontFamily#addFontFromAssetManager",
         "android.graphics.Typeface#create",
+        "android.graphics.Typeface$Builder#createAssetUid",
         "android.graphics.fonts.SystemFonts#buildSystemFallback",
         "android.os.Binder#getNativeBBinderHolder",
         "android.os.Binder#getNativeFinalizer",
@@ -372,6 +373,8 @@ public final class CreateInfo implements ICreateInfo {
     private final static String[] PROMOTED_FIELDS = new String[] {
         "android.animation.AnimatorSet#mLastFrameTime",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI#mSet",
+        "android.graphics.Typeface#DEFAULT_FAMILY",
+        "android.graphics.Typeface#sDynamicTypefaceCache",
         "android.graphics.drawable.AdaptiveIconDrawable#sMask",
         "android.animation.PropertyValuesHolder#sSetterPropertyMap",
         "android.animation.PropertyValuesHolder#sGetterPropertyMap",
