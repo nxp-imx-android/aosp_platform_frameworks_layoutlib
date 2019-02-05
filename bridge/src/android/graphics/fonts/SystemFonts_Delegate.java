@@ -16,6 +16,7 @@
 
 package android.graphics.fonts;
 
+import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.impl.DelegateManager;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
@@ -51,6 +52,7 @@ public class SystemFonts_Delegate {
             @NonNull FontCustomizationParser.Result oemCustomization,
             @NonNull ArrayMap<String, FontFamily[]> fallbackMap,
             @NonNull ArrayList<Font> availableFonts) {
+        Bridge.sIsTypefaceInitialized = true;
         return SystemFonts.buildSystemFallback_Original(sFontLocation + "fonts.xml",
                 sFontLocation, oemCustomization, fallbackMap, availableFonts);
     }
