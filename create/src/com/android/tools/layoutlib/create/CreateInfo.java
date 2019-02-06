@@ -185,6 +185,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.view.Display#updateDisplayInfoLocked",
         "android.view.Display#getWindowManager",
         "android.view.HandlerActionQueue#postDelayed",
+        "android.view.LayoutInflater#initPrecompiledViews",
         "android.view.LayoutInflater#rInflate",
         "android.view.LayoutInflater#parseInclude",
         "android.view.View#draw",
