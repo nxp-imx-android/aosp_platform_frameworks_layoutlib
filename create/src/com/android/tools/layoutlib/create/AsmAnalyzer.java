@@ -204,11 +204,15 @@ public class AsmAnalyzer {
                         if (entry.getName().endsWith(".class")) {
                             ClassReader cr = new ClassReader(zip.getInputStream(entry));
                             String className = classReaderToClassName(cr);
-                            classes.put(className, cr);
+                            synchronized (classes) {
+                                classes.put(className, cr);
+                            }
                         } else {
                             for (Pattern includeFilePattern : includeFilePatterns) {
                                 if (includeFilePattern.matcher(entry.getName()).matches()) {
-                                    filesFound.put(entry.getName(), zip.getInputStream(entry));
+                                    synchronized (filesFound) {
+                                        filesFound.put(entry.getName(), zip.getInputStream(entry));
+                                    }
                                     break;
                                 }
                             }
