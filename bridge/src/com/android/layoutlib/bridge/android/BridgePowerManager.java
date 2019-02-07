@@ -20,6 +20,7 @@ import android.os.BatterySaverPolicyConfig;
 import android.os.IBinder;
 import android.os.IPowerManager;
 import android.os.PowerManager;
+import android.os.PowerManager.WakeReason;
 import android.os.PowerSaveState;
 import android.os.RemoteException;
 import android.os.WorkSource;
@@ -160,7 +161,8 @@ public class BridgePowerManager implements IPowerManager {
     }
 
     @Override
-    public void wakeUp(long time, String reason, String opPackageName) throws RemoteException {
+    public void wakeUp(long time, @WakeReason int reason, String details , String opPackageName)
+            throws RemoteException {
         // pass for now.
     }
 

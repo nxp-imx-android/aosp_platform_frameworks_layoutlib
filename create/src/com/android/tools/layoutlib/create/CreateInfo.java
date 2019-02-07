@@ -118,6 +118,7 @@ public final class CreateInfo implements ICreateInfo {
     public final static String[] DELEGATE_METHODS = new String[] {
         "android.app.Fragment#instantiate", //(Landroid/content/Context;Ljava/lang/String;Landroid/os/Bundle;)Landroid/app/Fragment;",
         "android.content.res.Resources#getAnimation",
+        "android.content.res.Resources#getAttributeSetSourceResId",
         "android.content.res.Resources#getBoolean",
         "android.content.res.Resources#getColor",
         "android.content.res.Resources#getColorStateList",
@@ -184,6 +185,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.view.Display#updateDisplayInfoLocked",
         "android.view.Display#getWindowManager",
         "android.view.HandlerActionQueue#postDelayed",
+        "android.view.LayoutInflater#initPrecompiledViews",
         "android.view.LayoutInflater#rInflate",
         "android.view.LayoutInflater#parseInclude",
         "android.view.View#draw",

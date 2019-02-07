@@ -930,6 +930,12 @@ public class Resources_Delegate {
     }
 
     @LayoutlibDelegate
+    static int getAttributeSetSourceResId(@Nullable AttributeSet set) {
+        // Not supported in layoutlib
+        return Resources.ID_NULL;
+    }
+
+    @LayoutlibDelegate
     static XmlResourceParser getXml(Resources resources, int id) throws NotFoundException {
         Pair<String, ResourceValue> v = getResourceValue(resources, id);
 
