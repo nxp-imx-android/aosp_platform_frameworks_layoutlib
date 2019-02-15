@@ -200,4 +200,9 @@ public class BridgePowerManager implements IPowerManager {
     public void setDozeAfterScreenOff(boolean mode) throws RemoteException {
         // pass for now.
     }
+
+    @Override
+    public boolean forceSuspend() {
+        return false;
+    }
 }
