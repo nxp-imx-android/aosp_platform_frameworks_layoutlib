@@ -47,7 +47,6 @@ import javax.imageio.ImageIO;
 import libcore.util.NativeAllocationRegistry_Delegate;
 
 import static android.content.res.AssetManager.ACCESS_STREAMING;
-import static android.graphics.Bitmap.Config.RGBA_F16;
 
 /**
  * Delegate implementing the native methods of android.graphics.Bitmap
@@ -365,16 +364,6 @@ public final class Bitmap_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static boolean nativeIsConfigF16(long nativeBitmap) {
-        Bitmap_Delegate delegate = sManager.getDelegate(nativeBitmap);
-        if (delegate == null) {
-            return false;
-        }
-
-        return delegate.mConfig == RGBA_F16;
-    }
-
-    @LayoutlibDelegate
     /*package*/ static boolean nativeHasAlpha(long nativeBitmap) {
         // get the delegate from the native int.
         Bitmap_Delegate delegate = sManager.getDelegate(nativeBitmap);
@@ -660,20 +649,14 @@ public final class Bitmap_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static boolean nativeGetColorSpace(long nativePtr, float[] xyz, float[] params) {
+    /*package*/ static ColorSpace nativeComputeColorSpace(long nativePtr) {
         Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED,
                 "Color spaces are not supported", null /*data*/);
-        return false;
+        return null;
     }
 
     @LayoutlibDelegate
     /*package*/ static void nativeSetColorSpace(long nativePtr, long nativeColorSpace) {
-        Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED,
-                "Color spaces are not supported", null /*data*/);
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static void nativeCopyColorSpace(long srcBitmap, long dstBitmap) {
         Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED,
                 "Color spaces are not supported", null /*data*/);
     }
