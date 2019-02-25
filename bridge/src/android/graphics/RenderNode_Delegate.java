@@ -170,7 +170,7 @@ public class RenderNode_Delegate {
     /*package*/ static void getMatrix(RenderNode renderNode, Matrix outMatrix) {
         outMatrix.reset();
         if (renderNode != null) {
-            float rotation = renderNode.getRotation();
+            float rotation = renderNode.getRotationZ();
             float translationX = renderNode.getTranslationX();
             float translationY = renderNode.getTranslationY();
             float pivotX = renderNode.getPivotX();
