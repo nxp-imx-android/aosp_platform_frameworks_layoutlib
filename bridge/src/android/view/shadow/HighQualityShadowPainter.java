@@ -113,13 +113,15 @@ public class HighQualityShadowPainter {
 
         float lightX = (rectBound.left + rectBound.right) / 2;
         float lightY = rectBound.top;
+        // Light shouldn't be bigger than the object by too much.
+        int dynamicLightRadius = Math.min(rectBound.width(), rectBound.height());
 
         SpotShadowConfig config = new SpotShadowConfig.Builder()
                 .setSize(width, height)
                 .setLayers(ShadowConstants.SPOT_SHADOW_LAYERS)
                 .setRays(ShadowConstants.SPOT_SHADOW_RAYS)
                 .setLightCoord(lightX, lightY, lightZHeightPx)
-                .setLightRadius(ShadowConstants.SPOT_SHADOW_LIGHT_RADIUS)
+                .setLightRadius(dynamicLightRadius)
                 .setLightSourcePoints(ShadowConstants.SPOT_SHADOW_LIGHT_SOURCE_POINTS)
                 .setShadowStrength(ShadowConstants.SPOT_SHADOW_STRENGTH)
                 .setPolygon(poly, ShadowConstants.RECT_VERTICES_SIZE)
