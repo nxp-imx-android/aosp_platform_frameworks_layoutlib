@@ -272,10 +272,15 @@ public class BridgeContext extends Context {
     }
 
     /**
-     * Disposes the {@link Resources} singleton.
+     * Disposes the {@link Resources} singleton and the AssetRepository inside BridgeAssetManager.
      */
     public void disposeResources() {
         Resources_Delegate.disposeSystem();
+
+        // The BridgeAssetManager pointed to by the mAssets field is a long-lived object, but
+        // the AssetRepository is not. To prevent it from leaking clear a reference to it from
+        // the BridgeAssetManager.
+        mAssets.releaseAssetRepository();
     }
 
     public void setBridgeInflater(BridgeInflater inflater) {
