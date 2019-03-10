@@ -104,6 +104,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import static android.os._Original_Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static com.android.layoutlib.bridge.android.RenderParamsFlags.FLAG_KEY_APPLICATION_PACKAGE;
@@ -1206,8 +1207,13 @@ public class BridgeContext extends Context {
     }
 
     @Override
+    public boolean bindService(Intent arg0, int arg1, Executor arg2, ServiceConnection arg3) {
+        return false;
+    }
+
+    @Override
     public boolean bindIsolatedService(Intent arg0,
-            ServiceConnection arg1, int arg2, String arg3) {
+            int arg1, String arg2, Executor arg3, ServiceConnection arg4) {
         return false;
     }
 
