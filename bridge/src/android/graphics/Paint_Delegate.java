@@ -99,7 +99,8 @@ public class Paint_Delegate {
     private float mTextScaleX;
     private float mTextSkewX;
     private int mHintingMode = Paint.HINTING_ON;
-    private int mHyphenEdit;
+    private int mStartHyphenEdit;
+    private int mEndHyphenEdit;
     private float mLetterSpacing;  // not used in actual text rendering.
     private float mWordSpacing;  // not used in actual text rendering.
     // Variant of the font. A paint's variant can only be compact or elegant.
@@ -1080,21 +1081,39 @@ public class Paint_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static int nGetHyphenEdit(long nativePaint) {
+    /*package*/ static int nGetStartHyphenEdit(long nativePaint) {
         Paint_Delegate delegate = sManager.getDelegate(nativePaint);
         if (delegate == null) {
             return 0;
         }
-        return delegate.mHyphenEdit;
+        return delegate.mStartHyphenEdit;
     }
 
     @LayoutlibDelegate
-    /*package*/ static void nSetHyphenEdit(long nativePaint, int hyphen) {
+    /*package*/ static void nSetStartHyphenEdit(long nativePaint, int hyphen) {
         Paint_Delegate delegate = sManager.getDelegate(nativePaint);
         if (delegate == null) {
             return;
         }
-        delegate.mHyphenEdit = hyphen;
+        delegate.mStartHyphenEdit = hyphen;
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static int nGetEndHyphenEdit(long nativePaint) {
+        Paint_Delegate delegate = sManager.getDelegate(nativePaint);
+        if (delegate == null) {
+            return 0;
+        }
+        return delegate.mEndHyphenEdit;
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static void nSetEndHyphenEdit(long nativePaint, int hyphen) {
+        Paint_Delegate delegate = sManager.getDelegate(nativePaint);
+        if (delegate == null) {
+            return;
+        }
+        delegate.mEndHyphenEdit = hyphen;
     }
 
     @LayoutlibDelegate
