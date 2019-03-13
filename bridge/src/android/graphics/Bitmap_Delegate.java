@@ -704,7 +704,7 @@ public final class Bitmap_Delegate {
 
         // and create/return a new Bitmap with it
         return new Bitmap(nativeInt, width, height, density, isPremultiplied,
-                null /*ninePatchChunk*/, null /* layoutBounds */);
+                null /*ninePatchChunk*/, null /* layoutBounds */, true /* fromMalloc */);
     }
 
     private static Set<BitmapCreateFlags> getPremultipliedBitmapCreateFlags(boolean isMutable) {
