@@ -22,23 +22,23 @@ import android.annotation.Nullable;
 // frameworks/base/core/jni/android_text_StaticLayout.cpp revision b808260
 public class TabStops {
     @Nullable
-    private int[] mStops;
-    private final int mTabWidth;
+    private float[] mStops;
+    private final float mTabWidth;
 
-    public TabStops(@Nullable int[] stops, int defaultTabWidth) {
+    public TabStops(@Nullable float[] stops, float defaultTabWidth) {
         mTabWidth = defaultTabWidth;
         mStops = stops;
     }
 
     public float width(float widthSoFar) {
         if (mStops != null) {
-            for (int i : mStops) {
-                if (i > widthSoFar) {
-                    return i;
+            for (float f : mStops) {
+                if (f > widthSoFar) {
+                    return f;
                 }
             }
         }
         // find the next tabStop after widthSoFar.
-        return (int) ((widthSoFar + mTabWidth) / mTabWidth) * mTabWidth;
+        return ((widthSoFar + mTabWidth) / mTabWidth) * mTabWidth;
     }
 }

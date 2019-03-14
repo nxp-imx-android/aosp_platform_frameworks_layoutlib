@@ -91,8 +91,8 @@ public class LineBreaker_Delegate {
             float firstWidth,
             int firstWidthLineCount,
             float restWidth,
-            @Nullable int[] variableTabStops,
-            int defaultTabStop,
+            @Nullable float[] variableTabStops,
+            float defaultTabStop,
             int indentsOffset) {
         Builder builder = sBuilderManager.getDelegate(nativePtr);
         if (builder == null) {
