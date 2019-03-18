@@ -1044,6 +1044,24 @@ public class RenderTests extends RenderTestBase {
     }
 
     @Test
+    public void testHighQualityLargeViewShadow() throws Exception {
+        LayoutPullParser parser = createParserFromPath("large_view_shadows_test.xml");
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+        layoutLibCallback.setShadowQuality(true);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setConfigGenerator(ConfigGenerator.NEXUS_5)
+                .setCallback(layoutLibCallback)
+                .build();
+
+        renderAndVerify(params, "large_shadows_test_high_quality.png");
+        // We expect fidelity warnings for Path.isConvex. Fail for anything else.
+        sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
+    }
+
+    @Test
     public void testResourcesGetIdentifier() throws Exception {
         // Setup
         // Create the layout pull parser for our resources (empty.xml can not be part of the test
