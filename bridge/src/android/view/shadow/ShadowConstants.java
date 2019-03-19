@@ -44,4 +44,6 @@ class ShadowConstants {
 
     public static final int COORDINATE_SIZE = 3;
     public static final int RECT_VERTICES_SIZE = 4;
+
+    public static final int SPLICE_ROUNDED_EDGE = 5;
 }
