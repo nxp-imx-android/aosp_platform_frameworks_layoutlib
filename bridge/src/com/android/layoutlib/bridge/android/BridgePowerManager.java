@@ -41,7 +41,7 @@ public class BridgePowerManager implements IPowerManager {
     }
 
     @Override
-    public boolean setPowerSaveMode(boolean mode) throws RemoteException {
+    public boolean setPowerSaveModeEnabled(boolean mode) throws RemoteException {
         return false;
     }
 
