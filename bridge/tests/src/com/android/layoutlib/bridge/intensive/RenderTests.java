@@ -1054,6 +1054,7 @@ public class RenderTests extends RenderTestBase {
                 .setParser(parser)
                 .setConfigGenerator(ConfigGenerator.NEXUS_5)
                 .setCallback(layoutLibCallback)
+                .disableDecoration()
                 .build();
 
         renderAndVerify(params, "large_shadows_test_high_quality.png");
