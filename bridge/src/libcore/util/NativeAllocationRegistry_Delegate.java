@@ -87,20 +87,12 @@ public class NativeAllocationRegistry_Delegate {
         } // Other exceptions are impossible.
         // Enable the cleaner only after we can no longer throw anything, including OOME.
         thunk.setNativePtr(nativePtr);
+        // Needs to call Reference.reachabilityFence(referent) to ensure that cleaner doesn't
+        // get invoked before we enable it. Unfortunately impossible in OpenJDK 8.
         return result;
     }
 
     @LayoutlibDelegate
-    /*package*/ static Runnable registerNativeAllocation(NativeAllocationRegistry registry,
-            Object referent,
-            NativeAllocationRegistry.Allocator allocator) {
-        long nativePtr = allocator.allocate();
-        return NativeAllocationRegistry_Delegate.registerNativeAllocation(registry, referent,
-                nativePtr);
-    }
-
-
-        @LayoutlibDelegate
     /*package*/ static void applyFreeFunction(long freeFunction, long nativePtr) {
         // This method MIGHT run in the context of the finalizer thread. If the delegate method
         // crashes, it could bring down the VM. That's why we catch all the exceptions and ignore
