@@ -87,4 +87,48 @@ include $(BUILD_SYSTEM)/link_type.mk
 #
 include $(call all-makefiles-under,$(LOCAL_PATH))
 
+include $(CLEAR_VARS)
+
+built_framework_dep := $(call java-lib-deps,framework)
+built_framework_classes := $(call java-lib-files,framework)
+
+built_layoutlib_create_jar := $(call java-lib-files,layoutlib_create,HOST)
+
+# This is mostly a copy of config/host_java_library.mk
+LOCAL_MODULE := layoutlib-native-delegates
+LOCAL_MODULE_CLASS := JAVA_LIBRARIES
+LOCAL_MODULE_SUFFIX := $(COMMON_JAVA_PACKAGE_SUFFIX)
+LOCAL_IS_HOST_MODULE := true
+LOCAL_BUILT_MODULE_STEM := classes.jar
+
+#######################################
+include $(BUILD_SYSTEM)/base_rules.mk
+#######################################
+
+$(LOCAL_BUILT_MODULE): $(built_framework_dep) \
+                       $(built_layoutlib_create_jar)
+	$(hide) echo "host layoutlib_create: $@"
+	$(hide) mkdir -p $(dir $@)
+	$(hide) rm -f $@
+	$(hide) ls -l $(built_framework_classes)
+	$(hide) java -ea -jar $(built_layoutlib_create_jar) \
+		     --create-native-only-delegates \
+	             $@ \
+	             $(built_framework_classes)
+	$(hide) ls -l $(built_framework_classes)
+
+
+my_link_type := java
+my_warn_types :=
+my_allowed_types :=
+my_link_deps :=
+my_2nd_arch_prefix :=
+my_common := COMMON
+include $(BUILD_SYSTEM)/link_type.mk
+
+#
+# Include the subdir makefiles.
+#
+include $(call all-makefiles-under,$(LOCAL_PATH))
+
 endif

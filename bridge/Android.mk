@@ -49,7 +49,8 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
 	layoutlib_api-prebuilt \
 	tools-common-prebuilt \
 	ninepatch-prebuilt \
-	layoutlib-common
+	layoutlib-common \
+	layoutlib-native-delegates
 
 LOCAL_MODULE := layoutlib-no-framework
 
