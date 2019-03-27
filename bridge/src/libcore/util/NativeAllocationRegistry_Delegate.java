@@ -83,33 +83,10 @@ public class NativeAllocationRegistry_Delegate {
         } // Other exceptions are impossible.
         // Enable the cleaner only after we can no longer throw anything, including OOME.
         thunk.setNativePtr(nativePtr);
+        // Needs to call Reference.reachabilityFence(referent) to ensure that cleaner doesn't
+        // get invoked before we enable it. Unfortunately impossible in OpenJDK 8.
         return result;
     }
-
-    @LayoutlibDelegate
-    /*package*/ static Runnable registerNativeAllocation(NativeAllocationRegistry registry,
-            Object referent,
-            NativeAllocationRegistry.Allocator allocator) {
-        if (referent == null) {
-            throw new IllegalArgumentException("referent is null");
-        }
-
-        // Create the cleaner before running the allocator so that
-        // VMRuntime.registerNativeFree is eventually called if the allocate
-        // method throws an exception.
-        CleanerThunk thunk = registry.new CleanerThunk();
-        Cleaner cleaner = Cleaner.create(referent, thunk);
-        CleanerRunner result = new CleanerRunner(cleaner);
-        long nativePtr = allocator.allocate();
-        if (nativePtr == 0) {
-            cleaner.clean();
-            return null;
-        }
-        registerNativeAllocation(registry.size);
-        thunk.setNativePtr(nativePtr);
-        return result;
-    }
-
 
     @LayoutlibDelegate
     /*package*/ static void applyFreeFunction(long freeFunction, long nativePtr) {
