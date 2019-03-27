@@ -183,4 +183,7 @@ public final class NinePatch_Delegate {
         return null;
     }
 
+    public static void clearCache() {
+        sChunkCache.clear();
+    }
 }
