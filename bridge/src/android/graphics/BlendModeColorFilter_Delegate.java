@@ -47,7 +47,6 @@ public class BlendModeColorFilter_Delegate extends ColorFilter_Delegate {
 
     @LayoutlibDelegate
     /*package*/ static long native_CreateBlendModeFilter(int srcColor, int blendmode) {
-        ColorMatrixColorFilter_Delegate newDelegate = new ColorMatrixColorFilter_Delegate();
-        return sManager.addNewDelegate(newDelegate);
+        return PorterDuffColorFilter_Delegate.native_CreateBlendModeFilter(srcColor, blendmode);
     }
 }
