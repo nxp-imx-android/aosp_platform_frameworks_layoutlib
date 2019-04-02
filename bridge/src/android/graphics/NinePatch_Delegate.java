@@ -170,7 +170,8 @@ public final class NinePatch_Delegate {
 
 
     @LayoutlibDelegate
-    /*package*/ static long nativeGetTransparentRegion(Bitmap bitmap, long chunk, Rect location) {
+    /*package*/ static long nativeGetTransparentRegion(long bitmapHandle, long chunk,
+            Rect location) {
         return 0;
     }
 

@@ -93,11 +93,6 @@ public final class Bitmap_Delegate {
         return sManager.getDelegate(native_bitmap);
     }
 
-    @Nullable
-    public static Bitmap_Delegate getDelegate(@Nullable Bitmap bitmap) {
-        return bitmap == null ? null : getDelegate(bitmap.getNativeInstance());
-    }
-
     /**
      * Creates and returns a {@link Bitmap} initialized with the given stream content.
      *
