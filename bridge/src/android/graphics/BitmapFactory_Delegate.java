@@ -49,7 +49,8 @@ import java.util.Set;
 
     @LayoutlibDelegate
     /*package*/ static Bitmap nativeDecodeStream(InputStream is, byte[] storage,
-            @Nullable Rect padding, @Nullable Options opts, long colorSpaceHandle) {
+            @Nullable Rect padding, @Nullable Options opts, long inBitmapHandle,
+            long colorSpaceHandle) {
         Bitmap bm = null;
 
         Density density = Density.MEDIUM;
@@ -100,7 +101,7 @@ import java.util.Set;
 
     @LayoutlibDelegate
     /*package*/ static Bitmap nativeDecodeFileDescriptor(FileDescriptor fd,
-            Rect padding, Options opts, long colorSpaceHandle) {
+            Rect padding, Options opts, long inBitmapHandle, long colorSpaceHandle) {
         if (opts != null) {
             opts.inBitmap = null;
         }
@@ -109,7 +110,7 @@ import java.util.Set;
 
     @LayoutlibDelegate
     /*package*/ static Bitmap nativeDecodeAsset(long asset, Rect padding, Options opts,
-            long colorSpaceHandle) {
+            long inBitmapHandle, long colorSpaceHandle) {
         if (opts != null) {
             opts.inBitmap = null;
         }
@@ -118,7 +119,7 @@ import java.util.Set;
 
     @LayoutlibDelegate
     /*package*/ static Bitmap nativeDecodeByteArray(byte[] data, int offset,
-            int length, Options opts, long colorSpaceHandle) {
+            int length, Options opts, long inBitmapHandle, long colorSpaceHandle) {
         if (opts != null) {
             opts.inBitmap = null;
         }
