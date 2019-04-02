@@ -76,10 +76,10 @@ public class BaseCanvas_Delegate {
     // ---- native methods ----
 
     @LayoutlibDelegate
-    /*package*/ static void nDrawBitmap(long nativeCanvas, Bitmap bitmap, float left, float top,
+    /*package*/ static void nDrawBitmap(long nativeCanvas, long bitmapHandle, float left, float top,
             long nativePaintOrZero, int canvasDensity, int screenDensity, int bitmapDensity) {
         // get the delegate from the native int.
-        Bitmap_Delegate bitmapDelegate = Bitmap_Delegate.getDelegate(bitmap);
+        Bitmap_Delegate bitmapDelegate = Bitmap_Delegate.getDelegate(bitmapHandle);
         if (bitmapDelegate == null) {
             return;
         }
@@ -94,11 +94,12 @@ public class BaseCanvas_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static void nDrawBitmap(long nativeCanvas, Bitmap bitmap, float srcLeft, float srcTop,
-            float srcRight, float srcBottom, float dstLeft, float dstTop, float dstRight,
-            float dstBottom, long nativePaintOrZero, int screenDensity, int bitmapDensity) {
+    /*package*/ static void nDrawBitmap(long nativeCanvas, long bitmapHandle, float srcLeft,
+            float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop,
+            float dstRight, float dstBottom, long nativePaintOrZero, int screenDensity,
+            int bitmapDensity) {
         // get the delegate from the native int.
-        Bitmap_Delegate bitmapDelegate = Bitmap_Delegate.getDelegate(bitmap);
+        Bitmap_Delegate bitmapDelegate = Bitmap_Delegate.getDelegate(bitmapHandle);
         if (bitmapDelegate == null) {
             return;
         }
@@ -467,7 +468,7 @@ public class BaseCanvas_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static void nDrawBitmapMatrix(long nCanvas, Bitmap bitmap,
+    /*package*/ static void nDrawBitmapMatrix(long nCanvas, long bitmapHandle,
             long nMatrix, long nPaint) {
         // get the delegate from the native int.
         BaseCanvas_Delegate canvasDelegate = sManager.getDelegate(nCanvas);
@@ -479,7 +480,7 @@ public class BaseCanvas_Delegate {
         Paint_Delegate paintDelegate = Paint_Delegate.getDelegate(nPaint);
 
         // get the delegate from the native int.
-        Bitmap_Delegate bitmapDelegate = Bitmap_Delegate.getDelegate(bitmap);
+        Bitmap_Delegate bitmapDelegate = Bitmap_Delegate.getDelegate(bitmapHandle);
         if (bitmapDelegate == null) {
             return;
         }
@@ -505,7 +506,7 @@ public class BaseCanvas_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static void nDrawBitmapMesh(long nCanvas, Bitmap bitmap,
+    /*package*/ static void nDrawBitmapMesh(long nCanvas, long bitmapHandle,
             int meshWidth, int meshHeight, float[] verts, int vertOffset, int[] colors,
             int colorOffset, long nPaint) {
         // FIXME
