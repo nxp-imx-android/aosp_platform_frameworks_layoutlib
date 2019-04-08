@@ -1094,9 +1094,15 @@ public class RenderTests extends RenderTestBase {
                                         ResourceType.STRING,
                                         "app_name"));
         assertNotNull(id);
-        assertEquals(id.intValue(), resources.getIdentifier("string/app_name", null, null));
-        assertEquals(id.intValue(), resources.getIdentifier("app_name", "string", null));
-        assertEquals(0, resources.getIdentifier("string/does_not_exist", null, null));
+        assertEquals(id.intValue(),
+                resources.getIdentifier("com.android.layoutlib.test.myapplication:string/app_name",
+                        null, null));
+        assertEquals(id.intValue(), resources.getIdentifier("app_name", "string",
+                "com.android.layoutlib.test.myapplication"));
+        assertEquals(0, resources.getIdentifier("string/app_name", null, null));
+        assertEquals(0, resources.getIdentifier("string/app_name", null, "com.foo.bar"));
+        assertEquals(0, resources.getIdentifier("string/does_not_exist", null,
+                "com.android.layoutlib.test.myapplication"));
         assertEquals(R.string.accept, resources.getIdentifier("android:string/accept", null,
                 null));
         assertEquals(R.string.accept, resources.getIdentifier("string/accept", null,
