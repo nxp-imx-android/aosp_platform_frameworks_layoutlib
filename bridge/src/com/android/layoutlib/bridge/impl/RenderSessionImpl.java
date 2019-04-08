@@ -54,6 +54,7 @@ import android.app.Fragment_Delegate;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap_Delegate;
 import android.graphics.Canvas;
+import android.graphics.NinePatch_Delegate;
 import android.os.Looper;
 import android.preference.Preference_Delegate;
 import android.view.AttachInfo_Accessor;
@@ -1162,6 +1163,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         mImage = null;
         mViewRoot = null;
         mContentRoot = null;
+        NinePatch_Delegate.clearCache();
 
         if (createdLooper) {
             Choreographer_Delegate.dispose();
