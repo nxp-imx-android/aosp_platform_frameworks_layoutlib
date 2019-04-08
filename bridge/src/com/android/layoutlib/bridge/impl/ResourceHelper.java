@@ -28,6 +28,7 @@ import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.internal.util.XmlUtils;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.BridgeContext;
+import com.android.layoutlib.bridge.android.BridgeContext.Key;
 import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
 import com.android.resources.Density;
 import com.android.resources.ResourceType;
@@ -60,6 +61,8 @@ import android.util.TypedValue;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,6 +72,8 @@ import static android.content.res.AssetManager.ACCESS_STREAMING;
  * Helper class to provide various conversion method used in handling android resources.
  */
 public final class ResourceHelper {
+    private static final Key<Set<ResourceValue>> KEY_GET_DRAWABLE =
+            Key.create("ResourceHelper.getDrawable");
     private static final Pattern sFloatPattern = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)(.*)");
     private static final float[] sFloatOut = new float[1];
 
@@ -322,9 +327,20 @@ public final class ResourceHelper {
             try {
                 BridgeXmlBlockParser blockParser = getXmlBlockParser(context, value);
                 if (blockParser != null) {
+                    Set<ResourceValue> visitedValues = context.getUserData(KEY_GET_DRAWABLE);
+                    if (visitedValues == null) {
+                        visitedValues = new HashSet<>();
+                        context.putUserData(KEY_GET_DRAWABLE, visitedValues);
+                    }
+                    if (!visitedValues.add(value)) {
+                        Bridge.getLog().error(null, "Cyclic dependency in " + stringValue, null);
+                        return null;
+                    }
+
                     try {
                         return Drawable.createFromXml(context.getResources(), blockParser, theme);
                     } finally {
+                        visitedValues.remove(value);
                         blockParser.ensurePopped();
                     }
                 }
