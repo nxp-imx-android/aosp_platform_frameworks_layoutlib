@@ -180,6 +180,7 @@ public class BridgeContext extends Context {
     private PackageManager mPackageManager;
     private Boolean mIsThemeAppCompat;
     private final ResourceNamespace mAppCompatNamespace;
+    private final Map<Key<?>, Object> mUserData = new HashMap<>();
 
     /**
      * Some applications that target both pre API 17 and post API 17, set the newer attrs to
@@ -2018,6 +2019,40 @@ public class BridgeContext extends Context {
     @Override
     public boolean canLoadUnsafeResources() {
         return true;
+    }
+
+    public <T> void putUserData(@NonNull Key<T> key, @Nullable T data) {
+        mUserData.put(key, data);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    public <T> T getUserData(@NonNull Key<T> key) {
+        return (T) mUserData.get(key);
+    }
+
+    /**
+     * No two Key instances are considered equal.
+     *
+     * @param <T> the type of values associated with the key
+     */
+    public static final class Key<T> {
+        private final String name;
+
+        @NonNull
+        public static <T> Key<T> create(@NonNull String name) {
+            return new Key<T>(name);
+        }
+
+        private Key(@NonNull String name) {
+            this.name = name;
+        }
+
+        /** For debugging only. */
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     private class AttributeHolder {
