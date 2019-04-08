@@ -1024,7 +1024,18 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testRectangleShadow() throws Exception {
-        renderAndVerify("shadows_test.xml", "shadows_test.png", false);
+        LayoutPullParser parser = createParserFromPath("shadows_test.xml");
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+        layoutLibCallback.setShadowQuality(false);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setConfigGenerator(ConfigGenerator.NEXUS_5)
+                .setCallback(layoutLibCallback)
+                .build();
+
+        renderAndVerify(params, "shadows_test.png");
     }
 
     @Test
