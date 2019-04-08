@@ -30,7 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOError;
 import java.io.InputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,7 +67,7 @@ public class LayoutPullParser extends KXmlParser implements ILayoutPullParser{
     @NonNull
     public static LayoutPullParser createFromString(@NonNull String contents) {
         return new LayoutPullParser(new ByteArrayInputStream(
-                contents.getBytes(Charset.forName("UTF-8"))));
+                contents.getBytes(StandardCharsets.UTF_8)));
     }
 
     private LayoutPullParser(@NonNull InputStream inputStream) {
