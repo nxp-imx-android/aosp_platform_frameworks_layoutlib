@@ -152,7 +152,18 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testAllWidgets() throws ClassNotFoundException, FileNotFoundException {
-        renderAndVerify("allwidgets.xml", "allwidgets.png", true);
+        LayoutPullParser parser = createParserFromPath("allwidgets.xml");
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+        layoutLibCallback.setUseShadow(false);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setConfigGenerator(ConfigGenerator.NEXUS_5)
+                .setCallback(layoutLibCallback)
+                .build();
+
+        renderAndVerify(params, "allwidgets.png");
 
         // We expect fidelity warnings for Path.isConvex. Fail for anything else.
         sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
@@ -169,7 +180,17 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testAllWidgetsTablet() throws ClassNotFoundException, FileNotFoundException {
-        renderAndVerify("allwidgets.xml", "allwidgets_tab.png", ConfigGenerator.NEXUS_7_2012, true);
+        LayoutPullParser parser = createParserFromPath("allwidgets.xml");
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+        layoutLibCallback.setUseShadow(false);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setConfigGenerator(ConfigGenerator.NEXUS_7_2012)
+                .setCallback(layoutLibCallback)
+                .build();
+        renderAndVerify(params, "allwidgets_tab.png");
 
         // We expect fidelity warnings for Path.isConvex. Fail for anything else.
         sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
@@ -1033,6 +1054,7 @@ public class RenderTests extends RenderTestBase {
                 .setParser(parser)
                 .setConfigGenerator(ConfigGenerator.NEXUS_5)
                 .setCallback(layoutLibCallback)
+                .disableDecoration()
                 .build();
 
         renderAndVerify(params, "shadows_test.png");
@@ -1470,6 +1492,7 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
+        layoutLibCallback.setUseShadow(false);
 
         LayoutPullParser parser = LayoutPullParser.createFromString(
                 "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
