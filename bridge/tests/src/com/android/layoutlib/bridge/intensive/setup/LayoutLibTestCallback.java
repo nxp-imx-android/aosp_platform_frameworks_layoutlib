@@ -61,7 +61,7 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     private final ClassLoader mModuleClassLoader;
     private String mAdaptiveIconMaskPath;
     private boolean mSetUseShadow = true;
-    private boolean mHighShadowQuality;
+    private boolean mHighShadowQuality = true;
 
     public LayoutLibTestCallback(ILogger logger, ClassLoader classLoader) {
         mLog = logger;
