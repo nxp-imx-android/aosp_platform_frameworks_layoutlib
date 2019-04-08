@@ -72,10 +72,10 @@ import static android.content.res.AssetManager.ACCESS_STREAMING;
  * Helper class to provide various conversion method used in handling android resources.
  */
 public final class ResourceHelper {
-    private final static Pattern sFloatPattern = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)(.*)");
-    private final static float[] sFloatOut = new float[1];
+    private static final Pattern sFloatPattern = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)(.*)");
+    private static final float[] sFloatOut = new float[1];
 
-    private final static TypedValue mValue = new TypedValue();
+    private static final TypedValue mValue = new TypedValue();
 
     /**
      * Returns the color value represented by the given string value.
@@ -521,7 +521,7 @@ public final class ResourceHelper {
         }
     }
 
-    private final static UnitEntry[] sUnitNames = new UnitEntry[] {
+    private static final UnitEntry[] sUnitNames = new UnitEntry[] {
         new UnitEntry("px", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_PX, 1.0f),
         new UnitEntry("dip", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),
         new UnitEntry("dp", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),
