@@ -18,14 +18,14 @@ package android.view.shadow;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Outline;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import static android.view.shadow.ShadowConstants.MIN_ALPHA;
 import static android.view.shadow.ShadowConstants.SCALE_DOWN;
 
 public class HighQualityShadowPainter {
@@ -45,27 +45,33 @@ public class HighQualityShadowPainter {
         int width = parent.getWidth() / SCALE_DOWN;
         int height = parent.getHeight() / SCALE_DOWN;
 
-        Rect rectBound = new Rect();
-        if (!outline.getRect(rectBound)) {
+        Rect rectOriginal = new Rect();
+        Rect rectScaled = new Rect();
+        if (!outline.getRect(rectScaled) || alpha < MIN_ALPHA) {
+            // If alpha below MIN_ALPHA it's invisible (based on manual test). Save some perf.
             return;
         }
 
-        rectBound.left /= SCALE_DOWN;
-        rectBound.right /= SCALE_DOWN;
-        rectBound.top /= SCALE_DOWN;
-        rectBound.bottom /= SCALE_DOWN;
+        outline.getRect(rectOriginal);
+
+        rectScaled.left /= SCALE_DOWN;
+        rectScaled.right /= SCALE_DOWN;
+        rectScaled.top /= SCALE_DOWN;
+        rectScaled.bottom /= SCALE_DOWN;
         float radius = outline.getRadius() / SCALE_DOWN;
 
-        if (radius > rectBound.width() || radius > rectBound.height()) {
+        if (radius > rectScaled.width() || radius > rectScaled.height()) {
             // Rounded edge generation fails if radius is bigger than drawing box.
             return;
         }
 
-        float[] poly = getPoly(rectBound, elevation / SCALE_DOWN, radius);
+        // ensure alpha doesn't go over 1
+        alpha = (alpha > 1.0f) ? 1.0f : alpha;
+        float[] poly = getPoly(rectScaled, elevation / SCALE_DOWN, radius);
 
-        paintAmbientShadow(poly, canvas, width, height);
-        paintSpotShadow(poly, rectBound, elevation / SCALE_DOWN,
-                canvas, alpha, densityDpi, width, height);
+        paintAmbientShadow(poly, canvas, width, height, alpha, rectOriginal);
+        paintSpotShadow(poly, rectScaled, elevation / SCALE_DOWN,
+                canvas, densityDpi, width, height, alpha, rectOriginal);
     }
 
     /**
@@ -84,7 +90,17 @@ public class HighQualityShadowPainter {
         return true;
     }
 
-    private static void paintAmbientShadow(float[] polygon, Canvas canvas, int width, int height) {
+    /**
+     * @param polygon - polygon of the shadow caster
+     * @param canvas - canvas to draw
+     * @param width - scaled canvas (parent) width
+     * @param height - scaled canvas (parent) height
+     * @param alpha - 0-1 scale
+     * @param shadowCasterOutline - unscaled original shadow caster outline.
+     */
+    private static void paintAmbientShadow(
+            float[] polygon, Canvas canvas, int width, int height,
+            float alpha, Rect shadowCasterOutline) {
         // TODO: Consider re-using the triangle buffer here since the world stays consistent.
         // TODO: Reduce the buffer size based on shadow bounds.
 
@@ -93,7 +109,7 @@ public class HighQualityShadowPainter {
                 .setPolygon(polygon)
                 .setEdgeScale(ShadowConstants.AMBIENT_SHADOW_EDGE_SCALE)
                 .setShadowBoundRatio(ShadowConstants.AMBIENT_SHADOW_SHADOW_BOUND)
-                .setShadowStrength(ShadowConstants.AMBIENT_SHADOW_STRENGTH)
+                .setShadowStrength(ShadowConstants.AMBIENT_SHADOW_STRENGTH * alpha)
                 .setRays(ShadowConstants.AMBIENT_SHADOW_RAYS)
                 .setLayers(ShadowConstants.AMBIENT_SHADOW_LAYERS)
                 .build();
@@ -105,12 +121,23 @@ public class HighQualityShadowPainter {
             return;
         }
 
-        drawScaled(canvas, generator.getBitmap(), (int) generator.getTranslateX(),
-                (int) generator.getTranslateY(), width, height);
+        drawScaled(
+                canvas, generator.getBitmap(), (int) generator.getTranslateX(),
+                (int) generator.getTranslateY(), width, height,
+                shadowCasterOutline);
     }
 
-    private static void paintSpotShadow(float[] poly, Rect rectBound, float elevation, Canvas canvas, float alpha,
-            float densityDpi, int width, int height) {
+    /**
+     * @param poly - polygon of the shadow caster
+     * @param rectBound - scaled bounds of shadow caster.
+     * @param canvas - canvas to draw
+     * @param width - scaled canvas (parent) width
+     * @param height - scaled canvas (parent) height
+     * @param alpha - 0-1 scale
+     * @param shadowCasterOutline - unscaled original shadow caster outline.
+     */
+    private static void paintSpotShadow(float[] poly, Rect rectBound, float elevation, Canvas canvas,
+            float densityDpi, int width, int height, float alpha, Rect shadowCasterOutline) {
 
         // TODO: Use alpha later
         float lightZHeightPx = ShadowConstants.SPOT_SHADOW_LIGHT_Z_HEIGHT_DP * (densityDpi / DisplayMetrics.DENSITY_DEFAULT);
@@ -132,7 +159,7 @@ public class HighQualityShadowPainter {
                 .setLightCoord(lightX, lightY, lightZHeightPx)
                 .setLightRadius(dynamicLightRadius)
                 .setLightSourcePoints(ShadowConstants.SPOT_SHADOW_LIGHT_SOURCE_POINTS)
-                .setShadowStrength(ShadowConstants.SPOT_SHADOW_STRENGTH)
+                .setShadowStrength(ShadowConstants.SPOT_SHADOW_STRENGTH * alpha)
                 .setPolygon(poly, poly.length / ShadowConstants.COORDINATE_SIZE)
                 .build();
 
@@ -144,24 +171,73 @@ public class HighQualityShadowPainter {
         }
 
         drawScaled(canvas, generator.getBitmap(), (int) generator.getTranslateX(),
-                (int) generator.getTranslateY(), width, height);
+                (int) generator.getTranslateY(), width, height, shadowCasterOutline);
     }
 
     /**
      * Draw the bitmap scaled up.
      * @param translateX - offset in x axis by which the bitmap is shifted.
      * @param translateY - offset in y axis by which the bitmap is shifted.
+     * @param width  - scaled width of canvas (parent)
+     * @param height - scaled height of canvas (parent)
+     * @param shadowCaster - unscaled outline of shadow caster
      */
     private static void drawScaled(Canvas canvas, Bitmap bitmap, int translateX, int translateY,
-            int width, int height) {
-        Rect dest = new Rect();
-        dest.left = -translateX * SCALE_DOWN;
-        dest.top = -translateY * SCALE_DOWN;
-        dest.right = (width * SCALE_DOWN) + dest.left;
-        dest.bottom = (height * SCALE_DOWN) + dest.top;
+            int width, int height, Rect shadowCaster) {
+        int unscaledTranslateX = translateX * SCALE_DOWN;
+        int unscaledTranslateY = translateY * SCALE_DOWN;
+
+        // To the canvas
+        Rect dest = new Rect(
+                -unscaledTranslateX,
+                -unscaledTranslateY,
+                (width * SCALE_DOWN) - unscaledTranslateX,
+                (height * SCALE_DOWN) - unscaledTranslateY);
+        Rect destSrc = new Rect(0, 0, width, height);
+
+        /**
+         * ----------------------------------
+         * |                                |
+         * |              top               |
+         * |                                |
+         * ----------------------------------
+         * |      |                 |       |
+         * | left |  shadow caster  | right |
+         * |      |                 |       |
+         * ----------------------------------
+         * |                                |
+         * |            bottom              |
+         * |                                |
+         * ----------------------------------
+         *
+         * dest == top + left + shadow caster + right + bottom
+         * Visually, canvas.drawBitmap(bitmap, destSrc, dest, paint) would achieve the same result.
+         */
+        Rect left = new Rect(dest.left, shadowCaster.top, shadowCaster.left, shadowCaster.bottom);
+        int leftScaled = left.width() / SCALE_DOWN + destSrc.left;
+
+        Rect top = new Rect(dest.left, dest.top, dest.right, shadowCaster.top);
+        int topScaled = top.height() / SCALE_DOWN + destSrc.top;
+
+        Rect right = new Rect(shadowCaster.right, shadowCaster.top, dest.right,
+                shadowCaster.bottom);
+        int rightScaled = (shadowCaster.right + unscaledTranslateX) / SCALE_DOWN + destSrc.left;
+
+        Rect bottom = new Rect(dest.left, shadowCaster.bottom, dest.right, dest.bottom);
+        int bottomScaled = (bottom.bottom - bottom.height()) / SCALE_DOWN + destSrc.top;
+
+        // calculate parts of the middle ground that can be ignored.
+        Rect leftSrc = new Rect(destSrc.left, topScaled, leftScaled, bottomScaled);
+        Rect topSrc = new Rect(destSrc.left, destSrc.top, destSrc.right, topScaled);
+        Rect rightSrc = new Rect(rightScaled, topScaled, destSrc.right, bottomScaled);
+        Rect bottomSrc = new Rect(destSrc.left, bottomScaled, destSrc.right, destSrc.bottom);
 
         int save = canvas.save();
-        canvas.drawBitmap(bitmap, null, dest, null);
+        Paint paint = new Paint();
+        canvas.drawBitmap(bitmap, leftSrc, left, paint);
+        canvas.drawBitmap(bitmap, topSrc, top, paint);
+        canvas.drawBitmap(bitmap, rightSrc, right, paint);
+        canvas.drawBitmap(bitmap, bottomSrc, bottom, paint);
         canvas.restoreToCount(save);
     }
 
