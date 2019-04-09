@@ -663,6 +663,7 @@ public final class BridgeTypedArray extends TypedArray {
      * @return Drawable for the attribute, or null if not defined.
      */
     @Override
+    @Nullable
     public Drawable getDrawable(int index) {
         if (!hasValue(index)) {
             return null;
@@ -677,6 +678,7 @@ public final class BridgeTypedArray extends TypedArray {
      * @hide
      */
     @Override
+    @Nullable
     public Drawable getDrawableForDensity(int index, int density) {
         return getDrawable(index);
     }
