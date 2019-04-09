@@ -303,8 +303,14 @@ public class ImageUtils {
      */
     @NonNull
     private static File getFailureDir() {
-        String workingDirString = System.getProperty("user.dir");
-        File failureDir = new File(workingDirString, "out/failures");
+        File failureDir;
+        String failureDirString = System.getProperty("test_failure.dir");
+        if (failureDirString != null) {
+            failureDir = new File(failureDirString);
+        } else {
+            String workingDirString = System.getProperty("user.dir");
+            failureDir = new File(workingDirString, "out/failures");
+        }
 
         //noinspection ResultOfMethodCallIgnored
         failureDir.mkdirs();

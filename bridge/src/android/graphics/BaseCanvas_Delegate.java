@@ -26,6 +26,8 @@ import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import android.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.imagepool.ImagePool;
+import android.util.imagepool.ImagePoolProvider;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -114,7 +116,7 @@ public class BaseCanvas_Delegate {
             final float x, final float y, int width, int height, boolean hasAlpha,
             long nativePaintOrZero) {
         // create a temp BufferedImage containing the content.
-        final BufferedImage image = new BufferedImage(width, height,
+        final ImagePool.Image image = ImagePoolProvider.get().acquire(width, height,
                 hasAlpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
         image.setRGB(0, 0, width, height, colors, offset, stride);
 
@@ -125,7 +127,7 @@ public class BaseCanvas_Delegate {
                                 RenderingHints.VALUE_INTERPOLATION_BILINEAR);
                     }
 
-                    graphics.drawImage(image, (int) x, (int) y, null);
+                    image.drawImage(graphics, (int) x, (int) y, null);
                 });
     }
 
