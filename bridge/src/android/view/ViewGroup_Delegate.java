@@ -108,7 +108,7 @@ public class ViewGroup_Delegate {
         Rect clipBounds = canvas.getClipBounds();
         Rect newBounds = new Rect(clipBounds);
         newBounds.inset((int)-elevation, (int)-elevation);
-        canvas.clipRect(newBounds, Op.REPLACE);
+        canvas.clipRectUnion(newBounds);
         canvas.drawBitmap(bitmap, 0, 0, null);
         canvas.restore();
     }
