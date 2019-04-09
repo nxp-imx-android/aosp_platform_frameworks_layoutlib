@@ -1040,6 +1040,8 @@ public class RenderTests extends RenderTestBase {
                 .build();
 
         renderAndVerify(params, "shadows_test_no_shadow.png");
+        // We expect fidelity warnings for Path.isConvex. Fail for anything else.
+        sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
     }
 
     @Test
@@ -1057,6 +1059,8 @@ public class RenderTests extends RenderTestBase {
                 .build();
 
         renderAndVerify(params, "shadows_test.png");
+        // We expect fidelity warnings for Path.isConvex. Fail for anything else.
+        sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
     }
 
     @Test
@@ -1074,6 +1078,8 @@ public class RenderTests extends RenderTestBase {
                 .build();
 
         renderAndVerify(params, "shadows_test_high_quality.png");
+        // We expect fidelity warnings for Path.isConvex. Fail for anything else.
+        sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
     }
 
     @Test

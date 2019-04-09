@@ -570,7 +570,7 @@ public class RenderTestBase {
                 .setProjectResources(sProjectResources)
                 .setTheme("AppTheme", true)
                 .setRenderingMode(RenderingMode.NORMAL)
-                .setTargetSdk(27)
+                .setTargetSdk(28)
                 .setFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true)
                 .setAssetRepository(new TestAssetRepository(TEST_RES_DIR + "/" + APP_TEST_ASSET));
     }
