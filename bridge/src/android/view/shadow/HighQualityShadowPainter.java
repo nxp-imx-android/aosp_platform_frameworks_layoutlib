@@ -18,7 +18,6 @@ package android.view.shadow;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -69,9 +68,9 @@ public class HighQualityShadowPainter {
         alpha = (alpha > 1.0f) ? 1.0f : alpha;
         float[] poly = getPoly(rectScaled, elevation / SCALE_DOWN, radius);
 
-        paintAmbientShadow(poly, canvas, width, height, alpha, rectOriginal);
+        paintAmbientShadow(poly, canvas, width, height, alpha, rectOriginal, radius);
         paintSpotShadow(poly, rectScaled, elevation / SCALE_DOWN,
-                canvas, densityDpi, width, height, alpha, rectOriginal);
+                canvas, densityDpi, width, height, alpha, rectOriginal, radius);
     }
 
     /**
@@ -97,10 +96,10 @@ public class HighQualityShadowPainter {
      * @param height - scaled canvas (parent) height
      * @param alpha - 0-1 scale
      * @param shadowCasterOutline - unscaled original shadow caster outline.
+     * @param radius
      */
-    private static void paintAmbientShadow(
-            float[] polygon, Canvas canvas, int width, int height,
-            float alpha, Rect shadowCasterOutline) {
+    private static void paintAmbientShadow(float[] polygon, Canvas canvas, int width, int height,
+            float alpha, Rect shadowCasterOutline, float radius) {
         // TODO: Consider re-using the triangle buffer here since the world stays consistent.
         // TODO: Reduce the buffer size based on shadow bounds.
 
@@ -124,7 +123,7 @@ public class HighQualityShadowPainter {
         drawScaled(
                 canvas, generator.getBitmap(), (int) generator.getTranslateX(),
                 (int) generator.getTranslateY(), width, height,
-                shadowCasterOutline);
+                shadowCasterOutline, radius);
     }
 
     /**
@@ -135,9 +134,11 @@ public class HighQualityShadowPainter {
      * @param height - scaled canvas (parent) height
      * @param alpha - 0-1 scale
      * @param shadowCasterOutline - unscaled original shadow caster outline.
+     * @param radius
      */
     private static void paintSpotShadow(float[] poly, Rect rectBound, float elevation, Canvas canvas,
-            float densityDpi, int width, int height, float alpha, Rect shadowCasterOutline) {
+            float densityDpi, int width, int height, float alpha, Rect shadowCasterOutline,
+            float radius) {
 
         // TODO: Use alpha later
         float lightZHeightPx = ShadowConstants.SPOT_SHADOW_LIGHT_Z_HEIGHT_DP * (densityDpi / DisplayMetrics.DENSITY_DEFAULT);
@@ -171,7 +172,7 @@ public class HighQualityShadowPainter {
         }
 
         drawScaled(canvas, generator.getBitmap(), (int) generator.getTranslateX(),
-                (int) generator.getTranslateY(), width, height, shadowCasterOutline);
+                (int) generator.getTranslateY(), width, height, shadowCasterOutline, radius);
     }
 
     /**
@@ -181,9 +182,10 @@ public class HighQualityShadowPainter {
      * @param width  - scaled width of canvas (parent)
      * @param height - scaled height of canvas (parent)
      * @param shadowCaster - unscaled outline of shadow caster
+     * @param radius
      */
     private static void drawScaled(Canvas canvas, Bitmap bitmap, int translateX, int translateY,
-            int width, int height, Rect shadowCaster) {
+            int width, int height, Rect shadowCaster, float radius) {
         int unscaledTranslateX = translateX * SCALE_DOWN;
         int unscaledTranslateY = translateY * SCALE_DOWN;
 
@@ -194,6 +196,14 @@ public class HighQualityShadowPainter {
                 (width * SCALE_DOWN) - unscaledTranslateX,
                 (height * SCALE_DOWN) - unscaledTranslateY);
         Rect destSrc = new Rect(0, 0, width, height);
+
+        if (radius > 0) {
+            // Rounded edge.
+            int save = canvas.save();
+            canvas.drawBitmap(bitmap, destSrc, dest, null);
+            canvas.restoreToCount(save);
+            return;
+        }
 
         /**
          * ----------------------------------
