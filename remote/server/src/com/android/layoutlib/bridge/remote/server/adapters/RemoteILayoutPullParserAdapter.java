@@ -40,6 +40,10 @@ public class RemoteILayoutPullParserAdapter extends RemoteXmlPullParserAdapter
 
     @Override
     public ResourceNamespace getLayoutNamespace() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        try {
+            return ((RemoteILayoutPullParser) mDelegate).getLayoutNamespace();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
