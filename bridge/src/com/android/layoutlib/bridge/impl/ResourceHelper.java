@@ -28,6 +28,7 @@ import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.internal.util.XmlUtils;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.BridgeContext;
+import com.android.layoutlib.bridge.android.BridgeContext.Key;
 import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
 import com.android.ninepatch.NinePatch;
 import com.android.ninepatch.NinePatchChunk;
@@ -63,6 +64,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -72,10 +75,12 @@ import static android.content.res.AssetManager.ACCESS_STREAMING;
  * Helper class to provide various conversion method used in handling android resources.
  */
 public final class ResourceHelper {
-    private final static Pattern sFloatPattern = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)(.*)");
-    private final static float[] sFloatOut = new float[1];
+    private static final Key<Set<ResourceValue>> KEY_GET_DRAWABLE =
+            Key.create("ResourceHelper.getDrawable");
+    private static final Pattern sFloatPattern = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)(.*)");
+    private static final float[] sFloatOut = new float[1];
 
-    private final static TypedValue mValue = new TypedValue();
+    private static final TypedValue mValue = new TypedValue();
 
     /**
      * Returns the color value represented by the given string value.
@@ -336,9 +341,20 @@ public final class ResourceHelper {
             try {
                 BridgeXmlBlockParser blockParser = getXmlBlockParser(context, value);
                 if (blockParser != null) {
+                    Set<ResourceValue> visitedValues = context.getUserData(KEY_GET_DRAWABLE);
+                    if (visitedValues == null) {
+                        visitedValues = new HashSet<>();
+                        context.putUserData(KEY_GET_DRAWABLE, visitedValues);
+                    }
+                    if (!visitedValues.add(value)) {
+                        Bridge.getLog().error(null, "Cyclic dependency in " + stringValue, null);
+                        return null;
+                    }
+
                     try {
                         return Drawable.createFromXml(context.getResources(), blockParser, theme);
                     } finally {
+                        visitedValues.remove(value);
                         blockParser.ensurePopped();
                     }
                 }
@@ -521,7 +537,7 @@ public final class ResourceHelper {
         }
     }
 
-    private final static UnitEntry[] sUnitNames = new UnitEntry[] {
+    private static final UnitEntry[] sUnitNames = new UnitEntry[] {
         new UnitEntry("px", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_PX, 1.0f),
         new UnitEntry("dip", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),
         new UnitEntry("dp", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),

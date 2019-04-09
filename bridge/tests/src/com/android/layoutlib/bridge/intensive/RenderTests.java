@@ -152,7 +152,18 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testAllWidgets() throws ClassNotFoundException, FileNotFoundException {
-        renderAndVerify("allwidgets.xml", "allwidgets.png", true);
+        LayoutPullParser parser = createParserFromPath("allwidgets.xml");
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+        layoutLibCallback.setUseShadow(false);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setConfigGenerator(ConfigGenerator.NEXUS_5)
+                .setCallback(layoutLibCallback)
+                .build();
+
+        renderAndVerify(params, "allwidgets.png");
 
         // We expect fidelity warnings for Path.isConvex. Fail for anything else.
         sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
@@ -169,7 +180,17 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testAllWidgetsTablet() throws ClassNotFoundException, FileNotFoundException {
-        renderAndVerify("allwidgets.xml", "allwidgets_tab.png", ConfigGenerator.NEXUS_7_2012, true);
+        LayoutPullParser parser = createParserFromPath("allwidgets.xml");
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+        layoutLibCallback.setUseShadow(false);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setConfigGenerator(ConfigGenerator.NEXUS_7_2012)
+                .setCallback(layoutLibCallback)
+                .build();
+        renderAndVerify(params, "allwidgets_tab.png");
 
         // We expect fidelity warnings for Path.isConvex. Fail for anything else.
         sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
@@ -1024,7 +1045,19 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testRectangleShadow() throws Exception {
-        renderAndVerify("shadows_test.xml", "shadows_test.png", false);
+        LayoutPullParser parser = createParserFromPath("shadows_test.xml");
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+        layoutLibCallback.setShadowQuality(false);
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setConfigGenerator(ConfigGenerator.NEXUS_5)
+                .setCallback(layoutLibCallback)
+                .disableDecoration()
+                .build();
+
+        renderAndVerify(params, "shadows_test.png");
     }
 
     @Test
@@ -1094,9 +1127,15 @@ public class RenderTests extends RenderTestBase {
                                         ResourceType.STRING,
                                         "app_name"));
         assertNotNull(id);
-        assertEquals(id.intValue(), resources.getIdentifier("string/app_name", null, null));
-        assertEquals(id.intValue(), resources.getIdentifier("app_name", "string", null));
-        assertEquals(0, resources.getIdentifier("string/does_not_exist", null, null));
+        assertEquals(id.intValue(),
+                resources.getIdentifier("com.android.layoutlib.test.myapplication:string/app_name",
+                        null, null));
+        assertEquals(id.intValue(), resources.getIdentifier("app_name", "string",
+                "com.android.layoutlib.test.myapplication"));
+        assertEquals(0, resources.getIdentifier("string/app_name", null, null));
+        assertEquals(0, resources.getIdentifier("string/app_name", null, "com.foo.bar"));
+        assertEquals(0, resources.getIdentifier("string/does_not_exist", null,
+                "com.android.layoutlib.test.myapplication"));
         assertEquals(R.string.accept, resources.getIdentifier("android:string/accept", null,
                 null));
         assertEquals(R.string.accept, resources.getIdentifier("string/accept", null,
@@ -1453,6 +1492,7 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
+        layoutLibCallback.setUseShadow(false);
 
         LayoutPullParser parser = LayoutPullParser.createFromString(
                 "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
@@ -1565,6 +1605,49 @@ public class RenderTests extends RenderTestBase {
                 .build();
 
         renderAndVerify(params, "color_interpolation.png",
+                TimeUnit.SECONDS.toNanos(2));
+    }
+
+    @Test
+    public void testManyLineBreaks() throws Exception {
+        String layout =
+                "<FrameLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "              android:layout_width=\"match_parent\"\n" +
+                        "              android:layout_height=\"match_parent\">\n" + "\n" +
+                        "    <EditText\n" +
+                        "        android:layout_width=\"match_parent\"\n" +
+                        "        android:layout_height=\"wrap_content\"\n" +
+                        "        android:fallbackLineSpacing=\"true\"\n" +
+                        "        android:text=\"A very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very very very very very very very very " +
+                        "very very very very very very very long text\"/>\n" +
+                        "</FrameLayout>";
+
+        LayoutPullParser parser = LayoutPullParser.createFromString(layout);
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .disableDecoration()
+                .build();
+
+        renderAndVerify(params, "many_line_breaks.png",
                 TimeUnit.SECONDS.toNanos(2));
     }
 
