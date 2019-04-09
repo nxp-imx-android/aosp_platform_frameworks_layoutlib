@@ -246,8 +246,9 @@ public final class ResourceHelper {
 
     /**
      * Returns a drawable from the given value.
+     *
      * @param value The value that contains a path to a 9 patch, a bitmap or a xml based drawable,
-     * or an hexadecimal color
+     *     or an hexadecimal color
      * @param context the current context
      */
     @Nullable
@@ -291,8 +292,9 @@ public final class ResourceHelper {
 
     /**
      * Returns a drawable from the given value.
+     *
      * @param value The value that contains a path to a 9 patch, a bitmap or a xml based drawable,
-     * or an hexadecimal color
+     *     or an hexadecimal color
      * @param context the current context
      * @param theme the theme to be used to inflate the drawable.
      */
