@@ -17,7 +17,6 @@
 package android.view;
 
 import com.android.layoutlib.bridge.android.BridgeContext;
-import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.resources.Density;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
@@ -28,7 +27,6 @@ import android.graphics.Canvas;
 import android.graphics.Outline;
 import android.graphics.Path_Delegate;
 import android.graphics.Rect;
-import android.graphics.Region.Op;
 import android.view.animation.Transformation;
 import android.view.shadow.HighQualityShadowPainter;
 
@@ -74,10 +72,8 @@ public class ViewGroup_Delegate {
         float elevation = getElevation(child, parent);
         Context bridgeContext = parent.getContext();
         if (bridgeContext instanceof BridgeContext) {
-            highQualityShadow = ((BridgeContext) bridgeContext).getLayoutlibCallback()
-                    .getFlag(RenderParamsFlags.FLAG_RENDER_HIGH_QUALITY_SHADOW);
-            enableShadow = ((BridgeContext) bridgeContext).getLayoutlibCallback()
-                    .getFlag(RenderParamsFlags.FLAG_ENABLE_SHADOW);
+            highQualityShadow = ((BridgeContext) bridgeContext).isHighQualityShadows();
+            enableShadow = ((BridgeContext) bridgeContext).isShadowsEnabled();
         }
 
         if (!enableShadow) {
