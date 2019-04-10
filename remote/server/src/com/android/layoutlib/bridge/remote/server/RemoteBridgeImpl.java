@@ -74,9 +74,9 @@ public class RemoteBridgeImpl implements RemoteBridge {
     }
 
     @Override
-    public boolean init(Map<String, String> platformProperties, File fontLocation,
+    public boolean init(Map<String, String> platformProperties, File fontLocation, String icuDataPath,
             Map<String, Map<String, Integer>> enumValueMap, RemoteLayoutLog log) {
-        return mBridge.init(platformProperties, fontLocation, enumValueMap,
+        return mBridge.init(platformProperties, fontLocation, icuDataPath, enumValueMap,
                 log != null ? new RemoteLayoutLogAdapter(log) : null);
     }
 
