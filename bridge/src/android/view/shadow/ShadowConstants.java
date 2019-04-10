@@ -29,6 +29,8 @@ class ShadowConstants {
      */
     public static final int SCALE_DOWN = 5;
 
+    public static final float MIN_ALPHA = 0.2f;
+
     public static final int SPOT_SHADOW_RAYS = 40;
     public static final int SPOT_SHADOW_LAYERS = 1;
     public static final int SPOT_SHADOW_LIGHT_SOURCE_POINTS = 4;

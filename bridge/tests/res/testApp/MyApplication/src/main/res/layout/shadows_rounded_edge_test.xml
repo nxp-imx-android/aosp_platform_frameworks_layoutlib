@@ -14,7 +14,6 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="match_parent"
@@ -27,22 +26,22 @@
 
         <Button
             android:layout_marginLeft="40dp"
-            android:layout_width="48dp"
+            android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:elevation="48dp"
-            android:text="48"
-            android:stateListAnimator="@null"/>
+            android:stateListAnimator="@null"
+            android:background="@drawable/rounded_edge_rect"/>
 
         <Button
             android:layout_marginRight="40dp"
-            android:layout_width="48dp"
+            android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:elevation="48dp"
-            android:text="48"
+            android:background="@drawable/rounded_edge_rect"
             android:stateListAnimator="@null"/>
 
     </RelativeLayout>
@@ -59,7 +58,7 @@
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:elevation="0dp"
-            android:text="0"
+            android:background="@drawable/rounded_edge_rect"
             android:stateListAnimator="@null"/>
 
         <Button
@@ -69,7 +68,7 @@
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:elevation="100dp"
-            android:text="100"
+            android:background="@drawable/rounded_edge_rect"
             android:stateListAnimator="@null"/>
 
     </RelativeLayout>
@@ -81,22 +80,22 @@
 
         <Button
             android:layout_marginLeft="40dp"
-            android:layout_width="48dp"
-            android:layout_height="40dp"
+            android:layout_width="40dp"
+            android:layout_height="48dp"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:elevation="12dp"
-            android:text="12"
+            android:background="@drawable/rounded_edge_rect"
             android:stateListAnimator="@null"/>
 
         <Button
             android:layout_marginRight="40dp"
-            android:layout_width="48dp"
-            android:layout_height="40dp"
+            android:layout_width="40dp"
+            android:layout_height="48dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:elevation="36dp"
-            android:text="36"
+            android:background="@drawable/rounded_edge_rect"
             android:stateListAnimator="@null"/>
 
     </RelativeLayout>
@@ -105,7 +104,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1">
-
         <Button
             android:layout_marginLeft="40dp"
             android:layout_width="48dp"
@@ -113,8 +111,8 @@
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:elevation="12dp"
-            android:text="12"
             android:stateListAnimator="@null"
+            android:background="@drawable/rounded_edge_rect"
             android:alpha="0.1"/>
 
         <Button
@@ -124,43 +122,8 @@
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:elevation="12dp"
-            android:text="12"
             android:stateListAnimator="@null"
+            android:background="@drawable/rounded_edge_rect"
             android:alpha="0.5"/>
-
-    </RelativeLayout>
-
-    <!-- Test translation -->
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1">
-
-        <Button
-            android:translationX="5dp"
-            android:translationY="20dp"
-            android:layout_marginLeft="40dp"
-            android:layout_width="48dp"
-            android:layout_height="40dp"
-            android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true"
-            android:elevation="12dp"
-            android:text="12"
-            android:alpha="5"
-            android:stateListAnimator="@null" />
-
-        <Button
-            android:translationX="5dp"
-            android:translationY="20dp"
-            android:layout_marginRight="40dp"
-            android:layout_width="48dp"
-            android:layout_height="40dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:elevation="12dp"
-            android:text="12"
-            android:stateListAnimator="@null"
-            android:background="@drawable/corner" />
-
     </RelativeLayout>
 </LinearLayout>

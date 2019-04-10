@@ -67,7 +67,7 @@ public final class Typeface_Delegate {
 
     public static final String SYSTEM_FONTS = "/system/fonts/";
 
-    private static final Map<String, FontFamily_Delegate[]> sGenericNativeFamilies = new HashMap<>();
+    public static final Map<String, FontFamily_Delegate[]> sGenericNativeFamilies = new HashMap<>();
 
     // ---- delegate manager ----
     private static final DelegateManager<Typeface_Delegate> sManager =
@@ -100,19 +100,6 @@ public final class Typeface_Delegate {
     public static Typeface_Delegate getDelegate(long nativeTypeface) {
         return sManager.getDelegate(nativeTypeface);
     }
-
-    /**
-     * Clear the default typefaces when disposing bridge.
-     */
-    public static void resetDefaults() {
-        // Sometimes this is called before the Bridge is initialized. In that case, we don't want to
-        // initialize Typeface because the SDK fonts location hasn't been set.
-        if (FontFamily_Delegate.getFontLocation() != null) {
-            Typeface.sDefaults = null;
-            sGenericNativeFamilies.clear();
-        }
-    }
-
 
     // ---- native methods ----
 
