@@ -23,6 +23,7 @@ import com.android.ide.common.rendering.api.RenderResources;
 import com.android.ide.common.rendering.api.Result;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.BridgeContext;
+import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.resources.Density;
 import com.android.resources.ScreenOrientation;
 import com.android.resources.ScreenRound;
@@ -127,7 +128,9 @@ public abstract class RenderAction<T extends RenderParams> {
         // build the context
         mContext = new BridgeContext(mParams.getProjectKey(), metrics, resources,
                 mParams.getAssets(), mParams.getLayoutlibCallback(), getConfiguration(mParams),
-                mParams.getTargetSdkVersion(), mParams.isRtlSupported());
+                mParams.getTargetSdkVersion(), mParams.isRtlSupported(),
+                Boolean.TRUE.equals(mParams.getFlag(RenderParamsFlags.FLAG_ENABLE_SHADOW)),
+                Boolean.TRUE.equals(mParams.getFlag(RenderParamsFlags.FLAG_RENDER_HIGH_QUALITY_SHADOW)));
 
         setUp();
 

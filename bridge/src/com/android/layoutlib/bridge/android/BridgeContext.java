@@ -27,6 +27,7 @@ import com.android.ide.common.rendering.api.ResourceNamespace.Resolver;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.ResourceValueImpl;
+import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.StyleResourceValue;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.BridgeConstants;
@@ -149,6 +150,8 @@ public class BridgeContext extends Context {
      */
     private final HashMap<Object, Object> mViewKeyHelpMap = new HashMap<>();
     private final BridgeAssetManager mAssets;
+    private final boolean mShadowsEnabled;
+    private final boolean mHighQualityShadows;
     private Resources mSystemResources;
     private final Object mProjectKey;
     private final DisplayMetrics mMetrics;
@@ -218,7 +221,9 @@ public class BridgeContext extends Context {
             @NonNull LayoutlibCallback layoutlibCallback,
             @NonNull Configuration config,
             int targetSdkVersion,
-            boolean hasRtlSupport) {
+            boolean hasRtlSupport,
+            boolean shadowsEnabled,
+            boolean highQualityShadows) {
         mProjectKey = projectKey;
         mMetrics = metrics;
         mLayoutlibCallback = layoutlibCallback;
@@ -251,6 +256,9 @@ public class BridgeContext extends Context {
         } else {
             mAppCompatNamespace = ResourceNamespace.RES_AUTO;
         }
+
+        mShadowsEnabled = shadowsEnabled;
+        mHighQualityShadows = highQualityShadows;
     }
 
     /**
@@ -2024,6 +2032,20 @@ public class BridgeContext extends Context {
     @Override
     public boolean canLoadUnsafeResources() {
         return true;
+    }
+
+    /**
+     * Returns whether shadows should be rendered or not
+     */
+    public boolean isShadowsEnabled() {
+        return mShadowsEnabled;
+    }
+
+    /**
+     * Returns whether high quality shadows should be used
+     */
+    public boolean isHighQualityShadows() {
+        return mHighQualityShadows;
     }
 
     public <T> void putUserData(@NonNull Key<T> key, @Nullable T data) {
