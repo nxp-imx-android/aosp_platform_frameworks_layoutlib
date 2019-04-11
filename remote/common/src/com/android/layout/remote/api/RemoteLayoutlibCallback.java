@@ -23,6 +23,8 @@ import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams.Key;
 
+import org.xmlpull.v1.XmlPullParser;
+
 import java.nio.file.Path;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -56,19 +58,11 @@ public interface RemoteLayoutlibCallback extends Remote {
 
     <T> T getFlag(Key<T> key) throws RemoteException;
 
-    RemoteParserFactory getParserFactory() throws RemoteException;
-
     Path findClassPath(String name) throws RemoteException;
 
-    /**
-     * @deprecated Use {@link #getXmlParserForPsiFile}.
-     */
-    @Deprecated
-    default RemoteXmlPullParser getXmlFileParser(String fileName) throws RemoteException {
-        return getXmlParserForPsiFile(fileName);
-    }
+    RemoteXmlPullParser createXmlParserForPsiFile(String fileName) throws RemoteException;
 
-    RemoteXmlPullParser getXmlParserForPsiFile(String fileName) throws RemoteException;
+    RemoteXmlPullParser createXmlParserForFile(String fileName) throws RemoteException;
 
-    RemoteXmlPullParser getXmlParserForFile(String fileName) throws RemoteException;
+    RemoteXmlPullParser createXmlParser() throws RemoteException;
 }
