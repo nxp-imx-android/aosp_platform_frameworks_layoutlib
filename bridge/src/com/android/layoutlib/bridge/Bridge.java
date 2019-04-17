@@ -361,6 +361,10 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     public boolean dispose() {
         BridgeAssetManager.clearSystem();
 
+        // dispose of the default typeface.
+        if (sIsTypefaceInitialized) {
+            Typeface.sDynamicTypefaceCache.evictAll();
+        }
         sProjectBitmapCache.clear();
 
         return true;
