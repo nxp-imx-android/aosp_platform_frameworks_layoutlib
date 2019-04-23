@@ -156,11 +156,11 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        layoutLibCallback.setUseShadow(false);
         SessionParams params = getSessionParamsBuilder()
                 .setParser(parser)
                 .setConfigGenerator(ConfigGenerator.NEXUS_5)
                 .setCallback(layoutLibCallback)
+                .disableShadows()
                 .build();
 
         renderAndVerify(params, "allwidgets.png");
@@ -184,11 +184,11 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        layoutLibCallback.setUseShadow(false);
         SessionParams params = getSessionParamsBuilder()
                 .setParser(parser)
                 .setConfigGenerator(ConfigGenerator.NEXUS_7_2012)
                 .setCallback(layoutLibCallback)
+                .disableShadows()
                 .build();
         renderAndVerify(params, "allwidgets_tab.png");
 
@@ -757,7 +757,7 @@ public class RenderTests extends RenderTestBase {
         Configuration configuration = RenderAction.getConfiguration(params);
         BridgeContext context = new BridgeContext(params.getProjectKey(), metrics, params.getResources(),
                 params.getAssets(), params.getLayoutlibCallback(), configuration,
-                params.getTargetSdkVersion(), params.isRtlSupported());
+                params.getTargetSdkVersion(), params.isRtlSupported(), true, true);
         Resources resources = Resources_Delegate.initSystem(context, assetManager, metrics,
                 configuration, params.getLayoutlibCallback());
         // Test
@@ -799,7 +799,7 @@ public class RenderTests extends RenderTestBase {
         Configuration configuration = RenderAction.getConfiguration(params);
         BridgeContext context = new BridgeContext(params.getProjectKey(), metrics, params.getResources(),
                 params.getAssets(), params.getLayoutlibCallback(), configuration,
-                params.getTargetSdkVersion(), params.isRtlSupported());
+                params.getTargetSdkVersion(), params.isRtlSupported(), true, true);
         Resources resources = Resources_Delegate.initSystem(context, assetManager, metrics,
                 configuration, params.getLayoutlibCallback());
 
@@ -911,7 +911,7 @@ public class RenderTests extends RenderTestBase {
         BridgeContext mContext =
                 new BridgeContext(params.getProjectKey(), metrics, params.getResources(),
                         params.getAssets(), params.getLayoutlibCallback(), configuration,
-                        params.getTargetSdkVersion(), params.isRtlSupported());
+                        params.getTargetSdkVersion(), params.isRtlSupported(), true, true);
 
         TypedValue outValue = new TypedValue();
         mContext.resolveThemeAttribute(android.R.attr.colorPrimary, outValue, true);
@@ -974,7 +974,7 @@ public class RenderTests extends RenderTestBase {
         BridgeContext mContext =
                 new BridgeContext(params.getProjectKey(), metrics, params.getResources(),
                         params.getAssets(), params.getLayoutlibCallback(), configuration,
-                        params.getTargetSdkVersion(), params.isRtlSupported());
+                        params.getTargetSdkVersion(), params.isRtlSupported(), true, true);
         mContext.initResources();
         BridgeContext oldContext = RenderActionTestUtil.setBridgeContext(mContext);
 
@@ -1031,12 +1031,12 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        layoutLibCallback.setUseShadow(false);
         SessionParams params = getSessionParamsBuilder()
                 .setParser(parser)
                 .setConfigGenerator(ConfigGenerator.NEXUS_5)
                 .setCallback(layoutLibCallback)
                 .disableDecoration()
+                .disableShadows()
                 .build();
 
         renderAndVerify(params, "shadows_test_no_shadow.png");
@@ -1050,12 +1050,12 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        layoutLibCallback.setShadowQuality(false);
         SessionParams params = getSessionParamsBuilder()
                 .setParser(parser)
                 .setConfigGenerator(ConfigGenerator.NEXUS_5)
                 .setCallback(layoutLibCallback)
                 .disableDecoration()
+                .disableHighQualityShadows()
                 .build();
 
         renderAndVerify(params, "shadows_test.png");
@@ -1069,7 +1069,6 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        layoutLibCallback.setShadowQuality(true);
         SessionParams params = getSessionParamsBuilder()
                 .setParser(parser)
                 .setConfigGenerator(ConfigGenerator.NEXUS_5)
@@ -1080,6 +1079,7 @@ public class RenderTests extends RenderTestBase {
         renderAndVerify(params, "shadows_test_high_quality.png");
         // We expect fidelity warnings for Path.isConvex. Fail for anything else.
         sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
+        sRenderMessages.removeIf(message -> message.equals("Font$Builder.nAddAxis is not supported."));
     }
 
     @Test
@@ -1088,7 +1088,6 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        layoutLibCallback.setShadowQuality(true);
         SessionParams params = getSessionParamsBuilder()
                 .setParser(parser)
                 .setConfigGenerator(ConfigGenerator.NEXUS_5)
@@ -1106,7 +1105,6 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        layoutLibCallback.setShadowQuality(true);
         SessionParams params = getSessionParamsBuilder()
                 .setParser(parser)
                 .setConfigGenerator(ConfigGenerator.NEXUS_5)
@@ -1125,7 +1123,6 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        layoutLibCallback.setShadowQuality(true);
         SessionParams params = getSessionParamsBuilder()
                 .setParser(parser)
                 .setConfigGenerator(ConfigGenerator.NEXUS_5)
@@ -1157,7 +1154,7 @@ public class RenderTests extends RenderTestBase {
         Configuration configuration = RenderAction.getConfiguration(params);
         BridgeContext context = new BridgeContext(params.getProjectKey(), metrics, params.getResources(),
                 params.getAssets(), params.getLayoutlibCallback(), configuration,
-                params.getTargetSdkVersion(), params.isRtlSupported());
+                params.getTargetSdkVersion(), params.isRtlSupported(), true, true);
         Resources resources = Resources_Delegate.initSystem(context, assetManager, metrics,
                 configuration, params.getLayoutlibCallback());
         Integer id =
@@ -1533,7 +1530,6 @@ public class RenderTests extends RenderTestBase {
         LayoutLibTestCallback layoutLibCallback =
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
-        layoutLibCallback.setUseShadow(false);
 
         LayoutPullParser parser = LayoutPullParser.createFromString(
                 "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
@@ -1560,6 +1556,7 @@ public class RenderTests extends RenderTestBase {
                         new BufferedImage(width / 10, height / 10,
                         BufferedImage.TYPE_INT_ARGB))
                 .setFlag(RenderParamsFlags.FLAG_KEY_RESULT_IMAGE_AUTO_SCALE, true)
+                .disableShadows()
                 .build();
 
         renderAndVerify(params, "auto-scale-image.png");
