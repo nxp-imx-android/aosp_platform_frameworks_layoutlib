@@ -162,6 +162,10 @@ public class RenderDrawable extends RenderAction<DrawableParams> {
 
         // Draw.
         content.draw(canvas);
+
+        // Detach root from window after draw.
+        AttachInfo_Accessor.detachFromWindow(content);
+
         return image;
     }
 
