@@ -101,16 +101,18 @@ public interface RemoteBridge extends Remote {
 
     /**
      * Clears the resource cache for a specific project.
+     *
      * <p>This cache contains bitmaps and nine patches that are loaded from the disk and reused
      * until this method is called.
-     * <p>The cache is not configuration dependent and should only be cleared when a
-     * resource changes (at this time only bitmaps and 9 patches go into the cache).
-     * <p>
-     * The project key provided must be similar to the one passed in {@link RenderParams}.
+     *
+     * <p>The cache is not configuration dependent and should only be cleared when a resource
+     * changes (at this time only bitmaps and 9 patches go into the cache).
+     *
+     * <p>The project key provided must be similar to the one passed in {@link RenderParams}.
      *
      * @param projectKey the key for the project.
      */
-    void clearCaches(String projectKey) throws RemoteException;
+    void clearResourceCaches(String projectKey) throws RemoteException;
 
     /**
      * Returns true if the character orientation of the locale is right to left.
