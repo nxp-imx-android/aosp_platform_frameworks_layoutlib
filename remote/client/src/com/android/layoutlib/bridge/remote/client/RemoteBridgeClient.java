@@ -126,7 +126,7 @@ public class RemoteBridgeClient extends Bridge {
     }
 
     @Override
-    public void clearCaches(Object projectKey) {
+    public void clearResourceCaches(Object projectKey) {
         throw new UnsupportedOperationException();
     }
 
