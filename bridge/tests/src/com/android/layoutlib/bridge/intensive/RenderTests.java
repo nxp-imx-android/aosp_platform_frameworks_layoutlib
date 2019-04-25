@@ -848,6 +848,7 @@ public class RenderTests extends RenderTestBase {
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
 
+        layoutLibCallback.setAdaptiveIconMaskPath("M50,0L100,0 100,100 0,100 0,0z");
         SessionParams params = getSessionParamsBuilder()
                 .setParser(parser)
                 .setCallback(layoutLibCallback)
