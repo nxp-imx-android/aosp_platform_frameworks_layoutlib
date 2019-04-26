@@ -169,6 +169,10 @@ public class RenderDrawable extends RenderAction<DrawableParams> {
         bitmap.getPixels(pixels, 0, image.getWidth(), 0, 0, image.getWidth(),
                 image.getHeight());
         image.setRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
+
+        // Detach root from window after draw.
+        AttachInfo_Accessor.detachFromWindow(content);
+
         return image;
     }
 
