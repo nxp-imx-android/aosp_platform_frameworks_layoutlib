@@ -151,9 +151,9 @@ public class RemoteBridgeImpl implements RemoteBridge {
     }
 
     @Override
-    public void clearCaches(String projectKey) {
+    public void clearResourceCaches(String projectKey) {
         mCachedProjectKeys.remove(projectKey);
-        mBridge.clearCaches(projectKey);
+        mBridge.clearResourceCaches(projectKey);
     }
 
     @Override

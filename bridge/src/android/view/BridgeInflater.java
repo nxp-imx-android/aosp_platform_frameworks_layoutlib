@@ -256,10 +256,10 @@ public final class BridgeInflater extends LayoutInflater {
                         constructor.setAccessible(true);
                         Object inflater = constructor.newInstance();
                         Method method = getCreateViewMethod(inflaterClass);
-                        Context finalContext = context;
                         mCustomInflater = (viewName, attributeSet) -> {
                             try {
-                                return (View) method.invoke(inflater, null, viewName, finalContext,
+                                return (View) method.invoke(inflater, null, viewName,
+                                        getContext(),
                                         attributeSet,
                                         false,
                                         false /*readAndroidTheme*/, // No need after L
