@@ -611,11 +611,11 @@ public class GcSnapshot {
      * rectangle after applying to it the affine transform
      *
      * @param rect input rectangle
-     * @param transform transform applied to the input rectangle
+     * @param transform affine transform applied to the input rectangle
      *
      * Returns an output rectangle
      */
-    private static Rectangle getRectAfterTransform(Rectangle rect, AffineTransform transform) {
+    private static Rectangle transformRect(Rectangle rect, AffineTransform transform) {
         double[] coords = new double[16];
         coords[0] = rect.x;
         coords[1] = rect.y;
@@ -665,7 +665,7 @@ public class GcSnapshot {
                 }
                 // Calculate integer rectangle that contains clipBounds after the transform, that is
                 // the minimum image size we can use to render the drawable
-                imgRect = getRectAfterTransform(clipBounds, transform);
+                imgRect = transformRect(clipBounds, transform);
                 transform = new AffineTransform(
                         transform.getScaleX(),
                         transform.getShearY(),
