@@ -36,6 +36,8 @@ import com.android.tools.layoutlib.create.MethodAdapter;
 import com.android.tools.layoutlib.create.OverrideMethod;
 import com.android.util.Pair;
 
+import android.animation.PropertyValuesHolder;
+import android.animation.PropertyValuesHolder_Delegate;
 import android.content.res.BridgeAssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
@@ -443,10 +445,16 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     }
 
     @Override
-    public void clearCaches(Object projectKey) {
+    public void clearResourceCaches(Object projectKey) {
         if (projectKey != null) {
             sProjectBitmapCache.remove(projectKey);
         }
+    }
+
+    @Override
+    public void clearAllCaches(Object projectKey) {
+        clearResourceCaches(projectKey);
+        PropertyValuesHolder_Delegate.clearCaches();
     }
 
     @Override
