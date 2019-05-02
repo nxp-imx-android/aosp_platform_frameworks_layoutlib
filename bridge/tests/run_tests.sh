@@ -22,10 +22,16 @@ ${STUDIO_JDK}/bin/java -ea \
     org.junit.runner.JUnitCore \
     com.android.layoutlib.bridge.intensive.Main
 
+test_exit_code=$?
+
 # Create zip of all failure screenshots
-zip -q -j -r ${OUT_DIR}/${FAILURE_ZIP} ${OUT_DIR}/${FAILURE_DIR}
+if [[ -d "${OUT_DIR}/${FAILURE_DIR}" ]]; then
+    zip -q -j -r ${OUT_DIR}/${FAILURE_ZIP} ${OUT_DIR}/${FAILURE_DIR}
+fi
 
 # Move failure zip to dist directory if specified
-if [[ -d "${DIST_DIR}" ]]; then
+if [[ -d "${DIST_DIR}" ]] && [[ -e "${OUT_DIR}/${FAILURE_ZIP}" ]]; then
     mv ${OUT_DIR}/${FAILURE_ZIP} ${DIST_DIR}
 fi
+
+exit ${test_exit_code}
