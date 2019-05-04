@@ -40,9 +40,7 @@ import java.util.Map;
  * implementation of the PropertyValuesHolder won't be able to access protected methods.
  *
  */
-/*package*/
-@SuppressWarnings("unused")
-class PropertyValuesHolder_Delegate {
+public class PropertyValuesHolder_Delegate {
     // This code is copied from android.animation.PropertyValuesHolder and must be kept in sync
     // We try several different types when searching for appropriate setter/getter functions.
     // The caller may have supplied values in a type that does not match the setter/getter
@@ -191,5 +189,10 @@ class PropertyValuesHolder_Delegate {
             params[i] = args;
         }
         callMethod(target, methodID, params);
+    }
+
+    public static void clearCaches() {
+        ID_TO_METHOD.clear();
+        METHOD_NAME_TO_ID.clear();
     }
 }
