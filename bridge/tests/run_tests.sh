@@ -11,7 +11,6 @@ readonly FAILURE_ZIP=layoutlib-test-failures.zip
 
 STUDIO_JDK=${SCRIPT_DIR}"/../../../../prebuilts/studio/jdk/linux"
 MISC_COMMON=${SCRIPT_DIR}"/../../../../prebuilts/misc/common"
-M2_REPO=${SCRIPT_DIR}"/../../../../prebuilts/tools/common/m2/repository"
 OUT_INTERMEDIATES=${SCRIPT_DIR}"/../../../../out/soong/.intermediates"
 NATIVE_LIBRARIES=${SCRIPT_DIR}"/../../../../out/host/linux-x86/lib64/"
 SDK=${SCRIPT_DIR}"/../../../../out/host/linux-x86/sdk/sdk*/android-sdk*"
