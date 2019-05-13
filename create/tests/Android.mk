@@ -16,9 +16,9 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 # Only compile source java files in this lib.
-LOCAL_SRC_FILES := $(call all-java-files-under, com)
+LOCAL_SRC_FILES := $(call all-java-files-under, src)
 
-LOCAL_JAVA_RESOURCE_DIRS := data mock_data
+#LOCAL_JAVA_RESOURCE_DIRS := res
 
 LOCAL_MODULE := layoutlib-create-tests
 LOCAL_MODULE_TAGS := optional
