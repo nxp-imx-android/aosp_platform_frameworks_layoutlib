@@ -89,9 +89,11 @@ import static org.junit.Assert.fail;
  */
 public class RenderTestBase {
 
+    private static final String ICU_DIR_PROPERTY = "icu.dir";
     private static final String PLATFORM_DIR_PROPERTY = "platform.dir";
     private static final String RESOURCE_DIR_PROPERTY = "test_res.dir";
 
+    private static final String ICU_DIR;
     protected static final String PLATFORM_DIR;
     private static final String TEST_RES_DIR;
     /** Location of the app to test inside {@link #TEST_RES_DIR} */
@@ -118,6 +120,12 @@ public class RenderTestBase {
                     PLATFORM_DIR_PROPERTY, System.getProperty(PLATFORM_DIR_PROPERTY)));
         }
 
+        ICU_DIR = getIcuDir();
+        if (ICU_DIR == null) {
+            fail(String.format("System Property %1$s not properly set. The value is %2$s",
+                    ICU_DIR_PROPERTY, System.getProperty(ICU_DIR_PROPERTY)));
+        }
+
         TEST_RES_DIR = getTestResDir();
         if (TEST_RES_DIR == null) {
             fail(String.format("System property %1$s.dir not properly set. The value is %2$s",
@@ -138,6 +146,14 @@ public class RenderTestBase {
     };
 
     protected ClassLoader mDefaultClassLoader;
+
+    private static String getIcuDir() {
+        String icuDir = System.getProperty(ICU_DIR_PROPERTY);
+        if (icuDir == null) {
+            icuDir = PLATFORM_DIR + "/../../../../../com.android.runtime/etc/icu";
+        }
+        return icuDir;
+    }
 
     private static String getPlatformDir() {
         String platformDir = System.getProperty(PLATFORM_DIR_PROPERTY);
@@ -312,8 +328,7 @@ public class RenderTestBase {
         File buildProp = new File(PLATFORM_DIR, "build.prop");
         File attrs = new File(res, "values" + File.separator + "attrs.xml");
         sBridge = new Bridge();
-        sBridge.init(ConfigGenerator.loadProperties(buildProp), fontLocation,
-                PLATFORM_DIR + "/../../../../../com.android.runtime/etc/icu",
+        sBridge.init(ConfigGenerator.loadProperties(buildProp), fontLocation, ICU_DIR,
                 ConfigGenerator.getEnumMap(attrs), getLayoutLog());
         Bridge.getLock().lock();
         try {
@@ -373,8 +388,6 @@ public class RenderTestBase {
         try {
             String goldenImagePath = APP_TEST_DIR + "/golden/" + goldenImageName;
             ImageUtils.requireSimilar(goldenImagePath, image);
-            String emulatorImagePath = APP_TEST_DIR + "/emulator/" + goldenImageName;
-            ImageUtils.requireSimilar(emulatorImagePath, image);
         } catch (IOException e) {
             getLogger().error(e, e.getMessage());
         }

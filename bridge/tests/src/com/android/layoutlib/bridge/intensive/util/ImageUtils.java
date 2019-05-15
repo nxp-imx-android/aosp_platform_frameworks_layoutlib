@@ -52,7 +52,7 @@ public class ImageUtils {
      * you can generate all the missing thumbnails in one go, rather than having to run
      * the test repeatedly to get to each new render assertion generating its thumbnail.
      */
-    private static final boolean FAIL_ON_MISSING_THUMBNAIL = false;
+    private static final boolean FAIL_ON_MISSING_THUMBNAIL = true;
 
     private static final int THUMBNAIL_SIZE = 1000;
 
@@ -188,7 +188,7 @@ public class ImageUtils {
             error += " - see details in file://" + output.getPath() + "\n";
             error = saveImageAndAppendMessage(image, error, relativePath);
             System.out.println(error);
-//            fail(error);
+            fail(error);
         }
 
         g.dispose();
@@ -342,7 +342,6 @@ public class ImageUtils {
     }
 
     private static String getName(@NonNull String relativePath) {
-        return (relativePath.contains("emulator") ? "emulator-" : "")
-                + relativePath.substring(relativePath.lastIndexOf(separatorChar) + 1);
+        return relativePath.substring(relativePath.lastIndexOf(separatorChar) + 1);
     }
 }

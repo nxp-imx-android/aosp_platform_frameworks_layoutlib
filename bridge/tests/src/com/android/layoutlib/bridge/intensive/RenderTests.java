@@ -39,6 +39,7 @@ import com.android.resources.Navigation;
 import com.android.resources.ResourceType;
 
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParser;
@@ -171,7 +172,7 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testArrayCheck() throws ClassNotFoundException, FileNotFoundException {
-        renderAndVerify("array_check.xml", "array_check.png", true);
+        renderAndVerify("array_check.xml", "array_check.png", false);
 
         // We expect fidelity warnings for Path.isConvex. Fail for anything else.
         sRenderMessages.removeIf(
@@ -397,6 +398,7 @@ public class RenderTests extends RenderTestBase {
                 .setParser(parser)
                 .setCallback(layoutLibCallback)
                 .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .disableDecoration()
                 .setRenderingMode(RenderingMode.V_SCROLL)
                 .build();
 
@@ -502,6 +504,7 @@ public class RenderTests extends RenderTestBase {
      * Test a vector drawable that uses trimStart and trimEnd. It also tests all the primitives
      * for vector drawables (lines, moves and cubic and quadratic curves).
      */
+    @Ignore("This test does not make sense in layoutlib anymore, test in Studio")
     @Test
     public void testVectorDrawableHasMultipleLineInPathData() throws ClassNotFoundException {
         // Create the layout pull parser.
@@ -823,7 +826,7 @@ public class RenderTests extends RenderTestBase {
     @Test
     public void testFonts() throws ClassNotFoundException, FileNotFoundException {
         // TODO: styles seem to be broken in TextView
-        renderAndVerify("fonts_test.xml", "font_test.png", true);
+        renderAndVerify("fonts_test.xml", "font_test.png", false);
         sRenderMessages.removeIf(
                 message -> message.equals("Font$Builder.nAddAxis is not supported."));
     }
@@ -848,6 +851,7 @@ public class RenderTests extends RenderTestBase {
                 new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
         layoutLibCallback.initResources();
 
+        layoutLibCallback.setAdaptiveIconMaskPath("M50,0L100,0 100,100 0,100 0,0z");
         SessionParams params = getSessionParamsBuilder()
                 .setParser(parser)
                 .setCallback(layoutLibCallback)
@@ -1567,7 +1571,7 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testTranslation() throws ClassNotFoundException, FileNotFoundException {
-        RenderResult res = renderAndVerify("translate_test.xml", "translate_test.png", true);
+        RenderResult res = renderAndVerify("translate_test.xml", "translate_test.png", false);
         ViewInfo rootInfo = res.getRootViews().get(0);
         ViewInfo buttonInfo = rootInfo.getChildren().get(0);
         assertEquals(100, buttonInfo.getLeft());
@@ -1609,7 +1613,7 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testTypedArrays() throws ClassNotFoundException, FileNotFoundException {
-        renderAndVerify("typed_array.xml", "typed_arrays.png", true);
+        renderAndVerify("typed_array.xml", "typed_arrays.png", false);
     }
 
     /**
@@ -1651,8 +1655,8 @@ public class RenderTests extends RenderTestBase {
 
     @Test
     public void testJustified() throws ClassNotFoundException, FileNotFoundException {
-        renderAndVerify("justified_inter_word.xml", "justified_inter_word.png", true);
-        renderAndVerify("justified_none.xml", "justified_none.png", true);
+        renderAndVerify("justified_inter_word.xml", "justified_inter_word.png", false);
+        renderAndVerify("justified_none.xml", "justified_none.png", false);
     }
 
     @Test
