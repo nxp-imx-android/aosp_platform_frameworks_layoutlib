@@ -40,7 +40,7 @@ import android.util.BridgeXmlPullAttributesTest;
         BridgeXmlBlockParserTest.class, BridgeXmlPullAttributesTest.class,
         TestDelegates.class, BridgeRenderSessionTest.class, ResourceHelperTest.class,
         BridgeContextTest.class, SystemServiceRegistry_AccessorTest.class,
-        Resources_DelegateTest.class,
+        Resources_DelegateTest.class, HighQualityShadowsRenderTests.class,
 })
 public class Main {
 }
