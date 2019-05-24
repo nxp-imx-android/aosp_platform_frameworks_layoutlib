@@ -97,8 +97,9 @@ public class Font_Builder_Delegate {
 
     @LayoutlibDelegate
     /*package*/ static void nAddAxis(long builderPtr, int tag, float value) {
-        Bridge.getLog().fidelityWarning(LayoutLog.TAG_UNSUPPORTED,
-                "Font$Builder.nAddAxis is not supported.", null, null, null);
+        // Do not log as it happens for system fonts and hence would be present all the time
+        // Bridge.getLog().fidelityWarning(LayoutLog.TAG_UNSUPPORTED,
+        //         "Font$Builder.nAddAxis is not supported.", null, null, null);
     }
 
     @LayoutlibDelegate
