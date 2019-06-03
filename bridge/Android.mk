@@ -46,7 +46,6 @@ LOCAL_JAVA_RESOURCE_DIRS := resources
 LOCAL_JAVA_LIBRARIES := temp_layoutlib
 
 LOCAL_STATIC_JAVA_LIBRARIES := \
-	layoutlib_create \
 	layoutlib_api-prebuilt \
 	tools-common-prebuilt \
 	ninepatch-prebuilt \

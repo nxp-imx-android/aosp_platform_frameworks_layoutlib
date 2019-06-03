@@ -20,9 +20,14 @@ import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 import com.android.tools.layoutlib.java.LinkedHashMap_Delegate;
 import com.android.tools.layoutlib.java.System_Delegate;
 
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,6 +35,11 @@ import java.util.Set;
  * Describes the work to be done by {@link AsmGenerator}.
  */
 public final class CreateInfo implements ICreateInfo {
+
+    @Override
+    public MethodReplacer[] getMethodReplacers() {
+        return METHOD_REPLACERS;
+    }
 
     @Override
     public Class<?>[] getInjectedClasses() {
@@ -109,6 +119,16 @@ public final class CreateInfo implements ICreateInfo {
     }
 
     //-----
+
+    private static final MethodReplacer[] METHOD_REPLACERS = new MethodReplacer[] {
+        new SystemArrayCopyReplacer(),
+        new LocaleGetDefaultReplacer(),
+        new SystemLogReplacer(),
+        new SystemNanoTimeReplacer(),
+        new SystemCurrentTimeMillisReplacer(),
+        new LinkedHashMapEldestReplacer(),
+        new ContextGetClassLoaderReplacer()
+    };
 
     /**
      * The list of class from layoutlib_create to inject in layoutlib.
@@ -258,24 +278,10 @@ public final class CreateInfo implements ICreateInfo {
     /**
      * The list of classes on which to delegate all native methods.
      */
-    public final static String[] DELEGATE_CLASS_NATIVES = new String[] {
-        "android.os.SystemClock",
-        "android.os.SystemProperties",
-        "android.view.Display",
-        "libcore.icu.ICU",
-    };
+    public final static String[] DELEGATE_CLASS_NATIVES = NativeConfig.DELEGATE_CLASS_NATIVES;
 
-    public final static String[] DELEGATE_CLASS_NATIVES_TO_NATIVES = new String [] {
-        "android.graphics.ColorSpace$Rgb",
-        "android.graphics.FontFamily",
-        "android.graphics.ImageDecoder",
-        "android.graphics.Matrix",
-        "android.graphics.Path",
-        "android.graphics.Typeface",
-        "android.graphics.fonts.Font$Builder",
-        "android.graphics.fonts.FontFamily$Builder",
-        "android.graphics.text.LineBreaker",
-    };
+    public final static String[] DELEGATE_CLASS_NATIVES_TO_NATIVES =
+            NativeConfig.DELEGATE_CLASS_NATIVES_TO_NATIVES;
 
     /**
      * The list of classes on which NOT to delegate any native method.
@@ -425,4 +431,138 @@ public final class CreateInfo implements ICreateInfo {
                 put("android.content.Context",
                         InjectMethodRunnables.CONTEXT_GET_FRAMEWORK_CLASS_LOADER);
             }};
+
+    private static class LinkedHashMapEldestReplacer implements MethodReplacer {
+
+        private final String VOID_TO_MAP_ENTRY =
+                Type.getMethodDescriptor(Type.getType(Map.Entry.class));
+        private final String LINKED_HASH_MAP = Type.getInternalName(LinkedHashMap.class);
+
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return LINKED_HASH_MAP.equals(owner) &&
+                    "eldest".equals(name) &&
+                    VOID_TO_MAP_ENTRY.equals(desc);
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.opcode = Opcodes.INVOKESTATIC;
+            mi.owner = Type.getInternalName(LinkedHashMap_Delegate.class);
+            mi.desc = Type.getMethodDescriptor(
+                    Type.getType(Map.Entry.class), Type.getType(LinkedHashMap.class));
+        }
+    }
+
+    private static class ContextGetClassLoaderReplacer implements MethodReplacer {
+        // When LayoutInflater asks for a class loader, we must return the class loader that
+        // cannot return app's custom views/classes. This is so that in case of any failure
+        // or exception when instantiating the views, the IDE can replace it with a mock view
+        // and have proper error handling. However, if a custom view asks for the class
+        // loader, we must return a class loader that can find app's custom views as well.
+        // Thus, we rewrite the call to get class loader in LayoutInflater to
+        // getFrameworkClassLoader and inject a new method in Context. This leaves the normal
+        // method: Context.getClassLoader() free to be used by the apps.
+        private final String VOID_TO_CLASS_LOADER =
+                Type.getMethodDescriptor(Type.getType(ClassLoader.class));
+
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return owner.equals("android/content/Context") &&
+                    sourceClass.equals("android/view/LayoutInflater") &&
+                    name.equals("getClassLoader") &&
+                    desc.equals(VOID_TO_CLASS_LOADER);
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.name = "getFrameworkClassLoader";
+        }
+    }
+
+    private static class SystemCurrentTimeMillisReplacer implements MethodReplacer {
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return Type.getInternalName(System.class).equals(owner) && name.equals("currentTimeMillis");
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.name = "currentTimeMillis";
+            mi.owner = Type.getInternalName(System_Delegate.class);
+        }
+    }
+
+    private static class SystemNanoTimeReplacer implements MethodReplacer {
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return Type.getInternalName(System.class).equals(owner) && name.equals("nanoTime");
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.name = "nanoTime";
+            mi.owner = Type.getInternalName(System_Delegate.class);
+        }
+    }
+
+    private static class SystemLogReplacer implements MethodReplacer {
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return Type.getInternalName(System.class).equals(owner) && name.length() == 4
+                    && name.startsWith("log");
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            assert mi.desc.equals("(Ljava/lang/String;Ljava/lang/Throwable;)V")
+                    || mi.desc.equals("(Ljava/lang/String;)V");
+            mi.name = "log";
+            mi.owner = Type.getInternalName(System_Delegate.class);
+        }
+    }
+
+    private static class LocaleGetDefaultReplacer implements MethodReplacer {
+
+        private static final String ANDROID_LOCALE_CLASS =
+                "com/android/layoutlib/bridge/android/AndroidLocale";
+        private static final String JAVA_LOCALE_CLASS = Type.getInternalName(java.util.Locale.class);
+        private final String STRING_TO_STRING = Type.getMethodDescriptor(Type.getType(String.class),
+                Type.getType(String.class));
+        private final String VOID_TO_LOCALE =
+                Type.getMethodDescriptor(Type.getType(Locale.class));
+
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return JAVA_LOCALE_CLASS.equals(owner) &&
+                    ("adjustLanguageCode".equals(name) && desc.equals(STRING_TO_STRING) ||
+                    "getDefault".equals(name) && desc.equals(VOID_TO_LOCALE));
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.owner = ANDROID_LOCALE_CLASS;
+        }
+    }
+
+    private static class SystemArrayCopyReplacer implements MethodReplacer {
+        /**
+         * Descriptors for specialized versions {@link System#arraycopy} that are not present on the
+         * Desktop VM.
+         */
+        private static Set<String> ARRAYCOPY_DESCRIPTORS = new HashSet<>(Arrays.asList(
+                "([CI[CII)V", "([BI[BII)V", "([SI[SII)V", "([II[III)V",
+                "([JI[JII)V", "([FI[FII)V", "([DI[DII)V", "([ZI[ZII)V"));
+
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return Type.getInternalName(System.class).equals(owner) && "arraycopy".equals(name) &&
+                    ARRAYCOPY_DESCRIPTORS.contains(desc);
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.desc = "(Ljava/lang/Object;ILjava/lang/Object;II)V";
+        }
+    }
 }
