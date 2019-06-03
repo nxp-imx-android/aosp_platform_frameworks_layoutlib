@@ -19,12 +19,13 @@ package com.android.tools.layoutlib.create;
 import org.objectweb.asm.ClassVisitor;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Interface describing the work to be done by {@link AsmGenerator}.
  */
 public interface ICreateInfo {
+
+    MethodReplacer[] getMethodReplacers();
 
     /**
      * Returns the list of class from layoutlib_create to inject in layoutlib.
@@ -119,6 +120,16 @@ public interface ICreateInfo {
      */
     Map<String, InjectMethodRunnable> getInjectedMethodsMap();
 
+    interface MethodReplacer {
+        boolean isNeeded(String owner, String name, String desc, String sourceClass);
+
+        /**
+         * Updates the MethodInformation with the new values of the method attributes -
+         * opcode, owner, name and desc.
+         */
+        void replace(MethodInformation mi);
+    }
+
     abstract class InjectMethodRunnable {
         /**
          * @param cv Must be {@link ClassVisitor}. However, the param type is object so that when
@@ -127,5 +138,19 @@ public interface ICreateInfo {
          * asm classes also, but still keep CreateInfo loadable.
          */
         public abstract void generateMethods(Object cv);
+    }
+
+    class MethodInformation {
+        public int opcode;
+        public String owner;
+        public String name;
+        public String desc;
+
+        public MethodInformation(int opcode, String owner, String name, String desc) {
+            this.opcode = opcode;
+            this.owner = owner;
+            this.name = name;
+            this.desc = desc;
+        }
     }
 }

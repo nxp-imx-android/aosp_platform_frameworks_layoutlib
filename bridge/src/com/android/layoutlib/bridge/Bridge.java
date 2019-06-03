@@ -670,6 +670,8 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             return;
         }
         try {
+            // set the system property so LayoutLibLoader.cpp can read it
+            System.setProperty("icu.dir", Bridge.getIcuDataPath());
             System.loadLibrary("android_runtime");
         }
         finally {
