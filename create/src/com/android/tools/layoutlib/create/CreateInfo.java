@@ -17,11 +17,8 @@
 package com.android.tools.layoutlib.create;
 
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
-import com.android.tools.layoutlib.java.AutoCloseable;
-import com.android.tools.layoutlib.java.Charsets;
 import com.android.tools.layoutlib.java.IntegralToString;
 import com.android.tools.layoutlib.java.LinkedHashMap_Delegate;
-import com.android.tools.layoutlib.java.Objects;
 import com.android.tools.layoutlib.java.System_Delegate;
 import com.android.tools.layoutlib.java.UnsafeByteSequence;
 
@@ -314,10 +311,6 @@ public final class CreateInfo implements ICreateInfo {
             "java.nio.charset.Charsets",                       "java.nio.charset.StandardCharsets",
             "java.lang.IntegralToString",                      "com.android.tools.layoutlib.java.IntegralToString",
             "java.lang.UnsafeByteSequence",                    "com.android.tools.layoutlib.java.UnsafeByteSequence",
-            // Use android.icu.text versions of DateFormat and SimpleDateFormat since the
-            // original ones do not match the Android implementation
-            "java.text.DateFormat",                            "android.icu.text.DateFormat",
-            "java.text.SimpleDateFormat",                      "android.icu.text.SimpleDateFormat",
         };
 
     /**
