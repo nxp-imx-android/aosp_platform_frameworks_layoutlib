@@ -17,10 +17,8 @@
 package com.android.tools.layoutlib.create;
 
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
-import com.android.tools.layoutlib.java.IntegralToString;
 import com.android.tools.layoutlib.java.LinkedHashMap_Delegate;
 import com.android.tools.layoutlib.java.System_Delegate;
-import com.android.tools.layoutlib.java.UnsafeByteSequence;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -110,8 +108,6 @@ public final class CreateInfo implements ICreateInfo {
             InjectMethodRunnable.class,
             InjectMethodRunnables.class,
             /* Java package classes */
-            IntegralToString.class,
-            UnsafeByteSequence.class,
             System_Delegate.class,
             LinkedHashMap_Delegate.class,
         };
@@ -308,9 +304,6 @@ public final class CreateInfo implements ICreateInfo {
      */
     private final static String[] JAVA_PKG_CLASSES =
         new String[] {
-            "java.nio.charset.Charsets",                       "java.nio.charset.StandardCharsets",
-            "java.lang.IntegralToString",                      "com.android.tools.layoutlib.java.IntegralToString",
-            "java.lang.UnsafeByteSequence",                    "com.android.tools.layoutlib.java.UnsafeByteSequence",
         };
 
     /**
