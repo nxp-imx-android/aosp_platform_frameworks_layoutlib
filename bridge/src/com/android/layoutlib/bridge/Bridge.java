@@ -665,7 +665,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             return;
         }
         try {
-            System.loadLibrary("android-host");
+            System.loadLibrary("android_runtime");
         }
         finally {
             sJniLibLoadAttempted = true;
