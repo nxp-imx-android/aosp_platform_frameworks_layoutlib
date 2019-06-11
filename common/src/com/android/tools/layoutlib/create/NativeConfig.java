@@ -16,6 +16,10 @@
 
 package com.android.tools.layoutlib.create;
 
+/**
+ * Stores data needed for native JNI registration, and possibly the framework bytecode
+ * instrumentation.
+ */
 public class NativeConfig {
 
     private NativeConfig() {}
@@ -37,5 +41,43 @@ public class NativeConfig {
             "android.os.SystemProperties",
             "android.view.Display",
             "libcore.icu.ICU",
+    };
+
+    /**
+     * The list of classes to register with JNI
+     */
+    public final static String[] CLASS_NATIVES = new String[] {
+            "android.animation.PropertyValuesHolder",
+            "android.graphics.Bitmap",
+            "android.graphics.BitmapFactory",
+            "android.graphics.ByteBufferStreamAdaptor",
+            "android.graphics.Canvas",
+            "android.graphics.ColorFilter",
+            "android.graphics.ColorSpace",
+            "android.graphics.CreateJavaOutputStreamAdaptor",
+            "android.graphics.DrawFilter",
+            "android.graphics.FontFamily",
+            "android.graphics.Graphics",
+            "android.graphics.ImageDecoder",
+            "android.graphics.MaskFilter",
+            "android.graphics.Matrix",
+            "android.graphics.NinePatch",
+            "android.graphics.Paint",
+            "android.graphics.Path",
+            "android.graphics.PathEffect",
+            "android.graphics.PathMeasure",
+            "android.graphics.Picture",
+            "android.graphics.Region",
+            "android.graphics.Shader",
+            "android.graphics.Typeface",
+            "android.graphics.drawable.AnimatedVectorDrawable",
+            "android.graphics.drawable.VectorDrawable",
+            "android.graphics.fonts.Font",
+            "android.graphics.fonts.FontFamily",
+            "android.graphics.text.LineBreaker",
+            "android.graphics.text.MeasuredText",
+            "android.util.PathParser",
+            "com.android.internal.util.VirtualRefBasePtr",
+            "com.android.internal.view.animation.NativeInterpolatorFactoryHelper",
     };
 }

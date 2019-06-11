@@ -33,6 +33,7 @@ import com.android.layoutlib.bridge.util.DynamicIdMap;
 import com.android.resources.ResourceType;
 import com.android.tools.layoutlib.annotations.Nullable;
 import com.android.tools.layoutlib.create.MethodAdapter;
+import com.android.tools.layoutlib.create.NativeConfig;
 import com.android.tools.layoutlib.create.OverrideMethod;
 import com.android.util.Pair;
 
@@ -666,6 +667,10 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         }
         try {
             // set the system property so LayoutLibLoader.cpp can read it
+            System.setProperty("delegate_natives_to_natives", String.join(",",
+                    NativeConfig.DELEGATE_CLASS_NATIVES_TO_NATIVES).replace('.', '/'));
+            System.setProperty("native_classes", String.join(",",
+                    NativeConfig.CLASS_NATIVES));
             System.setProperty("icu.dir", Bridge.getIcuDataPath());
             System.loadLibrary("android_runtime");
         }
