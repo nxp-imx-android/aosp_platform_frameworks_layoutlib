@@ -15,24 +15,13 @@
 //
 
 java_library_host {
-    name: "layoutlib",
+    name: "layoutlib-common-delegates",
 
     srcs: ["src/**/*.java"],
-    java_resource_dirs: ["resources"],
 
     libs: [
-        "layoutlib_api-prebuilt",
-        "tools-common-prebuilt",
-    ],
-
-    static_libs: [
         "temp_layoutlib",
-        "ninepatch-prebuilt",
         "layoutlib-common",
-        "layoutlib-common-delegates",
     ],
 
-    dist: {
-        targets: ["layoutlib"],
-    },
 }

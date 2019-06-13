@@ -89,5 +89,6 @@
     <orderEntry type="library" scope="TEST" name="mockito" level="project" />
     <orderEntry type="library" scope="TEST" name="objenesis" level="project" />
     <orderEntry type="module" module-name="common" />
+    <orderEntry type="module" module-name="delegates" />
   </component>
 </module>
