@@ -31,6 +31,7 @@ java_library_host {
         "temp_layoutlib",
         "ninepatch-prebuilt",
         "layoutlib-common",
+        "layoutlib-common-delegates",
     ],
 
     dist: {
