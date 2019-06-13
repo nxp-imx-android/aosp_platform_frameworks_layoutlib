@@ -29,13 +29,13 @@ java_test_host {
         "tools-common-prebuilt",
         "sdk-common",
         "junit",
-        "guava",
+        "guava-prebuilt-host-jar",
+        "mockito",
+        "objenesis",
+        "hamcrest",
     ],
 
-    static_libs: [
-      "mockito",
-      "objenesis",
-    ],
+    required: ["layoutlib"],
 
     // Copy the jar to DIST_DIR for sdk builds
     dist: {
