@@ -62,6 +62,11 @@ public final class CreateInfo implements ICreateInfo {
     }
 
     @Override
+    public boolean shouldKeepAllNativeClasses() {
+        return false;
+    }
+
+    @Override
     public String[] getKeepClassNatives() {
         return KEEP_CLASS_NATIVES;
     }

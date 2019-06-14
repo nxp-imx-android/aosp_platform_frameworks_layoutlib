@@ -90,6 +90,7 @@ public class AsmGenerator {
 
     /** A Set of methods that should be intercepted and replaced **/
     private final Set<MethodReplacer> mMethodReplacers;
+    private boolean mKeepAllNativeClasses;
 
     /**
      * Creates a new generator that can generate the output JAR with the stubbed classes.
@@ -201,6 +202,8 @@ public class AsmGenerator {
 
         mPromotedClasses =
                 Arrays.stream(createInfo.getPromotedClasses()).collect(Collectors.toSet());
+
+        mKeepAllNativeClasses = createInfo.shouldKeepAllNativeClasses();
 
         mKeepNativeClasses =
                 Arrays.stream(createInfo.getKeepClassNatives()).collect(Collectors.toSet());
@@ -383,7 +386,7 @@ public class AsmGenerator {
             }
             cv = new DelegateToNativeAdapter(mLog, cv, className, mDelegates, delegateMethods);
         }
-        else if (!mKeepNativeClasses.contains(binaryNewName)) {
+        else if (!mKeepAllNativeClasses && !mKeepNativeClasses.contains(binaryNewName)) {
             cv = StubClassAdapter.builder(mLog, cv)
                     .withDeleteReturns(mDeleteReturns.get(className))
                     .withNewClassName(newName)
