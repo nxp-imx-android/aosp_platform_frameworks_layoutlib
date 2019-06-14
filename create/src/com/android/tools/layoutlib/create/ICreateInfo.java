@@ -54,8 +54,15 @@ public interface ICreateInfo {
     String[] getDelegateClassNativesToNatives();
 
     /**
+     * Returns true if native methods should not be stubbed by default.
+     */
+    boolean shouldKeepAllNativeClasses();
+
+    /**
      * Returns the list of classes for which not to delegate any native method.
      * The list can be empty but must not be null.
+     *
+     * Only used when shouldKeepAllNativeClasses is false.
      */
     String[] getKeepClassNatives();
 
