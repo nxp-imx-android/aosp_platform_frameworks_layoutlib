@@ -415,6 +415,10 @@ public class BridgeContext extends Context {
             else if (stringValue.charAt(0) == '@') {
                 outValue.type = TypedValue.TYPE_REFERENCE;
             }
+            else if ("true".equals(stringValue) || "false".equals(stringValue)) {
+                outValue.type = TypedValue.TYPE_INT_BOOLEAN;
+                outValue.data = "true".equals(stringValue) ? 1 : 0;
+            }
         }
 
         int a = getResourceId(value.asReference(), 0 /*defValue*/);
@@ -2056,6 +2060,21 @@ public class BridgeContext extends Context {
     @Nullable
     public <T> T getUserData(@NonNull Key<T> key) {
         return (T) mUserData.get(key);
+    }
+
+    /** Logs an error message to the error log of the host application. */
+    public void error(@NonNull String message, @NonNull String... details) {
+        mLayoutlibCallback.error(message, details);
+    }
+
+    /** Logs an error message to the error log of the host application. */
+    public void error(@NonNull String message, @Nullable Throwable t) {
+        mLayoutlibCallback.error(message, t);
+    }
+
+    /** Logs an error message to the error log of the host application. */
+    public void error(@NonNull Throwable t) {
+        mLayoutlibCallback.error(t);
     }
 
     /**
