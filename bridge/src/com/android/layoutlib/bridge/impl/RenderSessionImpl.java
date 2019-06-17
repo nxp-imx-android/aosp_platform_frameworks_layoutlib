@@ -1145,31 +1145,35 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
     }
 
     public void dispose() {
-        boolean createdLooper = false;
-        if (Looper.myLooper() == null) {
-            // Detaching the root view from the window will try to stop any running animations.
-            // The stop method checks that it can run in the looper so, if there is no current
-            // looper, we create a temporary one to complete the shutdown.
-            Bridge.prepareThread();
-            createdLooper = true;
-        }
-        AttachInfo_Accessor.detachFromWindow(mViewRoot);
-        if (mCanvas != null) {
-            mCanvas.release();
-            mCanvas = null;
-        }
-        if (mViewInfoList != null) {
-            mViewInfoList.clear();
-        }
-        if (mSystemViewInfoList != null) {
-            mSystemViewInfoList.clear();
-        }
-        mImage = null;
-        mViewRoot = null;
-        mContentRoot = null;
+        try {
+            boolean createdLooper = false;
+            if (Looper.myLooper() == null) {
+                // Detaching the root view from the window will try to stop any running animations.
+                // The stop method checks that it can run in the looper so, if there is no current
+                // looper, we create a temporary one to complete the shutdown.
+                Bridge.prepareThread();
+                createdLooper = true;
+            }
+            AttachInfo_Accessor.detachFromWindow(mViewRoot);
+            if (mCanvas != null) {
+                mCanvas.release();
+                mCanvas = null;
+            }
+            if (mViewInfoList != null) {
+                mViewInfoList.clear();
+            }
+            if (mSystemViewInfoList != null) {
+                mSystemViewInfoList.clear();
+            }
+            mImage = null;
+            mViewRoot = null;
+            mContentRoot = null;
 
-        if (createdLooper) {
-            Bridge.cleanupThread();
+            if (createdLooper) {
+                Bridge.cleanupThread();
+            }
+        } catch (Throwable t) {
+            getContext().error("Error while disposing a RenderSession", t);
         }
     }
 }
