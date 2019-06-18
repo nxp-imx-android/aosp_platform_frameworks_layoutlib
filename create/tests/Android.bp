@@ -18,14 +18,12 @@ java_test_host {
     // Only compile source java files in this lib.
     srcs: ["src/**/*.java"],
 
-    java_resource_dirs: [
-        "data",
-        "mock_data",
-    ],
+    java_resource_dirs: ["res"],
 
     libs: [
         "layoutlib_create",
         "junit",
+        "hamcrest",
     ],
     static_libs: ["asm-6.0"],
 
