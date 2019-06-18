@@ -18,10 +18,7 @@ java_test_host {
     // Only compile source java files in this lib.
     srcs: ["src/**/*.java"],
 
-    java_resource_dirs: [
-        "data",
-        "mock_data",
-    ],
+    java_resource_dirs: ["res"],
 
     libs: [
         "layoutlib_create",
