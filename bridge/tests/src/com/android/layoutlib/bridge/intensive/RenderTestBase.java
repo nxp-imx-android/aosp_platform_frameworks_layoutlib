@@ -89,10 +89,12 @@ import static org.junit.Assert.fail;
  */
 public class RenderTestBase {
 
+    private static final String NATIVE_LIB_PATH_PROPERTY = "native.lib.path";
     private static final String ICU_DIR_PROPERTY = "icu.dir";
     private static final String PLATFORM_DIR_PROPERTY = "platform.dir";
     private static final String RESOURCE_DIR_PROPERTY = "test_res.dir";
 
+    private static final String NATIVE_LIB_PATH;
     private static final String ICU_DIR;
     protected static final String PLATFORM_DIR;
     private static final String TEST_RES_DIR;
@@ -120,11 +122,8 @@ public class RenderTestBase {
                     PLATFORM_DIR_PROPERTY, System.getProperty(PLATFORM_DIR_PROPERTY)));
         }
 
+        NATIVE_LIB_PATH = getNativeLibPath();
         ICU_DIR = getIcuDir();
-        if (ICU_DIR == null) {
-            fail(String.format("System Property %1$s not properly set. The value is %2$s",
-                    ICU_DIR_PROPERTY, System.getProperty(ICU_DIR_PROPERTY)));
-        }
 
         TEST_RES_DIR = getTestResDir();
         if (TEST_RES_DIR == null) {
@@ -146,6 +145,22 @@ public class RenderTestBase {
     };
 
     protected ClassLoader mDefaultClassLoader;
+
+    private static String getNativeLibPath() {
+        String nativeLibPath = System.getProperty(NATIVE_LIB_PATH_PROPERTY);
+        if (nativeLibPath != null) {
+            File nativeLib = new File(nativeLibPath);
+            if (nativeLib.isFile()) {
+                nativeLibPath = nativeLib.getAbsolutePath();
+            } else {
+                nativeLibPath = null;
+            }
+        }
+        if (nativeLibPath == null) {
+            nativeLibPath = PLATFORM_DIR + "/../../../../../lib64/libandroid_runtime.so";
+        }
+        return nativeLibPath;
+    }
 
     private static String getIcuDir() {
         String icuDir = System.getProperty(ICU_DIR_PROPERTY);
@@ -328,8 +343,8 @@ public class RenderTestBase {
         File buildProp = new File(PLATFORM_DIR, "build.prop");
         File attrs = new File(res, "values" + File.separator + "attrs.xml");
         sBridge = new Bridge();
-        sBridge.init(ConfigGenerator.loadProperties(buildProp), fontLocation, ICU_DIR,
-                ConfigGenerator.getEnumMap(attrs), getLayoutLog());
+        sBridge.init(ConfigGenerator.loadProperties(buildProp), fontLocation, NATIVE_LIB_PATH,
+                ICU_DIR, ConfigGenerator.getEnumMap(attrs), getLayoutLog());
         Bridge.getLock().lock();
         try {
             Bridge.setLog(getLayoutLog());

@@ -148,6 +148,8 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
 
     private static String sIcuDataPath;
 
+    private static String sNativeLibPath;
+
     @Override
     public int getApiLevel() {
         return com.android.ide.common.rendering.api.Bridge.API_CURRENT;
@@ -170,11 +172,13 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     @Override
     public boolean init(Map<String,String> platformProperties,
             File fontLocation,
+            String nativeLibPath,
             String icuDataPath,
             Map<String, Map<String, Integer>> enumValueMap,
             LayoutLog log) {
         sPlatformProperties = platformProperties;
         sEnumValueMap = enumValueMap;
+        sNativeLibPath = nativeLibPath;
         sIcuDataPath = icuDataPath;
 
         if (!loadNativeLibraryIfNeeded(log)) {
@@ -678,7 +682,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             System.setProperty("native_classes", String.join(",",
                     NativeConfig.CLASS_NATIVES));
             System.setProperty("icu.dir", Bridge.getIcuDataPath());
-            System.loadLibrary("android_runtime");
+            System.load(sNativeLibPath);
         }
         finally {
             sJniLibLoadAttempted = true;
