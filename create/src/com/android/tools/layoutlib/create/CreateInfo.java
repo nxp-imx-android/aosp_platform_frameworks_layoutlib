@@ -128,6 +128,7 @@ public final class CreateInfo implements ICreateInfo {
     private static final MethodReplacer[] METHOD_REPLACERS = new MethodReplacer[] {
         new SystemArrayCopyReplacer(),
         new LocaleGetDefaultReplacer(),
+        new LocaleAdjustLanguageCodeReplacer(),
         new SystemLogReplacer(),
         new SystemNanoTimeReplacer(),
         new SystemCurrentTimeMillisReplacer(),
@@ -531,24 +532,31 @@ public final class CreateInfo implements ICreateInfo {
 
     private static class LocaleGetDefaultReplacer implements MethodReplacer {
 
-        private static final String ANDROID_LOCALE_CLASS =
-                "com/android/layoutlib/bridge/android/AndroidLocale";
-        private static final String JAVA_LOCALE_CLASS = Type.getInternalName(java.util.Locale.class);
-        private final String STRING_TO_STRING = Type.getMethodDescriptor(Type.getType(String.class),
-                Type.getType(String.class));
-        private final String VOID_TO_LOCALE =
-                Type.getMethodDescriptor(Type.getType(Locale.class));
-
         @Override
         public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
-            return JAVA_LOCALE_CLASS.equals(owner) &&
-                    ("adjustLanguageCode".equals(name) && desc.equals(STRING_TO_STRING) ||
-                    "getDefault".equals(name) && desc.equals(VOID_TO_LOCALE));
+            return Type.getInternalName(Locale.class).equals(owner)
+                    && "getDefault".equals(name)
+                    && desc.equals(Type.getMethodDescriptor(Type.getType(Locale.class)));
         }
 
         @Override
         public void replace(MethodInformation mi) {
-            mi.owner = ANDROID_LOCALE_CLASS;
+            mi.owner = "com/android/layoutlib/bridge/android/AndroidLocale";
+        }
+    }
+
+    public static class LocaleAdjustLanguageCodeReplacer implements MethodReplacer {
+
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return Type.getInternalName(java.util.Locale.class).equals(owner)
+                    && ("adjustLanguageCode".equals(name)
+                    && desc.equals(Type.getMethodDescriptor(Type.getType(String.class), Type.getType(String.class))));
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.owner = "com/android/tools/layoutlib/java/util/LocaleAdjustLanguageCodeReplacement";
         }
     }
 

@@ -81,4 +81,8 @@ public class VMRuntime_Delegate {
         // whenever trying to use a NativeAllocationRegistry with size 0
         return 128; // see art/runtime/gc/heap.h -> kNotifyNativeInterval
     }
+
+    static boolean is64Bit(VMRuntime vmRuntime) {
+        return false;
+    }
 }
