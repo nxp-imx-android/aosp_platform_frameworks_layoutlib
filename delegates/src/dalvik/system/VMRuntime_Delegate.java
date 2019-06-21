@@ -76,6 +76,18 @@ public class VMRuntime_Delegate {
     }
 
     @LayoutlibDelegate
+    /*package*/ static Object newNonMovableArray(VMRuntime runtime, Class<?> componentType,
+            int length) {
+        // TODO: JVM doesn't support non movable allocations. Figure out how to handle this
+        return newUnpaddedArray(runtime, componentType, length);
+    }
+
+    @LayoutlibDelegate
+    static long addressOf(VMRuntime runtime, Object array) {
+        return 0;
+    }
+
+    @LayoutlibDelegate
     /*package*/ static int getNotifyNativeInterval() {
         // This cannot return 0, otherwise it is responsible for triggering an exception
         // whenever trying to use a NativeAllocationRegistry with size 0
@@ -84,5 +96,25 @@ public class VMRuntime_Delegate {
 
     static boolean is64Bit(VMRuntime vmRuntime) {
         return false;
+    }
+
+    static void registerSensitiveThread() {
+        // ignore
+    }
+
+    static  void setProcessPackageName(String packageName) {
+        // ignore
+    }
+
+    static  void setProcessDataDirectory(String dataDir) {
+        // ignore
+    }
+
+    static void setDedupeHiddenApiWarnings(boolean ignored) {
+        // ignore
+    }
+
+    static void clampGrowthLimit(VMRuntime runtime) {
+        // ignore
     }
 }

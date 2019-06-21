@@ -23,6 +23,7 @@ import com.android.tools.layoutlib.java.System_Delegate;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -496,7 +497,7 @@ public final class CreateInfo implements ICreateInfo {
         }
     }
 
-    private static class SystemLogReplacer implements MethodReplacer {
+    public static class SystemLogReplacer implements MethodReplacer {
         @Override
         public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
             return Type.getInternalName(System.class).equals(owner) && name.length() == 4
@@ -560,6 +561,20 @@ public final class CreateInfo implements ICreateInfo {
         @Override
         public void replace(MethodInformation mi) {
             mi.desc = "(Ljava/lang/Object;ILjava/lang/Object;II)V";
+        }
+    }
+
+    public static class DateFormatSet24HourTimePrefReplacer implements MethodReplacer {
+
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return Type.getInternalName(DateFormat.class).equals(owner) &&
+                    "set24HourTimePref".equals(name);
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.owner = "com/android/tools/layoutlib/java/text/DateFormat_Delegate";
         }
     }
 }
