@@ -18,6 +18,8 @@
 package com.android.tools.layoutlib.create;
 
 
+import com.android.tools.layoutlib.create.ICreateInfo.MethodReplacer;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -106,7 +108,8 @@ public class AsmGeneratorTest {
                     "**"
                 },
                 new String[]{}  /* excluded classes */,
-                new String[]{} /* include files */);
+                new String[]{}, /* include files */
+                new MethodReplacer[] {});
         agen.setAnalysisResult(aa.analyze());
         agen.generate();
 
@@ -150,7 +153,8 @@ public class AsmGeneratorTest {
                 new String[]{},
                 new String[] {        /* include files */
                     "mock_android/data/data*"
-                });
+                },
+                new MethodReplacer[] {} /* method replacers */);
         agen.setAnalysisResult(aa.analyze());
         Map<String, byte[]> output = agen.generate();
         RecordingClassVisitor cv = new RecordingClassVisitor();
@@ -195,7 +199,8 @@ public class AsmGeneratorTest {
                         "**"
                 },
                 new String[]{},
-                new String[] {});
+                new String[] {},
+                new MethodReplacer[] {});
         agen.setAnalysisResult(aa.analyze());
         Map<String, byte[]> output = agen.generate();
         RecordingClassVisitor cv = new RecordingClassVisitor();
@@ -232,7 +237,8 @@ public class AsmGeneratorTest {
                 ci.getExcludedClasses(),
                 new String[] {        /* include files */
                         "mock_android/data/data*"
-                });
+                },
+                new MethodReplacer[] {});
         agen.setAnalysisResult(aa.analyze());
         Map<String, byte[]> output = agen.generate();
         // Everything in .dummy.** should be filtered
@@ -275,7 +281,8 @@ public class AsmGeneratorTest {
                 ci.getExcludedClasses(),
                 new String[] {        /* include files */
                         "mock_android/data/data*"
-                });
+                },
+                new MethodReplacer[] {});
         agen.setAnalysisResult(aa.analyze());
         JarUtil.createJar(new FileOutputStream(mOsDestJar), agen.generate());
 

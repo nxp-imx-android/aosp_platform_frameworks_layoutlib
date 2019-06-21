@@ -97,7 +97,7 @@ public class Main {
         }
 
         try {
-            CreateInfo info = new CreateInfo();
+            ICreateInfo info = new CreateInfo();
             AsmGenerator agen = new AsmGenerator(log, info);
 
             AsmAnalyzer aa = new AsmAnalyzer(log, osJarPath,
@@ -137,7 +137,7 @@ public class Main {
                     new String[] {
                         "com/android/i18n/phonenumbers/data/*",
                         "android/icu/impl/data/**"
-                    });
+                    }, info.getMethodReplacers());
             agen.setAnalysisResult(aa.analyze());
 
             Map<String, byte[]> outputClasses = agen.generate();

@@ -18,6 +18,7 @@ package com.android.tools.layoutlib.create;
 
 import com.android.tools.layoutlib.annotations.NotNull;
 import com.android.tools.layoutlib.create.AsmAnalyzer.Result;
+import com.android.tools.layoutlib.create.ICreateInfo.MethodReplacer;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -86,6 +87,9 @@ public class AsmGenerator {
     private final Set<String> mKeepNativeClasses;
 
     private final Set<String> mDelegateAllNative;
+
+    /** A Set of methods that should be intercepted and replaced **/
+    private final Set<MethodReplacer> mMethodReplacers;
 
     /**
      * Creates a new generator that can generate the output JAR with the stubbed classes.
@@ -203,6 +207,8 @@ public class AsmGenerator {
 
         mDelegateAllNative =
                 Arrays.stream(createInfo.getDelegateClassNativesToNatives()).collect(Collectors.toSet());
+
+        mMethodReplacers = Arrays.stream(createInfo.getMethodReplacers()).collect(Collectors.toSet());
     }
 
     /**
@@ -357,7 +363,7 @@ public class AsmGenerator {
         ClassVisitor cv = cw;
 
         if (mReplaceMethodCallsClasses.contains(className)) {
-            cv = new ReplaceMethodCallsAdapter(cv, className);
+            cv = new ReplaceMethodCallsAdapter(mMethodReplacers, cv, className);
         }
 
         cv = new RefactorClassAdapter(cv, mRefactorClasses);
