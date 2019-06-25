@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 The Android Open Source Project
+ * Copyright (C) 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.android.tools.layoutlib.create;
 
 
 import com.android.tools.layoutlib.create.ICreateInfo.MethodReplacer;
+import com.android.tools.layoutlib.create.dataclass.JavaClass;
 
 import org.junit.After;
 import org.junit.Before;
@@ -125,7 +126,7 @@ public class AsmGeneratorTest {
             public Class<?>[] getInjectedClasses() {
                 // classes to inject in the final JAR
                 return new Class<?>[] {
-                        com.android.tools.layoutlib.create.dataclass.JavaClass.class
+                        JavaClass.class
                 };
             }
 
@@ -133,7 +134,7 @@ public class AsmGeneratorTest {
             public String[] getJavaPkgClasses() {
              // classes to refactor (so that we can replace them)
                 return new String[] {
-                        JAVA_CLASS_NAME, "com.android.tools.layoutlib.create.dataclass.JavaClass",
+                        JAVA_CLASS_NAME, "JavaClass",
                 };
             }
 
@@ -178,7 +179,7 @@ public class AsmGeneratorTest {
             public Class<?>[] getInjectedClasses() {
                 // classes to inject in the final JAR
                 return new Class<?>[] {
-                        com.android.tools.layoutlib.create.dataclass.JavaClass.class
+                        JavaClass.class
                 };
             }
 
