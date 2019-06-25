@@ -328,7 +328,7 @@ public class RenderTestBase {
         File buildProp = new File(PLATFORM_DIR, "build.prop");
         File attrs = new File(res, "values" + File.separator + "attrs.xml");
         sBridge = new Bridge();
-        sBridge.init(ConfigGenerator.loadProperties(buildProp), fontLocation, ICU_DIR,
+        sBridge.init(ConfigGenerator.loadProperties(buildProp), fontLocation, null, ICU_DIR,
                 ConfigGenerator.getEnumMap(attrs), getLayoutLog());
         Bridge.getLock().lock();
         try {
