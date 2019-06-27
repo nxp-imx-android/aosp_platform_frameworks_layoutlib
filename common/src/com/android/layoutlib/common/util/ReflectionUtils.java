@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.layoutlib.bridge.util;
+package com.android.layoutlib.common.util;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
+import com.android.tools.layoutlib.annotations.NonNull;
+import com.android.tools.layoutlib.annotations.Nullable;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -68,6 +68,17 @@ public class ReflectionUtils {
             ex = e;
         }
         throw new ReflectionException(ex);
+    }
+
+    @Nullable
+    public static Object invokeStatic(String className, String methodName, @Nullable Object... args)
+            throws ReflectionException {
+        try {
+            Method m = getMethod(Class.forName(className), methodName);
+            return invoke(m, null, args);
+        } catch (ClassNotFoundException e) {
+            throw new ReflectionException(e);
+        }
     }
 
     /**

@@ -20,7 +20,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.view.View.AttachInfo;
 
-import com.android.layoutlib.bridge.util.ReflectionUtils;
+import com.android.layoutlib.common.util.ReflectionUtils;
 
 /**
  * Class allowing access to package-protected methods/fields.
