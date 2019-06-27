@@ -48,10 +48,8 @@ import com.android.layoutlib.bridge.impl.binding.FakeExpandableAdapter;
 import com.android.tools.layoutlib.java.System_Delegate;
 import com.android.util.Pair;
 
-import android.animation.AnimationHandler;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.Fragment_Delegate;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -60,7 +58,6 @@ import android.os.Looper;
 import android.preference.Preference_Delegate;
 import android.view.AttachInfo_Accessor;
 import android.view.BridgeInflater;
-import android.view.Choreographer_Delegate;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
@@ -84,8 +81,6 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -95,7 +90,7 @@ import static com.android.ide.common.rendering.api.Result.Status.ERROR_INFLATION
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_NOT_INFLATED;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN;
 import static com.android.ide.common.rendering.api.Result.Status.SUCCESS;
-import static com.android.layoutlib.bridge.util.ReflectionUtils.isInstanceOf;
+import static com.android.layoutlib.common.util.ReflectionUtils.isInstanceOf;
 
 /**
  * Class implementing the render session.

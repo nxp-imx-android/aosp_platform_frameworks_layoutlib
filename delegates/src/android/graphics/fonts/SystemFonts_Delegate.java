@@ -16,8 +16,6 @@
 
 package android.graphics.fonts;
 
-import com.android.layoutlib.bridge.Bridge;
-import com.android.layoutlib.bridge.impl.DelegateManager;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import android.annotation.NonNull;
@@ -36,11 +34,11 @@ import java.util.ArrayList;
  * native data into its own objects and mapping them to int that are sent back and forth between it
  * and the original SystemFonts class.
  *
- * @see DelegateManager
  */
 public class SystemFonts_Delegate {
 
     private static String sFontLocation;
+    public static boolean sIsTypefaceInitialized = false;
 
     public static void setFontLocation(String fontLocation) {
         sFontLocation = fontLocation;
@@ -52,7 +50,7 @@ public class SystemFonts_Delegate {
             @NonNull FontCustomizationParser.Result oemCustomization,
             @NonNull ArrayMap<String, FontFamily[]> fallbackMap,
             @NonNull ArrayList<Font> availableFonts) {
-        Bridge.sIsTypefaceInitialized = true;
+        sIsTypefaceInitialized = true;
         return SystemFonts.buildSystemFallback_Original(sFontLocation + "fonts.xml",
                 sFontLocation, oemCustomization, fallbackMap, availableFonts);
     }
