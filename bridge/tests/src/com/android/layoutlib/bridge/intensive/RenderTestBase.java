@@ -57,10 +57,7 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import com.google.android.collect.Lists;
-import com.google.common.collect.ImmutableMap;
 
-import static com.android.SdkConstants.PLATFORM_DARWIN;
-import static com.android.SdkConstants.currentPlatform;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -94,7 +91,7 @@ public class RenderTestBase {
     private static final String PLATFORM_DIR_PROPERTY = "platform.dir";
     private static final String RESOURCE_DIR_PROPERTY = "test_res.dir";
 
-    private static final String NATIVE_LIB_PATH;
+    private static final String NATIVE_LIB_DIR_PATH;
     private static final String ICU_DIR;
     protected static final String PLATFORM_DIR;
     private static final String TEST_RES_DIR;
@@ -122,7 +119,7 @@ public class RenderTestBase {
                     PLATFORM_DIR_PROPERTY, System.getProperty(PLATFORM_DIR_PROPERTY)));
         }
 
-        NATIVE_LIB_PATH = getNativeLibPath();
+        NATIVE_LIB_DIR_PATH = getNativeLibDirPath();
         ICU_DIR = getIcuDir();
 
         TEST_RES_DIR = getTestResDir();
@@ -146,20 +143,20 @@ public class RenderTestBase {
 
     protected ClassLoader mDefaultClassLoader;
 
-    private static String getNativeLibPath() {
-        String nativeLibPath = System.getProperty(NATIVE_LIB_PATH_PROPERTY);
-        if (nativeLibPath != null) {
-            File nativeLib = new File(nativeLibPath);
-            if (nativeLib.isFile()) {
-                nativeLibPath = nativeLib.getAbsolutePath();
+    private static String getNativeLibDirPath() {
+        String nativeLibDirPath = System.getProperty(NATIVE_LIB_PATH_PROPERTY);
+        if (nativeLibDirPath != null) {
+            File nativeLibDir = new File(nativeLibDirPath);
+            if (nativeLibDir.isDirectory()) {
+                nativeLibDirPath = nativeLibDir.getAbsolutePath();
             } else {
-                nativeLibPath = null;
+                nativeLibDirPath = null;
             }
         }
-        if (nativeLibPath == null) {
-            nativeLibPath = PLATFORM_DIR + "/../../../../../lib64/libandroid_runtime.so";
+        if (nativeLibDirPath == null) {
+            nativeLibDirPath = PLATFORM_DIR + "/../../../../../lib64/";
         }
-        return nativeLibPath;
+        return nativeLibDirPath;
     }
 
     private static String getIcuDir() {
@@ -343,7 +340,7 @@ public class RenderTestBase {
         File buildProp = new File(PLATFORM_DIR, "build.prop");
         File attrs = new File(res, "values" + File.separator + "attrs.xml");
         sBridge = new Bridge();
-        sBridge.init(ConfigGenerator.loadProperties(buildProp), fontLocation, NATIVE_LIB_PATH,
+        sBridge.init(ConfigGenerator.loadProperties(buildProp), fontLocation, NATIVE_LIB_DIR_PATH,
                 ICU_DIR, ConfigGenerator.getEnumMap(attrs), getLayoutLog());
         Bridge.getLock().lock();
         try {
