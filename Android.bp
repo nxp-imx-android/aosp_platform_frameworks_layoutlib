@@ -31,5 +31,5 @@ java_genrule_host {
         ":icu4j-icudata-jarjar{.jar}", // HOST
         ":icu4j-icutzdata-jarjar{.jar}", // HOST
     ],
-    cmd: "rm -f $(out) && $(location layoutlib_create) $(out) $(in)",
+    cmd: "rm -f $(out) && $(location layoutlib_create) --create-stub $(out) $(in)",
 }
