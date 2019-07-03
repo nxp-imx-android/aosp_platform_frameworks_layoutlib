@@ -57,6 +57,7 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReentrantLock;
@@ -147,7 +148,15 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
 
     private static String sIcuDataPath;
 
-    private static String sNativeLibPath;
+    private static final String[] LINUX_NATIVE_LIBRARIES = {"libandroid_runtime.so"};
+    private static final String[] MAC_NATIVE_LIBRARIES = {"libandroid_runtime.dylib"};
+    private static final String[] WINDOWS_NATIVE_LIBRARIES =
+            {"libbase.dll", "liblog.dll", "libicuuc_stubdata.dll", "libicuuc-host.dll",
+                    "libicui18n-host.dll", "libnativehelper.dll", "libandroidicu-host.dll",
+                    "libharfbuzz_ng.dll", "libminikin.dll", "libz-host.dll", "libpng.dll",
+                    "libjpeg.dll", "libft2.dll", "libexpat-host.dll", "libpiex.dll",
+                    "libdng_sdk.dll",  "libhwui.dll", "libcutils.dll", "libziparchive.dll",
+                    "libandroid_runtime.dll"};
 
     @Override
     public int getApiLevel() {
@@ -177,10 +186,9 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             LayoutLog log) {
         sPlatformProperties = platformProperties;
         sEnumValueMap = enumValueMap;
-        sNativeLibPath = nativeLibPath;
         sIcuDataPath = icuDataPath;
 
-        if (!loadNativeLibraryIfNeeded(log)) {
+        if (!loadNativeLibrariesIfNeeded(log, nativeLibPath)) {
             return false;
         }
 
@@ -657,10 +665,11 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     private static boolean sJniLibLoadAttempted;
     private static boolean sJniLibLoaded;
 
-    private synchronized static boolean loadNativeLibraryIfNeeded(LayoutLog log) {
+    private synchronized static boolean loadNativeLibrariesIfNeeded(LayoutLog log,
+            String nativeLibDir) {
         if (!sJniLibLoadAttempted) {
             try {
-                loadNativeLibrary();
+                loadNativeLibraries(nativeLibDir);
             }
             catch (UnsatisfiedLinkError e) {
                 log.error(LayoutLog.TAG_BROKEN, "Native layoutlib failed to load", e, null, null);
@@ -669,7 +678,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         return sJniLibLoaded;
     }
 
-    private synchronized static void loadNativeLibrary() {
+    private synchronized static void loadNativeLibraries(String nativeLibDir) {
         if (sJniLibLoadAttempted) {
             // Already attempted to load, nothing to do here.
             return;
@@ -681,12 +690,26 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             System.setProperty("native_classes", String.join(",",
                     NativeConfig.CLASS_NATIVES));
             System.setProperty("icu.dir", Bridge.getIcuDataPath());
-            System.load(sNativeLibPath);
+            for (String library : getNativeLibraries()) {
+                String path = new File(nativeLibDir, library).getAbsolutePath();
+                System.load(path);
+            }
         }
         finally {
             sJniLibLoadAttempted = true;
         }
         sJniLibLoaded = true;
+    }
+
+    private static String[] getNativeLibraries() {
+        String osName = System.getProperty("os.name").toLowerCase(Locale.US);
+        if (osName.startsWith("windows")) {
+            return WINDOWS_NATIVE_LIBRARIES;
+        }
+        if (osName.startsWith("mac")) {
+            return MAC_NATIVE_LIBRARIES;
+        }
+        return LINUX_NATIVE_LIBRARIES;
     }
 
     @Override
