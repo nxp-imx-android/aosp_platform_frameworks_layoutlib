@@ -18,6 +18,7 @@ package com.android.tools.layoutlib.create;
 
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 import com.android.tools.layoutlib.java.LinkedHashMap_Delegate;
+import com.android.tools.layoutlib.java.NioUtils_Delegate;
 import com.android.tools.layoutlib.java.System_Delegate;
 
 import org.objectweb.asm.Opcodes;
@@ -142,6 +143,8 @@ public final class CreateInfo implements ICreateInfo {
         new LinkedHashMapEldestReplacer(),
         new ContextGetClassLoaderReplacer(),
         new ImageReaderNativeInitReplacer(),
+        new NioUtilsFreeBufferReplacer(),
+        new ProcessInitializerInitSchedReplacer(),
     };
 
     /**
@@ -159,6 +162,7 @@ public final class CreateInfo implements ICreateInfo {
             /* Java package classes */
             System_Delegate.class,
             LinkedHashMap_Delegate.class,
+            NioUtils_Delegate.class,
         };
 
     /**
@@ -216,6 +220,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.Typeface$Builder#createAssetUid",
         "android.graphics.drawable.AdaptiveIconDrawable#<init>",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI#onDraw",
+        "android.graphics.drawable.AnimatedVectorDrawable#draw",
         "android.graphics.fonts.Font$Builder#nGetAssetBuffer",
         "android.graphics.fonts.Font$Builder#nGetNativeAsset",
         "android.graphics.fonts.Font$Builder#nGetReleaseNativeAssetFunc",
@@ -243,6 +248,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.view.PointerIcon#loadResource",
         "android.view.PointerIcon#registerDisplayListener",
         "android.view.SurfaceControl#nativeCreateTransaction",
+        "android.view.TextureView#getTextureLayer",
         "android.view.View#draw",
         "android.view.View#dispatchDetachedFromWindow",
         "android.view.View#getWindowToken",
@@ -391,6 +397,8 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.Typeface#DEFAULT_FAMILY",
         "android.graphics.Typeface#sDynamicTypefaceCache",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI#mSet",
+        "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorRT#mPendingAnimationActions",
+        "android.graphics.drawable.AnimatedVectorDrawable#mAnimatorSet",
         "android.graphics.drawable.AdaptiveIconDrawable#sMask",
         "libcore.util.NativeAllocationRegistry#freeFunction",
         "libcore.util.NativeAllocationRegistry#size",
@@ -410,6 +418,7 @@ public final class CreateInfo implements ICreateInfo {
      */
     private final static String[] PROMOTED_CLASSES = new String[] {
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI",
+        "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimator",
         "libcore.util.NativeAllocationRegistry$CleanerRunner",
         "libcore.util.NativeAllocationRegistry$CleanerThunk",
     };
@@ -621,6 +630,33 @@ public final class CreateInfo implements ICreateInfo {
         @Override
         public void replace(MethodInformation mi) {
             mi.owner = "com/android/tools/layoutlib/java/text/DateFormat_Delegate";
+        }
+    }
+
+    public static class NioUtilsFreeBufferReplacer implements MethodReplacer {
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return "java/nio/NioUtils".equals(owner) && name.equals("freeDirectBuffer");
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.owner = Type.getInternalName(NioUtils_Delegate.class);
+        }
+    }
+
+    public static class ProcessInitializerInitSchedReplacer implements MethodReplacer {
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return "android/graphics/HardwareRenderer$ProcessInitializer".equals(owner) &&
+                    name.equals("initSched");
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.owner = "android/graphics/HardwareRenderer_ProcessInitializer_Delegate";
+            mi.opcode = Opcodes.INVOKESTATIC;
+            mi.desc = "(J)V";
         }
     }
 }
