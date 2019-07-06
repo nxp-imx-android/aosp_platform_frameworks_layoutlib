@@ -54,7 +54,14 @@ import android.annotation.Nullable;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
+import android.graphics.HardwareRenderer;
+import android.graphics.LayoutlibRenderer;
+import android.graphics.PixelFormat;
+import android.graphics.RenderNode;
 import android.graphics.drawable.AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate;
+import android.media.Image;
+import android.media.Image.Plane;
+import android.media.ImageReader;
 import android.os.Looper;
 import android.preference.Preference_Delegate;
 import android.view.AttachInfo_Accessor;
@@ -83,10 +90,14 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.android.internal.R;
+import android.content.res.TypedArray;
 
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_INFLATION;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_NOT_INFLATED;
@@ -111,7 +122,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
     private BridgeInflater mInflater;
     private ViewGroup mViewRoot;
     private FrameLayout mContentRoot;
-    private Canvas mCanvas;
     private int mMeasuredScreenWidth = -1;
     private int mMeasuredScreenHeight = -1;
     private boolean mIsAlphaChannelImage;
@@ -126,7 +136,9 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
     private List<ViewInfo> mSystemViewInfoList;
     private Layout.Builder mLayoutBuilder;
     private boolean mNewRenderSize;
-    private Bitmap mBitmap;
+    private ImageReader mImageReader;
+    private Image mNativeImage;
+    private LayoutlibRenderer mRenderer = new LayoutlibRenderer();
 
     private static final class PostInflateException extends Exception {
         private static final long serialVersionUID = 1L;
@@ -185,6 +197,9 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         mBlockParser = new BridgeXmlBlockParser(layoutParser, context, layoutParser.getLayoutNamespace());
 
         Bitmap.setDefaultDensity(params.getHardwareConfig().getDensity().getDpiValue());
+
+        // Needed in order to initialize static state of ImageReader
+        ImageReader.nativeClassInit();
 
         return SUCCESS.createResult();
     }
@@ -390,18 +405,19 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
     }
 
     /**
-     * Renders the given view hierarchy to the passed canvas and returns the result of the render
-     * operation.
-     * @param canvas an optional canvas to render the views to. If null, only the measure and
-     * layout steps will be executed.
+     * Creates a display list for the root view and draws that display list with a "hardware"
+     * renderer. In layoutlib the renderer is not actually hardware (in contrast to the actual
+     * android) but pretends to be so in order to draw all the advanced android features (e.g.
+     * shadows).
      */
-    private static Result renderAndBuildResult(@NonNull ViewGroup viewRoot, @Nullable Canvas canvas) {
-        if (canvas == null) {
-            return SUCCESS.createResult();
-        }
+    private static Result renderAndBuildResult(@NonNull ViewGroup viewRoot,
+        @NonNull HardwareRenderer renderer) {
 
         AttachInfo_Accessor.dispatchOnPreDraw(viewRoot);
-        viewRoot.draw(canvas);
+
+        RenderNode node = viewRoot.updateDisplayListIfDirty();
+        renderer.setContentRoot(node);
+        renderer.createRenderRequest().syncAndDraw();
 
         return SUCCESS.createResult();
     }
@@ -472,7 +488,10 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             if (onlyMeasure) {
                 // delete the canvas and image to reset them on the next full rendering
                 mImage = null;
-                mCanvas = null;
+                if (mImageReader != null) {
+                    mImageReader.close();
+                    mImageReader = null;
+                }
                 doLayout(getContext(), mViewRoot, mMeasuredScreenWidth, mMeasuredScreenHeight);
             } else {
                 // draw the views
@@ -486,7 +505,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                 boolean disableBitmapCaching = Boolean.TRUE.equals(params.getFlag(
                     RenderParamsFlags.FLAG_KEY_DISABLE_BITMAP_CACHING));
 
-                if (mNewRenderSize || mCanvas == null || disableBitmapCaching) {
+                if (mNewRenderSize || mImageReader == null || disableBitmapCaching) {
                     mNewRenderSize = false;
                     if (params.getImageFactory() != null) {
                         mImage = params.getImageFactory().getImage(
@@ -497,6 +516,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                                 mMeasuredScreenWidth,
                                 mMeasuredScreenHeight,
                                 BufferedImage.TYPE_INT_ARGB);
+
                         newImage = true;
                     }
 
@@ -510,32 +530,29 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                         gc.dispose();
                     }
 
-                    // create an Android bitmap around the BufferedImage
-                    mBitmap = Bitmap.createBitmap(mImage.getWidth(), mImage.getHeight(),
-                            Config.ARGB_8888);
-                    int[] imageData = ((DataBufferInt) mImage.getRaster().getDataBuffer()).getData();
-                    mBitmap.setPixels(imageData, 0, mImage.getWidth(), 0, 0, mImage.getWidth(), mImage.getHeight());
-
-                    if (mCanvas == null) {
-                        // create a Canvas around the Android bitmap
-                        mCanvas = new Canvas(mBitmap);
-                    } else {
-                        mCanvas.setBitmap(mBitmap);
-                    }
-
                     boolean enableImageResizing =
                             mImage.getWidth() != mMeasuredScreenWidth &&
-                            mImage.getHeight() != mMeasuredScreenHeight &&
-                            Boolean.TRUE.equals(params.getFlag(
-                                    RenderParamsFlags.FLAG_KEY_RESULT_IMAGE_AUTO_SCALE));
+                                    mImage.getHeight() != mMeasuredScreenHeight &&
+                                    Boolean.TRUE.equals(params.getFlag(
+                                            RenderParamsFlags.FLAG_KEY_RESULT_IMAGE_AUTO_SCALE));
 
                     if (enableImageResizing) {
-                        float scaleX = (float)mImage.getWidth() / mMeasuredScreenWidth;
-                        float scaleY = (float)mImage.getHeight() / mMeasuredScreenHeight;
-                        mCanvas.scale(scaleX, scaleY);
+                        // have to recreate
+                        if (mImageReader != null) {
+                            mImageReader.close();
+                            mImageReader = null;
+                        }
+                        mRenderer.setScale(mImage.getWidth() * 1.0f / mMeasuredScreenWidth,
+                                mImage.getHeight() * 1.0f / mMeasuredScreenHeight);
+                    } else {
+                        mRenderer.setScale(1.0f, 1.0f);
                     }
 
-                    mCanvas.setDensity(hardwareConfig.getDensity().getDpiValue());
+                    if (mImageReader == null) {
+                        mImageReader = ImageReader.newInstance(mImage.getWidth(), mImage.getHeight(), PixelFormat.RGBA_8888, 1);
+                        mRenderer.setSurface(mImageReader.getSurface());
+                        mNativeImage = mImageReader.acquireNextImage();
+                    }
                 }
 
                 if (freshRender && !newImage) {
@@ -551,11 +568,12 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                 }
 
                 doLayout(getContext(), mViewRoot, mMeasuredScreenWidth, mMeasuredScreenHeight);
+
                 if (mElapsedFrameTimeNanos >= 0) {
-                    long initialTime = System_Delegate.nanoTime();
                     if (!mFirstFrameExecuted) {
                         // We need to run an initial draw call to initialize the animations
-                        renderAndBuildResult(mViewRoot, NOP_CANVAS);
+                        AttachInfo_Accessor.dispatchOnPreDraw(mViewRoot);
+                        mViewRoot.draw(NOP_CANVAS);
 
                         // The first frame will initialize the animations
                         mFirstFrameExecuted = true;
@@ -564,10 +582,26 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                     AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate.sFrameTime =
                             mElapsedFrameTimeNanos / 1000000;
                 }
-                renderResult = renderAndBuildResult(mViewRoot, mCanvas);
+
+                final TypedArray a = getContext().obtainStyledAttributes(null, R.styleable.Lighting, 0, 0);
+                float lightY = a.getDimension(R.styleable.Lighting_lightY, 0);
+                float lightZ = a.getDimension(R.styleable.Lighting_lightZ, 0);
+                float lightRadius = a.getDimension(R.styleable.Lighting_lightRadius, 0);
+                float ambientShadowAlpha = a.getFloat(R.styleable.Lighting_ambientShadowAlpha, 0);
+                float spotShadowAlpha = a.getFloat(R.styleable.Lighting_spotShadowAlpha, 0);
+                a.recycle();
+
+                mRenderer.setLightSourceGeometry(mMeasuredScreenWidth / 2, lightY, lightZ, lightRadius);
+                mRenderer.setLightSourceAlpha(ambientShadowAlpha, spotShadowAlpha);
+
+                renderResult = renderAndBuildResult(mViewRoot, mRenderer);
+
                 int[] imageData = ((DataBufferInt) mImage.getRaster().getDataBuffer()).getData();
-                mBitmap.getPixels(imageData, 0, mImage.getWidth(), 0, 0, mImage.getWidth(),
-                        mImage.getHeight());
+
+                Plane[] planes = mNativeImage.getPlanes();
+                IntBuffer buff = planes[0].getBuffer().asIntBuffer();
+                int len = buff.remaining();
+                buff.get(imageData, 0, len);
             }
 
             mSystemViewInfoList =
@@ -1153,10 +1187,11 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                 Bridge.prepareThread();
                 createdLooper = true;
             }
+            mRenderer.destroy();
             AttachInfo_Accessor.detachFromWindow(mViewRoot);
-            if (mCanvas != null) {
-                mCanvas.release();
-                mCanvas = null;
+            if (mImageReader != null) {
+                mImageReader.close();
+                mImageReader = null;
             }
             if (mViewInfoList != null) {
                 mViewInfoList.clear();

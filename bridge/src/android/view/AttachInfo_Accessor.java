@@ -38,7 +38,9 @@ public class AttachInfo_Accessor {
         info.mHasWindowFocus = true;
         info.mWindowVisibility = View.VISIBLE;
         info.mInTouchMode = false; // this is so that we can display selections.
-        info.mHardwareAccelerated = false;
+        info.mHardwareAccelerated = true;
+        // We do not use this one at all, it is only needed to satisfy null checks in View
+        info.mThreadedRenderer = new ThreadedRenderer(context, false, "layoutlib-renderer");
         view.dispatchAttachedToWindow(info, 0);
     }
 
@@ -47,6 +49,9 @@ public class AttachInfo_Accessor {
     }
 
     public static void detachFromWindow(View view) {
+        if (view.mAttachInfo.mThreadedRenderer != null) {
+            view.mAttachInfo.mThreadedRenderer.destroy();
+        }
         if (view != null) {
             view.dispatchDetachedFromWindow();
         }
