@@ -15,7 +15,7 @@ OUT_INTERMEDIATES=${SCRIPT_DIR}"/../../../../out/soong/.intermediates"
 NATIVE_LIBRARIES=${SCRIPT_DIR}"/../../../../out/host/darwin-x86/lib64/"
 SDK=${SCRIPT_DIR}"/../../../../out/host/darwin-x86/sdk/sdk*/android-sdk*"
 ICU_DIR=${SCRIPT_DIR}"/../../../../out/host/darwin-x86/com.android.runtime/etc/icu"
-TMP_DIR=$(mktemp -d)
+TMP_DIR=$(mktemp -d -t tmp)
 PLATFORM=${TMP_DIR}/"android"
 
 # Copy resources to a temp directory
