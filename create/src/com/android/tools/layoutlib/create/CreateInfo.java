@@ -251,6 +251,8 @@ public final class CreateInfo implements ICreateInfo {
         "com.android.internal.view.menu.MenuBuilder#createNewMenuItem",
         "dalvik.system.VMRuntime#getNotifyNativeInterval",
         "dalvik.system.VMRuntime#newUnpaddedArray",
+        "dalvik.system.VMRuntime#newNonMovableArray",
+        "dalvik.system.VMRuntime#addressOf",
         "libcore.io.MemoryMappedFile#bigEndianIterator",
         "libcore.io.MemoryMappedFile#close",
         "libcore.io.MemoryMappedFile#mmapRO",
