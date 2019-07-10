@@ -304,4 +304,9 @@ public class NopCanvas extends Canvas {
     @Override
     public void drawPicture(Picture picture, Rect dst) {
     }
+
+    @Override
+    public boolean quickReject(float left, float top, float right, float bottom, EdgeType type) {
+        return false;
+    }
 }
