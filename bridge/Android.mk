@@ -23,6 +23,7 @@ LOCAL_JAVA_RESOURCE_DIRS := resources
 LOCAL_JAVA_LIBRARIES := \
 	layoutlib_api-prebuilt \
 	tools-common-prebuilt \
+	kxml2-2.3.0 \
 	guava-prebuilt-host-jar
 
 LOCAL_STATIC_JAVA_LIBRARIES := \
@@ -44,6 +45,7 @@ LOCAL_JAVA_LANGUAGE_VERSION := 1.8
 LOCAL_JAVA_RESOURCE_DIRS := resources
 
 LOCAL_JAVA_LIBRARIES := temp_layoutlib \
+    kxml2-2.3.0 \
 	guava-prebuilt-host-jar \
 
 LOCAL_STATIC_JAVA_LIBRARIES := \
