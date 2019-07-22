@@ -151,9 +151,8 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     private static final String[] LINUX_NATIVE_LIBRARIES = {"libandroid_runtime.so"};
     private static final String[] MAC_NATIVE_LIBRARIES = {"libandroid_runtime.dylib"};
     private static final String[] WINDOWS_NATIVE_LIBRARIES =
-            {"liblog.dll", "libicuuc_stubdata.dll", "libicuuc-host.dll", "libicui18n-host.dll",
-                    "libandroidicu-host.dll", "libharfbuzz_ng.dll", "libz-host.dll", "libpng.dll",
-                    "libpiex.dll", "libandroid_runtime.dll"};
+            {"libicuuc_stubdata.dll", "libicuuc-host.dll", "libicui18n-host.dll", "libpiex.dll",
+                    "libandroid_runtime.dll"};
 
     @Override
     public int getApiLevel() {
