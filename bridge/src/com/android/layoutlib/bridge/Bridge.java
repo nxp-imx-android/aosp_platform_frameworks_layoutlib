@@ -142,8 +142,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
      */
     private static LayoutLog sCurrentLog = sDefaultLog;
 
-    public static boolean sIsTypefaceInitialized;
-
     private static final int LAST_SUPPORTED_FEATURE = Features.THEME_PREVIEW_NAVIGATION_BAR;
 
     private static String sIcuDataPath;
@@ -371,7 +369,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         BridgeAssetManager.clearSystem();
 
         // dispose of the default typeface.
-        if (sIsTypefaceInitialized) {
+        if (SystemFonts_Delegate.sIsTypefaceInitialized) {
             Typeface.sDynamicTypefaceCache.evictAll();
         }
         sProjectBitmapCache.clear();
@@ -710,7 +708,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
 
     @Override
     public void clearFontCache(String path) {
-        if (sIsTypefaceInitialized) {
+        if (SystemFonts_Delegate.sIsTypefaceInitialized) {
             final String key =
                     Typeface_Builder_Delegate.createAssetUid(BridgeAssetManager.initSystem(), path,
                             0, null, RESOLVE_BY_FONT_TABLE, RESOLVE_BY_FONT_TABLE, DEFAULT_FAMILY);

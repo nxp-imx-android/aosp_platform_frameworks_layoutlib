@@ -124,6 +124,11 @@ public final class CreateInfo implements ICreateInfo {
         return INJECTED_METHODS;
     }
 
+    @Override
+    public String[] getDeferredStaticInitializerClasses() {
+        return DEFERRED_STATIC_INITIALIZER_CLASSES;
+    }
+
     //-----
 
     private static final MethodReplacer[] METHOD_REPLACERS = new MethodReplacer[] {
@@ -412,6 +417,12 @@ public final class CreateInfo implements ICreateInfo {
     private final static String[] DELETE_RETURNS =
         new String[] {
             null };                         // separator, for next class/methods list.
+
+
+
+    private final static String[] DEFERRED_STATIC_INITIALIZER_CLASSES = new String[] {
+
+    };
 
     private final static Map<String, InjectMethodRunnable> INJECTED_METHODS =
             new HashMap<String, InjectMethodRunnable>(1) {{
