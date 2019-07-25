@@ -430,7 +430,7 @@ public final class CreateInfo implements ICreateInfo {
                         InjectMethodRunnables.CONTEXT_GET_FRAMEWORK_CLASS_LOADER);
             }};
 
-    private static class LinkedHashMapEldestReplacer implements MethodReplacer {
+    public static class LinkedHashMapEldestReplacer implements MethodReplacer {
 
         private final String VOID_TO_MAP_ENTRY =
                 Type.getMethodDescriptor(Type.getType(Map.Entry.class));

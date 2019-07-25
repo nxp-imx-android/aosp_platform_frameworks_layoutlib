@@ -17,6 +17,7 @@
 package dalvik.system;
 
 import com.android.internal.util.Preconditions;
+import com.android.layoutlib.common.util.ReflectionUtils;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 import com.android.tools.layoutlib.annotations.VisibleForTesting;
 
@@ -115,11 +116,11 @@ public class VMRuntime_Delegate {
         Preconditions.checkNotNull(byteBuffer, "Trying to get address of unknown object");
         // TODO: implement this in JNI and use GetDirectBufferAddress
         try {
-            Method addressMethod = getAccessibleMethod(Class.forName("java.nio.DirectByteBuffer"),
+            Method addressMethod = ReflectionUtils.getAccessibleMethod(Class.forName("java.nio.DirectByteBuffer"),
                     "address");
-            return (long)addressMethod.invoke(byteBuffer);
+            return (long)ReflectionUtils.invoke(addressMethod, byteBuffer);
 
-        } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException | InvocationTargetException e) {
+        } catch (ClassNotFoundException | ReflectionUtils.ReflectionException e) {
             throw new RuntimeException(e);
         }
     }
@@ -184,18 +185,12 @@ public class VMRuntime_Delegate {
 
     static  void preloadDexCaches(VMRuntime runtime) {}
 
-    @NonNull
-    public static Method getMethod(@NonNull Class<?> clazz, @NonNull String name,
-            @Nullable Class<?>... params) throws NoSuchMethodException {
-            return clazz.getMethod(name, params);
+    static void registerNativeAllocation(VMRuntime original, long ptr) {
+        // ignore for now
     }
 
-    @NonNull
-    public static Method getAccessibleMethod(@NonNull Class<?> clazz, @NonNull String name,
-            @Nullable Class<?>... params) throws NoSuchMethodException {
-        Method method = getMethod(clazz, name, params);
-        method.setAccessible(true);
-
-        return method;
+    static void registerNativeFree(VMRuntime original, long ptr) {
+        // ignore for now
     }
+
 }

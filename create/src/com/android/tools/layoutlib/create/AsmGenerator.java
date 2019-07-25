@@ -94,7 +94,6 @@ public class AsmGenerator {
     private final Set<MethodReplacer> mMethodReplacers;
     private boolean mKeepAllNativeClasses;
 
-
     /**
      * Creates a new generator that can generate the output JAR with the stubbed classes.
      *
