@@ -106,13 +106,18 @@ public class VMRuntime_Delegate {
         ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * length);
         byteBuffer.order(ByteOrder.nativeOrder());
         int[] javaArray = new int[length];
-        sNonMovableArrays.put(javaArray, byteBuffer);
+        synchronized (sNonMovableArrays) {
+            sNonMovableArrays.put(javaArray, byteBuffer);
+        }
         return javaArray;
     }
 
     @LayoutlibDelegate
     static long addressOf(VMRuntime runtime, Object array) {
-        ByteBuffer byteBuffer = sNonMovableArrays.get(array);
+        ByteBuffer byteBuffer;
+        synchronized (sNonMovableArrays) {
+            byteBuffer = sNonMovableArrays.get(array);
+        }
         Preconditions.checkNotNull(byteBuffer, "Trying to get address of unknown object");
         // TODO: implement this in JNI and use GetDirectBufferAddress
         try {
@@ -127,7 +132,9 @@ public class VMRuntime_Delegate {
 
     @VisibleForTesting
     static ByteBuffer getBackingBuffer(int[] javaArray) {
-        return sNonMovableArrays.get(javaArray);
+        synchronized (sNonMovableArrays) {
+            return sNonMovableArrays.get(javaArray);
+        }
     }
 
     /**
