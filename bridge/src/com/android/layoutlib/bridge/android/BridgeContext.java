@@ -67,7 +67,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.Typeface_Delegate;
 import android.graphics.drawable.Drawable;
+import android.graphics.fonts.SystemFonts_Delegate;
 import android.hardware.display.DisplayManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -278,6 +281,12 @@ public class BridgeContext extends Context {
                 mConfig,
                 mLayoutlibCallback);
         mTheme = mSystemResources.newTheme();
+
+        // If Typeface has not yet been initialized, do it here to ensure that default fonts are
+        // correctly set up and all font information is available for rendering.
+        if (!SystemFonts_Delegate.sIsTypefaceInitialized) {
+            Typeface_Delegate.init(this);
+        }
     }
 
     /**
