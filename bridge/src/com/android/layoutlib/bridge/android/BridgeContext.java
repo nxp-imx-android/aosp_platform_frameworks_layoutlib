@@ -27,7 +27,6 @@ import com.android.ide.common.rendering.api.ResourceNamespace.Resolver;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.ResourceValueImpl;
-import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.StyleResourceValue;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.BridgeConstants;
@@ -67,10 +66,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.Typeface_Delegate;
 import android.graphics.drawable.Drawable;
-import android.graphics.fonts.SystemFonts_Delegate;
 import android.hardware.display.DisplayManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -288,7 +285,7 @@ public class BridgeContext extends Context {
 
         // If Typeface has not yet been initialized, do it here to ensure that default fonts are
         // correctly set up and all font information is available for rendering.
-        if (!SystemFonts_Delegate.sIsTypefaceInitialized) {
+        if (!Bridge.sIsTypefaceInitialized) {
             Typeface_Delegate.init(this);
         }
     }
