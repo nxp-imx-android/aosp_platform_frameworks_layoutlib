@@ -85,6 +85,7 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
@@ -517,9 +518,8 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                     // create an Android bitmap around the BufferedImage
                     mBitmap = Bitmap.createBitmap(mImage.getWidth(), mImage.getHeight(),
                             Config.ARGB_8888);
-                    mBitmap.setPixels(mImage.getRGB(0, 0, mImage.getWidth(), mImage.getHeight(),
-                            null, 0, mImage.getWidth()), 0, mImage.getWidth(), 0, 0, mImage
-                            .getWidth(), mImage.getHeight());
+                    int[] imageData = ((DataBufferInt) mImage.getRaster().getDataBuffer()).getData();
+                    mBitmap.setPixels(imageData, 0, mImage.getWidth(), 0, 0, mImage.getWidth(), mImage.getHeight());
 
                     if (mCanvas == null) {
                         // create a Canvas around the Android bitmap
@@ -570,10 +570,9 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                             mElapsedFrameTimeNanos / 1000000;
                 }
                 renderResult = renderAndBuildResult(mViewRoot, mCanvas);
-                int[] pixels = new int[mImage.getWidth() * mImage.getHeight()];
-                mBitmap.getPixels(pixels, 0, mImage.getWidth(), 0, 0, mImage.getWidth(),
+                int[] imageData = ((DataBufferInt) mImage.getRaster().getDataBuffer()).getData();
+                mBitmap.getPixels(imageData, 0, mImage.getWidth(), 0, 0, mImage.getWidth(),
                         mImage.getHeight());
-                mImage.setRGB(0, 0, mImage.getWidth(), mImage.getHeight(), pixels, 0, mImage.getWidth());
             }
 
             mSystemViewInfoList =
