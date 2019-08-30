@@ -319,6 +319,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.text.MeasuredText",
         "android.graphics.text.MeasuredText$Builder",
         "android.os.SystemProperties",
+        "android.util.Log",
         "android.util.PathParser",
         "com.android.internal.view.animation.NativeInterpolatorFactoryHelper",
         "com.android.internal.util.VirtualRefBasePtr",

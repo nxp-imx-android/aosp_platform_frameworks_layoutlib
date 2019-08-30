@@ -78,6 +78,7 @@ public class NativeConfig {
             "android.graphics.text.LineBreaker",
             "android.graphics.text.MeasuredText",
             "android.os.SystemProperties",
+            "android.util.Log",
             "android.util.PathParser",
             "com.android.internal.util.VirtualRefBasePtr",
             "com.android.internal.view.animation.NativeInterpolatorFactoryHelper",
