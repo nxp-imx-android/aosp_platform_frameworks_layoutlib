@@ -43,6 +43,7 @@ import android.graphics.fonts.SystemFonts_Delegate;
 import android.icu.util.ULocale;
 import android.os.Looper;
 import android.os.Looper_Accessor;
+import android.os.SystemProperties;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -57,6 +58,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -113,7 +115,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     private final static Map<String, SoftReference<Bitmap>> sFrameworkBitmapCache = new HashMap<>();
 
     private static Map<String, Map<String, Integer>> sEnumValueMap;
-    private static Map<String, String> sPlatformProperties;
 
     /**
      * A default log than prints to stdout/stderr.
@@ -157,12 +158,15 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             String icuDataPath,
             Map<String, Map<String, Integer>> enumValueMap,
             LayoutLog log) {
-        sPlatformProperties = platformProperties;
         sEnumValueMap = enumValueMap;
         sIcuDataPath = icuDataPath;
 
         if (!loadNativeLibrariesIfNeeded(log, nativeLibPath)) {
             return false;
+        }
+
+        for (Entry<String, String> property : platformProperties.entrySet()) {
+            SystemProperties.set(property.getKey(), property.getValue());
         }
 
         BridgeAssetManager.initSystem();
@@ -575,13 +579,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         }
 
         return null;
-    }
-
-    /**
-     * Returns the platform build properties.
-     */
-    public static Map<String, String> getPlatformProperties() {
-        return sPlatformProperties;
     }
 
     /**

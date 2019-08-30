@@ -38,7 +38,6 @@ public class NativeConfig {
 
     public final static String[] DELEGATE_CLASS_NATIVES = new String[] {
             "android.os.SystemClock",
-            "android.os.SystemProperties",
             "android.view.Display",
             "libcore.icu.ICU",
     };
@@ -78,6 +77,7 @@ public class NativeConfig {
             "android.graphics.fonts.FontFamily",
             "android.graphics.text.LineBreaker",
             "android.graphics.text.MeasuredText",
+            "android.os.SystemProperties",
             "android.util.PathParser",
             "com.android.internal.util.VirtualRefBasePtr",
             "com.android.internal.view.animation.NativeInterpolatorFactoryHelper",
