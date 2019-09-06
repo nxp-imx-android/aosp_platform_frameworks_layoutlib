@@ -41,7 +41,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.SystemServiceRegistry_Accessor;
+import android.app.SystemServiceRegistry;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -649,7 +649,7 @@ public class BridgeContext extends Context {
 
     @Override
     public String getSystemServiceName(Class<?> serviceClass) {
-        return SystemServiceRegistry_Accessor.getSystemServiceName(serviceClass);
+        return SystemServiceRegistry.getSystemServiceName(serviceClass);
     }
 
     /**
