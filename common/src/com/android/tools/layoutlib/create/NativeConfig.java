@@ -79,10 +79,12 @@ public class NativeConfig {
             "android.graphics.fonts.FontFamily",
             "android.graphics.text.LineBreaker",
             "android.graphics.text.MeasuredText",
+            "android.media.ImageReader",
             "android.os.SystemProperties",
             "android.os.Trace",
             "android.util.Log",
             "android.util.PathParser",
+            "android.view.Surface",
             "com.android.internal.util.VirtualRefBasePtr",
             "com.android.internal.view.animation.NativeInterpolatorFactoryHelper",
     };

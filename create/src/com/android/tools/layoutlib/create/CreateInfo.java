@@ -132,6 +132,7 @@ public final class CreateInfo implements ICreateInfo {
     //-----
 
     private static final MethodReplacer[] METHOD_REPLACERS = new MethodReplacer[] {
+        new SystemLoadLibraryReplacer(),
         new SystemArrayCopyReplacer(),
         new LocaleGetDefaultReplacer(),
         new LocaleAdjustLanguageCodeReplacer(),
@@ -139,7 +140,8 @@ public final class CreateInfo implements ICreateInfo {
         new SystemNanoTimeReplacer(),
         new SystemCurrentTimeMillisReplacer(),
         new LinkedHashMapEldestReplacer(),
-        new ContextGetClassLoaderReplacer()
+        new ContextGetClassLoaderReplacer(),
+        new ImageReaderNativeInitReplacer(),
     };
 
     /**
@@ -324,10 +326,13 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.fonts.SystemFonts",
         "android.graphics.text.MeasuredText",
         "android.graphics.text.MeasuredText$Builder",
+        "android.media.ImageReader",
+        "android.media.ImageReader$SurfaceImage",
         "android.os.SystemProperties",
         "android.os.Trace",
         "android.util.Log",
         "android.util.PathParser",
+        "android.view.Surface",
         "com.android.internal.view.animation.NativeInterpolatorFactoryHelper",
         "com.android.internal.util.VirtualRefBasePtr",
     };
@@ -403,6 +408,7 @@ public final class CreateInfo implements ICreateInfo {
      */
     private final static String[] PROMOTED_METHODS = new String[] {
         "android.animation.AnimationHandler#doAnimationFrame",
+        "android.media.ImageReader#nativeClassInit"
     };
 
     /**
@@ -523,6 +529,39 @@ public final class CreateInfo implements ICreateInfo {
                     || mi.desc.equals("(Ljava/lang/String;)V");
             mi.name = "log";
             mi.owner = Type.getInternalName(System_Delegate.class);
+        }
+    }
+
+    /**
+     * Platform code should not loadLibrary on its own. Layoutlib loading infrastructure takes case
+     * of loading all the necessary native libraries (having the right paths etc.)
+     */
+    public static class SystemLoadLibraryReplacer implements MethodReplacer {
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return Type.getInternalName(System.class).equals(owner) && name.equals("loadLibrary");
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.owner = Type.getInternalName(System_Delegate.class);
+        }
+    }
+
+    /**
+     * This is to replace a static call to a dummy, so that ImageReader can be loaded and accessed
+     * during JNI loading
+     */
+    private static class ImageReaderNativeInitReplacer implements MethodReplacer {
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return "android/media/ImageReader".equals(owner) && name.equals("nativeClassInit");
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.owner = "android/media/ImageReader_Delegate";
+            mi.opcode = Opcodes.INVOKESTATIC;
         }
     }
 

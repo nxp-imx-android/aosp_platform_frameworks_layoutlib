@@ -655,8 +655,8 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             try {
                 loadNativeLibraries(nativeLibDir);
             }
-            catch (UnsatisfiedLinkError e) {
-                log.error(LayoutLog.TAG_BROKEN, "Native layoutlib failed to load", e, null, null);
+            catch (Throwable t) {
+                log.error(LayoutLog.TAG_BROKEN, "Native layoutlib failed to load", t, null, null);
             }
         }
         return sJniLibLoaded;

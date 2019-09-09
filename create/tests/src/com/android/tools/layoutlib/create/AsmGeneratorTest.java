@@ -18,6 +18,8 @@
 package com.android.tools.layoutlib.create;
 
 
+import com.android.tools.layoutlib.create.CreateInfo.SystemLoadLibraryReplacer;
+import com.android.tools.layoutlib.create.ICreateInfo.MethodInformation;
 import com.android.tools.layoutlib.create.ICreateInfo.MethodReplacer;
 
 import org.junit.After;
@@ -41,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -310,6 +313,58 @@ public class AsmGeneratorTest {
         Method method = emptyArrayClass.getMethod("getFrameworkClassLoader");
         Object cl = method.invoke(emptyArrayInstance);
         assertEquals(classLoader, cl);
+    }
+
+    @Test
+    public void testMethodVisitor_loadLibraryReplacer() throws IOException {
+        final List<String> isNeeded = new ArrayList<>();
+        final List<String> replaced = new ArrayList<>();
+        MethodReplacer recordingReplacer = new MethodReplacer() {
+            private final MethodReplacer loadLibraryReplacer = new SystemLoadLibraryReplacer();
+            private final List<String> isNeededList = isNeeded;
+            private final List<String> replacedList = replaced;
+
+            @Override
+            public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+                boolean res = loadLibraryReplacer.isNeeded(owner, name, desc, sourceClass);
+                if (res) {
+                    isNeededList.add(sourceClass + "->" + owner + "." + name);
+                }
+                return res;
+            }
+
+            @Override
+            public void replace(MethodInformation mi) {
+                replacedList.add(mi.owner + "." + mi.name);
+            }
+        };
+        MethodReplacer[] replacers = new MethodReplacer[] { recordingReplacer };
+
+        ICreateInfo ci = new CreateInfoAdapter() {
+            @Override
+            public MethodReplacer[] getMethodReplacers() {
+                return replacers;
+            }
+        };
+
+        AsmGenerator agen = new AsmGenerator(mLog, ci);
+        AsmAnalyzer aa = new AsmAnalyzer(mLog, mOsJarPath,
+                null,                 // derived from
+                new String[] {        // include classes
+                        "**"
+                },
+                new String[] {},
+                new String[] {},
+                replacers);
+        agen.setAnalysisResult(aa.analyze());
+
+        assertTrue(isNeeded.contains("mock_android/view/LibLoader->java/lang/System.loadLibrary"));
+        assertTrue(replaced.isEmpty());
+
+        agen.generate();
+
+        assertTrue(isNeeded.contains("mock_android/view/LibLoader->java/lang/System.loadLibrary"));
+        assertTrue(replaced.contains("java/lang/System.loadLibrary"));
     }
 
     private static byte[] getByteArray(InputStream stream) throws IOException {
