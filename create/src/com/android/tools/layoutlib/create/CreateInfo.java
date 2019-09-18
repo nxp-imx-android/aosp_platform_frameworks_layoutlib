@@ -553,7 +553,7 @@ public final class CreateInfo implements ICreateInfo {
      * This is to replace a static call to a dummy, so that ImageReader can be loaded and accessed
      * during JNI loading
      */
-    private static class ImageReaderNativeInitReplacer implements MethodReplacer {
+    public static class ImageReaderNativeInitReplacer implements MethodReplacer {
         @Override
         public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
             return "android/media/ImageReader".equals(owner) && name.equals("nativeClassInit");
