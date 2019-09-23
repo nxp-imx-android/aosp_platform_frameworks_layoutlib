@@ -165,12 +165,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             return false;
         }
 
-        for (Entry<String, String> property : platformProperties.entrySet()) {
-            SystemProperties.set(property.getKey(), property.getValue());
-        }
-
-        BridgeAssetManager.initSystem();
-
         // When DEBUG_LAYOUT is set and is not 0 or false, setup a default listener
         // on static (native) methods which prints the signature on the console and
         // throws an exception.
@@ -200,9 +194,23 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             });
         }
 
-        // load the fonts.
-        SystemFonts_Delegate.setFontLocation(fontLocation.getAbsolutePath() + File.separator);
-        MemoryMappedFile_Delegate.setDataDir(fontLocation.getAbsoluteFile().getParentFile());
+        try {
+            for (Entry<String, String> property : platformProperties.entrySet()) {
+                SystemProperties.set(property.getKey(), property.getValue());
+            }
+
+            BridgeAssetManager.initSystem();
+
+            // load the fonts.
+            SystemFonts_Delegate.setFontLocation(fontLocation.getAbsolutePath() + File.separator);
+            MemoryMappedFile_Delegate.setDataDir(fontLocation.getAbsoluteFile().getParentFile());
+        } catch (Throwable t) {
+            if (log != null) {
+                log.error(LayoutLog.TAG_BROKEN, "Layoutlib Bridge initialization failed", t,
+                        null, null);
+            }
+            return false;
+        }
 
         // now parse com.android.internal.R (and only this one as android.R is a subset of
         // the internal version), and put the content in the maps.
