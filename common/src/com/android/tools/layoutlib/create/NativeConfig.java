@@ -47,6 +47,8 @@ public class NativeConfig {
      */
     public final static String[] CLASS_NATIVES = new String[] {
             "android.animation.PropertyValuesHolder",
+            "android.content.res.StringBlock",
+            "android.content.res.XmlBlock",
             "android.graphics.Bitmap",
             "android.graphics.BitmapFactory",
             "android.graphics.ByteBufferStreamAdaptor",
@@ -78,6 +80,7 @@ public class NativeConfig {
             "android.graphics.text.LineBreaker",
             "android.graphics.text.MeasuredText",
             "android.os.SystemProperties",
+            "android.os.Trace",
             "android.util.Log",
             "android.util.PathParser",
             "com.android.internal.util.VirtualRefBasePtr",

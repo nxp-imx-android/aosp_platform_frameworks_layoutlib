@@ -277,6 +277,8 @@ public final class CreateInfo implements ICreateInfo {
      */
     public final static String[] KEEP_CLASS_NATIVES = new String[] {
         "android.animation.PropertyValuesHolder",
+        "android.content.res.StringBlock",
+        "android.content.res.XmlBlock",
         "android.graphics.BaseCanvas",
         "android.graphics.BaseRecordingCanvas",
         "android.graphics.Bitmap",
@@ -323,6 +325,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.text.MeasuredText",
         "android.graphics.text.MeasuredText$Builder",
         "android.os.SystemProperties",
+        "android.os.Trace",
         "android.util.Log",
         "android.util.PathParser",
         "com.android.internal.view.animation.NativeInterpolatorFactoryHelper",
