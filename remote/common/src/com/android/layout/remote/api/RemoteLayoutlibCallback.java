@@ -33,8 +33,6 @@ import java.rmi.RemoteException;
  * Remote version of the {@link LayoutlibCallback} class
  */
 public interface RemoteLayoutlibCallback extends Remote {
-    boolean supports(int ideFeature) throws RemoteException;
-
     Object loadView(String name, Class[] constructorSignature, Object[] constructorArgs)
             throws Exception;
 
