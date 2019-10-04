@@ -35,6 +35,8 @@ LOCAL_JAVA_LIBRARIES := layoutlib \
 			mockito-host \
 			objenesis-host
 
+LOCAL_STATIC_JAVA_LIBRARIES := trove-prebuilt
+
 include $(BUILD_HOST_JAVA_LIBRARY)
 
 # Copy the jar to DIST_DIR for sdk builds
