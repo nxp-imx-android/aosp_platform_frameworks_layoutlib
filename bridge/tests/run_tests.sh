@@ -14,6 +14,7 @@ MISC_COMMON=${SCRIPT_DIR}"/../../../../prebuilts/misc/common"
 OUT_INTERMEDIATES=${SCRIPT_DIR}"/../../../../out/soong/.intermediates"
 NATIVE_LIBRARIES=${SCRIPT_DIR}"/../../../../out/host/linux-x86/lib64/"
 SDK=${SCRIPT_DIR}"/../../../../out/host/linux-x86/sdk/sdk*/android-sdk*"
+FONT_DIR=${SCRIPT_DIR}"/../../../../out/host/common/obj/PACKAGING/sdk-fonts_intermediates"
 ICU_DIR=${SCRIPT_DIR}"/../../../../out/host/linux-x86/com.android.i18n/etc/icu"
 TMP_DIR=$(mktemp -d)
 PLATFORM=${TMP_DIR}/"android"
@@ -37,6 +38,7 @@ cp -RL ${TMP_DIR}/res ${PLATFORM}/data
 # Run layoutlib tests
 ${STUDIO_JDK}/bin/java -ea \
     -Dnative.lib.path=${NATIVE_LIBRARIES} \
+    -Dfont.dir=${FONT_DIR} \
     -Dicu.dir=${ICU_DIR} \
     -Dplatform.dir=${PLATFORM} \
     -Dtest_res.dir=${SCRIPT_DIR}/res \

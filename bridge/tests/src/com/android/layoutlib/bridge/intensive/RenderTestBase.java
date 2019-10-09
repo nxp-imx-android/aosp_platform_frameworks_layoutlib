@@ -87,11 +87,13 @@ import static org.junit.Assert.fail;
 public class RenderTestBase {
 
     private static final String NATIVE_LIB_PATH_PROPERTY = "native.lib.path";
+    private static final String FONT_DIR_PROPERTY = "font.dir";
     private static final String ICU_DIR_PROPERTY = "icu.dir";
     private static final String PLATFORM_DIR_PROPERTY = "platform.dir";
     private static final String RESOURCE_DIR_PROPERTY = "test_res.dir";
 
     private static final String NATIVE_LIB_DIR_PATH;
+    private static final String FONT_DIR;
     private static final String ICU_DIR;
     protected static final String PLATFORM_DIR;
     private static final String TEST_RES_DIR;
@@ -120,6 +122,7 @@ public class RenderTestBase {
         }
 
         NATIVE_LIB_DIR_PATH = getNativeLibDirPath();
+        FONT_DIR = getFontDir();
         ICU_DIR = getIcuDir();
 
         TEST_RES_DIR = getTestResDir();
@@ -159,10 +162,19 @@ public class RenderTestBase {
         return nativeLibDirPath;
     }
 
+    private static String getFontDir() {
+        String fontDir = System.getProperty(FONT_DIR_PROPERTY);
+        if (fontDir == null) {
+            fontDir = PLATFORM_DIR +
+                    "/../../../../../../common/obj/PACKAGING/sdk-fonts_intermediates";
+        }
+        return fontDir;
+    }
+
     private static String getIcuDir() {
         String icuDir = System.getProperty(ICU_DIR_PROPERTY);
         if (icuDir == null) {
-            icuDir = PLATFORM_DIR + "/../../../../../com.android.runtime/etc/icu";
+            icuDir = PLATFORM_DIR + "/../../../../../com.android.i18n/etc/icu";
         }
         return icuDir;
     }
@@ -338,8 +350,7 @@ public class RenderTestBase {
 
         // The fonts are built into out/host/common/obj/PACKAGING/sdk-fonts_intermediates as specified in
         // build/make/core/sdk_font.mk, and PLATFORM_DIR is out/host/[arch]/sdk/sdk*/android-sdk*/platforms/android*
-        File fontLocation = new File(PLATFORM_DIR,
-                "../../../../../../common/obj/PACKAGING/sdk-fonts_intermediates");
+        File fontLocation = new File(FONT_DIR);
         File buildProp = new File(PLATFORM_DIR, "build.prop");
         File attrs = new File(res, "values" + File.separator + "attrs.xml");
         sBridge = new Bridge();
