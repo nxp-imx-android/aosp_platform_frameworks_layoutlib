@@ -165,6 +165,9 @@ public class RenderTestBase {
     private static String getFontDir() {
         String fontDir = System.getProperty(FONT_DIR_PROPERTY);
         if (fontDir == null) {
+            // The fonts are built into out/host/common/obj/PACKAGING/fonts_intermediates
+            // as specified in build/make/core/layoutlib_fontst.mk, and PLATFORM_DIR is
+            // out/host/[arch]/sdk/sdk*/android-sdk*/platforms/android*
             fontDir = PLATFORM_DIR +
                     "/../../../../../../common/obj/PACKAGING/fonts_intermediates";
         }
@@ -348,8 +351,6 @@ public class RenderTestBase {
                 };
         sProjectResources.loadResources();
 
-        // The fonts are built into out/host/common/obj/PACKAGING/fonts_intermediates as specified in
-        // build/make/core/layoutlib_fonts.mk, and PLATFORM_DIR is out/host/[arch]/sdk/sdk*/android-sdk*/platforms/android*
         File fontLocation = new File(FONT_DIR);
         File buildProp = new File(PLATFORM_DIR, "build.prop");
         File attrs = new File(res, "values" + File.separator + "attrs.xml");
