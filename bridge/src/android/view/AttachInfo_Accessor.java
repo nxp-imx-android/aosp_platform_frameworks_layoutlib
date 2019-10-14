@@ -49,10 +49,10 @@ public class AttachInfo_Accessor {
     }
 
     public static void detachFromWindow(View view) {
-        if (view.mAttachInfo.mThreadedRenderer != null) {
-            view.mAttachInfo.mThreadedRenderer.destroy();
-        }
         if (view != null) {
+            if (view.mAttachInfo.mThreadedRenderer != null) {
+                view.mAttachInfo.mThreadedRenderer.destroy();
+            }
             view.dispatchDetachedFromWindow();
         }
     }
