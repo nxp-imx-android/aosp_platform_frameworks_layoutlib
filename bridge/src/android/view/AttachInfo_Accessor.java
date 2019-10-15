@@ -48,12 +48,16 @@ public class AttachInfo_Accessor {
         view.mAttachInfo.mTreeObserver.dispatchOnPreDraw();
     }
 
-    public static void detachFromWindow(View view) {
+    public static void detachFromWindow(final View view) {
         if (view != null) {
-            if (view.mAttachInfo.mThreadedRenderer != null) {
-                view.mAttachInfo.mThreadedRenderer.destroy();
-            }
+            final View.AttachInfo attachInfo = view.mAttachInfo;
             view.dispatchDetachedFromWindow();
+            if (attachInfo != null) {
+                final ThreadedRenderer threadedRenderer = attachInfo.mThreadedRenderer;
+                if(threadedRenderer != null) {
+                    threadedRenderer.destroy();
+                }
+            }
         }
     }
 
