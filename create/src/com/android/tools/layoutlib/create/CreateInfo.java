@@ -207,6 +207,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.Typeface$Builder#createAssetUid",
         "android.graphics.drawable.AdaptiveIconDrawable#<init>",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI#onDraw",
+        "android.graphics.drawable.DrawableInflater#inflateFromClass",
         "android.graphics.fonts.Font$Builder#nGetAssetBuffer",
         "android.graphics.fonts.Font$Builder#nGetNativeAsset",
         "android.graphics.fonts.Font$Builder#nGetReleaseNativeAssetFunc",
@@ -377,6 +378,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.Typeface#sDynamicTypefaceCache",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI#mSet",
         "android.graphics.drawable.AdaptiveIconDrawable#sMask",
+        "android.graphics.drawable.DrawableInflater#mRes",
         "libcore.util.NativeAllocationRegistry#freeFunction",
         "libcore.util.NativeAllocationRegistry#size",
     };
