@@ -155,11 +155,6 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     }
 
     @Override
-    public boolean supports(int ideFeature) {
-        return false;
-    }
-
-    @Override
     @Nullable
     public XmlPullParser createXmlParserForPsiFile(@NonNull String fileName) {
         return createXmlParserForFile(fileName);
@@ -197,6 +192,11 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
             return (T) mAdaptiveIconMaskPath;
         }
         return null;
+    }
+
+    @Override
+    public Class<?> findClass(String name) throws ClassNotFoundException {
+        return mModuleClassLoader.loadClass(name);
     }
 
     public void setAdaptiveIconMaskPath(String adaptiveIconMaskPath) {

@@ -168,6 +168,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorRT#onDraw",
         "android.graphics.drawable.GradientDrawable#buildRing",
         "android.graphics.drawable.AdaptiveIconDrawable#<init>",
+        "android.graphics.drawable.DrawableInflater#inflateFromClass",
         "android.graphics.FontFamily#addFont",
         "android.graphics.Typeface#create",
         "android.graphics.Typeface$Builder#createAssetUid",
@@ -313,7 +314,6 @@ public final class CreateInfo implements ICreateInfo {
         new String[] {
             "android.os.ServiceManager",                       "android.os._Original_ServiceManager",
             "android.view.textservice.TextServicesManager",    "android.view.textservice._Original_TextServicesManager",
-            "android.util.LruCache",                           "android.util._Original_LruCache",
             "android.view.SurfaceView",                        "android.view._Original_SurfaceView",
             "android.view.accessibility.AccessibilityManager", "android.view.accessibility._Original_AccessibilityManager",
             "android.view.accessibility.AccessibilityNodeIdManager", "android.view.accessibility._Original_AccessibilityNodeIdManager",
@@ -362,6 +362,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.Typeface#DEFAULT_FAMILY",
         "android.graphics.Typeface#sDynamicTypefaceCache",
         "android.graphics.drawable.AdaptiveIconDrawable#sMask",
+        "android.graphics.drawable.DrawableInflater#mRes",
         "android.animation.PropertyValuesHolder#sSetterPropertyMap",
         "android.animation.PropertyValuesHolder#sGetterPropertyMap",
         "android.animation.PropertyValuesHolder$IntPropertyValuesHolder#sJNISetterPropertyMap",
