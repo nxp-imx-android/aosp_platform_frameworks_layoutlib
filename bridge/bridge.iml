@@ -77,7 +77,7 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../prebuilts/misc/common/ninepatch/ninepatch-prebuilt.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/misc/common/ninepatch/ninepatch-prebuilt-sources.jar!/" />
         </SOURCES>
       </library>
     </orderEntry>
