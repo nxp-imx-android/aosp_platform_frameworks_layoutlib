@@ -34,11 +34,13 @@ import com.android.layoutlib.bridge.impl.ResourceHelper;
 import com.android.layoutlib.bridge.intensive.setup.ConfigGenerator;
 import com.android.layoutlib.bridge.intensive.setup.LayoutLibTestCallback;
 import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser;
+import com.android.ninepatch.NinePatch;
 import com.android.resources.Density;
 import com.android.resources.Navigation;
 import com.android.resources.ResourceType;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.kxml2.io.KXmlParser;
@@ -51,6 +53,8 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.Resources_Delegate;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.util.DisplayMetrics;
 import android.util.StateSet;
@@ -62,6 +66,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
@@ -1133,7 +1139,12 @@ public class RenderTests extends RenderTestBase {
      */
     @Test
     public void test9PatchNoDPIBackground() throws Exception {
-        String layout =
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        String layoutCompiled =
                 "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
                         "    android:layout_width=\"match_parent\"\n" +
                         "    android:layout_height=\"match_parent\"\n" +
@@ -1150,13 +1161,35 @@ public class RenderTests extends RenderTestBase {
                         "        android:text=\"Button\" />\n"
                         + "</LinearLayout>";
 
-        LayoutPullParser parser = LayoutPullParser.createFromString(layout);
-        // Create LayoutLibCallback.
-        LayoutLibTestCallback layoutLibCallback =
-                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
-        layoutLibCallback.initResources();
-
+        LayoutPullParser parser = LayoutPullParser.createFromString(layoutCompiled);
         SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .build();
+
+        renderAndVerify(params, "ninepatch_background.png");
+
+        String layoutNonCompiled =
+                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "    android:layout_width=\"match_parent\"\n" +
+                        "    android:layout_height=\"match_parent\"\n" +
+                        "    android:background=\"@drawable/uncompiled_ninepatch\"\n" +
+                        "    android:layout_margin=\"20dp\"\n" +
+                        "    android:orientation=\"vertical\">\n\n" +
+                        "    <Button\n" +
+                        "        android:layout_width=\"wrap_content\"\n" +
+                        "        android:layout_height=\"wrap_content\"\n" +
+                        "        android:text=\"Button\" />\n\n" +
+                        "    <Button\n" +
+                        "        android:layout_width=\"wrap_content\"\n" +
+                        "        android:layout_height=\"wrap_content\"\n" +
+                        "        android:text=\"Button\" />\n"
+                        + "</LinearLayout>";
+
+        parser = LayoutPullParser.createFromString(layoutNonCompiled);
+        params = getSessionParamsBuilder()
                 .setParser(parser)
                 .setCallback(layoutLibCallback)
                 .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
@@ -1648,5 +1681,18 @@ public class RenderTests extends RenderTestBase {
         // We expect fidelity warnings for Path.isConvex. Fail for anything else.
         sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
         sRenderMessages.removeIf(message -> message.equals("Font$Builder.nAddAxis is not supported."));
+    }
+
+    @Test
+    public void testNinePatchChunk() throws IOException {
+        InputStream compiled =
+                getClass().getResourceAsStream("/com/android/layoutlib/testdata/compiled.9.png");
+        Bitmap compiledBitmap = BitmapFactory.decodeStream(compiled, null, null);
+
+        InputStream nonCompiled = getClass().getResourceAsStream(
+                "/com/android/layoutlib/testdata/non_compiled.9.png");
+        NinePatch ninePatch = NinePatch.load(nonCompiled, true, false);
+
+        Assert.assertArrayEquals(compiledBitmap.getNinePatchChunk(), ninePatch.getChunk().getSerializedChunk());
     }
 }
