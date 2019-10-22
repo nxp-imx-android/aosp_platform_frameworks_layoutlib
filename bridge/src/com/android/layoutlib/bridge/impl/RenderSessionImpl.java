@@ -494,10 +494,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                 }
                 doLayout(getContext(), mViewRoot, mMeasuredScreenWidth, mMeasuredScreenHeight);
             } else {
-                // draw the views
-                // create the BufferedImage into which the layout will be rendered.
-                boolean newImage = false;
-
                 // When disableBitmapCaching is true, we do not reuse mImage and
                 // we create a new one in every render.
                 // This is useful when mImage is just a wrapper of Graphics2D so
@@ -516,18 +512,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                                 mMeasuredScreenWidth,
                                 mMeasuredScreenHeight,
                                 BufferedImage.TYPE_INT_ARGB);
-
-                        newImage = true;
-                    }
-
-                    if (params.isBgColorOverridden()) {
-                        // since we override the content, it's the same as if it was a new image.
-                        newImage = true;
-                        Graphics2D gc = mImage.createGraphics();
-                        gc.setColor(new Color(params.getOverrideBgColor(), true));
-                        gc.setComposite(AlphaComposite.Src);
-                        gc.fillRect(0, 0, mMeasuredScreenWidth, mMeasuredScreenHeight);
-                        gc.dispose();
                     }
 
                     boolean enableImageResizing =
@@ -553,18 +537,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                         mRenderer.setSurface(mImageReader.getSurface());
                         mNativeImage = mImageReader.acquireNextImage();
                     }
-                }
-
-                if (freshRender && !newImage) {
-                    Graphics2D gc = mImage.createGraphics();
-                    gc.setComposite(AlphaComposite.Src);
-
-                    gc.setColor(new Color(0x00000000, true));
-                    gc.fillRect(0, 0,
-                            mMeasuredScreenWidth, mMeasuredScreenHeight);
-
-                    // done
-                    gc.dispose();
                 }
 
                 doLayout(getContext(), mViewRoot, mMeasuredScreenWidth, mMeasuredScreenHeight);

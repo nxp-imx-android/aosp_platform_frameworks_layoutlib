@@ -32,6 +32,8 @@ public class LayoutlibRenderer extends HardwareRenderer {
         RecordingCanvas canvas = mRootNode.beginRecording();
         canvas.scale(scaleX, scaleY);
         canvas.enableZ();
+        // This way we clear the native image buffer before drawing
+        canvas.drawColor(0, BlendMode.CLEAR);
         if (content != null) {
             canvas.drawRenderNode(content);
         }
