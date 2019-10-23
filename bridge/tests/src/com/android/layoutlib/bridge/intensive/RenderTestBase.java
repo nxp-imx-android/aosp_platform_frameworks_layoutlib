@@ -87,11 +87,13 @@ import static org.junit.Assert.fail;
 public class RenderTestBase {
 
     private static final String NATIVE_LIB_PATH_PROPERTY = "native.lib.path";
+    private static final String FONT_DIR_PROPERTY = "font.dir";
     private static final String ICU_DIR_PROPERTY = "icu.dir";
     private static final String PLATFORM_DIR_PROPERTY = "platform.dir";
     private static final String RESOURCE_DIR_PROPERTY = "test_res.dir";
 
     private static final String NATIVE_LIB_DIR_PATH;
+    private static final String FONT_DIR;
     private static final String ICU_DIR;
     protected static final String PLATFORM_DIR;
     private static final String TEST_RES_DIR;
@@ -120,6 +122,7 @@ public class RenderTestBase {
         }
 
         NATIVE_LIB_DIR_PATH = getNativeLibDirPath();
+        FONT_DIR = getFontDir();
         ICU_DIR = getIcuDir();
 
         TEST_RES_DIR = getTestResDir();
@@ -157,6 +160,18 @@ public class RenderTestBase {
             nativeLibDirPath = PLATFORM_DIR + "/../../../../../lib64/";
         }
         return nativeLibDirPath;
+    }
+
+    private static String getFontDir() {
+        String fontDir = System.getProperty(FONT_DIR_PROPERTY);
+        if (fontDir == null) {
+            // The fonts are built into out/host/common/obj/PACKAGING/fonts_intermediates
+            // as specified in build/make/core/layoutlib_fontst.mk, and PLATFORM_DIR is
+            // out/host/[arch]/sdk/sdk*/android-sdk*/platforms/android*
+            fontDir = PLATFORM_DIR +
+                    "/../../../../../../common/obj/PACKAGING/fonts_intermediates";
+        }
+        return fontDir;
     }
 
     private static String getIcuDir() {
@@ -336,7 +351,7 @@ public class RenderTestBase {
                 };
         sProjectResources.loadResources();
 
-        File fontLocation = new File(data_dir, "fonts");
+        File fontLocation = new File(FONT_DIR);
         File buildProp = new File(PLATFORM_DIR, "build.prop");
         File attrs = new File(res, "values" + File.separator + "attrs.xml");
         sBridge = new Bridge();
