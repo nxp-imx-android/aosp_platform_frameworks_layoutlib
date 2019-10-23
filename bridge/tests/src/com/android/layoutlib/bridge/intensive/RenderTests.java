@@ -171,18 +171,11 @@ public class RenderTests extends RenderTestBase {
                 .build();
 
         renderAndVerify(params, "allwidgets.png");
-
-        // We expect fidelity warnings for Path.isConvex. Fail for anything else.
-        sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
     }
 
     @Test
     public void testArrayCheck() throws ClassNotFoundException, FileNotFoundException {
         renderAndVerify("array_check.xml", "array_check.png", false);
-
-        // We expect fidelity warnings for Path.isConvex. Fail for anything else.
-        sRenderMessages.removeIf(
-                message -> message.equals("Font$Builder.nAddAxis is not supported."));
     }
 
     @Test
@@ -198,10 +191,6 @@ public class RenderTests extends RenderTestBase {
                 .disableShadows()
                 .build();
         renderAndVerify(params, "allwidgets_tab.png");
-
-        // We expect fidelity warnings for Path.isConvex. Fail for anything else.
-        sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
-        sRenderMessages.removeIf(message -> message.equals("Font$Builder.nAddAxis is not supported."));
     }
 
     @Test
@@ -877,8 +866,6 @@ public class RenderTests extends RenderTestBase {
     public void testFonts() throws ClassNotFoundException, FileNotFoundException {
         // TODO: styles seem to be broken in TextView
         renderAndVerify("fonts_test.xml", "font_test.png", false);
-        sRenderMessages.removeIf(
-                message -> message.equals("Font$Builder.nAddAxis is not supported."));
     }
 
     @Test
@@ -1099,8 +1086,6 @@ public class RenderTests extends RenderTestBase {
                 .build();
 
         renderAndVerify(params, "shadows_test_no_shadow.png");
-        // We expect fidelity warnings for Path.isConvex. Fail for anything else.
-        sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
     }
 
     @Test
@@ -1118,8 +1103,6 @@ public class RenderTests extends RenderTestBase {
                 .build();
 
         renderAndVerify(params, "shadows_test.png");
-        // We expect fidelity warnings for Path.isConvex. Fail for anything else.
-        sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
     }
 
     @Test
@@ -1722,9 +1705,6 @@ public class RenderTests extends RenderTestBase {
                 .build();
 
         renderAndVerify(params, "shadow_scrollview_test_high_quality.png");
-        // We expect fidelity warnings for Path.isConvex. Fail for anything else.
-        sRenderMessages.removeIf(message -> message.equals("Path.isConvex is not supported."));
-        sRenderMessages.removeIf(message -> message.equals("Font$Builder.nAddAxis is not supported."));
     }
 
     @Test
