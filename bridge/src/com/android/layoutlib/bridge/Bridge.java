@@ -16,9 +16,7 @@
 
 package com.android.layoutlib.bridge;
 
-import com.android.ide.common.rendering.api.Capability;
 import com.android.ide.common.rendering.api.DrawableParams;
-import com.android.ide.common.rendering.api.Features;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceNamespace;
@@ -144,8 +142,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
 
     public static boolean sIsTypefaceInitialized;
 
-    private static final int LAST_SUPPORTED_FEATURE = Features.THEME_PREVIEW_NAVIGATION_BAR;
-
     private static String sIcuDataPath;
 
     private static final String[] LINUX_NATIVE_LIBRARIES = {"libandroid_runtime.so"};
@@ -153,25 +149,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     private static final String[] WINDOWS_NATIVE_LIBRARIES =
             {"libicuuc_stubdata.dll", "libicuuc-host.dll", "libicui18n-host.dll", "libpiex.dll",
                     "libandroid_runtime.dll"};
-
-    @Override
-    public int getApiLevel() {
-        return com.android.ide.common.rendering.api.Bridge.API_CURRENT;
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    @Deprecated
-    public EnumSet<Capability> getCapabilities() {
-        // The Capability class is deprecated and frozen. All Capabilities enumerated there are
-        // supported by this version of LayoutLibrary. So, it's safe to use EnumSet.allOf()
-        return EnumSet.allOf(Capability.class);
-    }
-
-    @Override
-    public boolean supports(int feature) {
-        return feature <= LAST_SUPPORTED_FEATURE;
-    }
 
     @Override
     public boolean init(Map<String,String> platformProperties,
