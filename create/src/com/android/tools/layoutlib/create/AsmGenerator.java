@@ -87,8 +87,6 @@ public class AsmGenerator {
     private final Set<String> mKeepNativeClasses;
 
     private final Set<String> mDelegateAllNative;
-    /** A set of classes for which to rename static initializers */
-    private Set<String> mRenameStaticInitializerClasses;
 
     /** A Set of methods that should be intercepted and replaced **/
     private final Set<MethodReplacer> mMethodReplacers;
@@ -215,9 +213,6 @@ public class AsmGenerator {
                 Arrays.stream(createInfo.getDelegateClassNativesToNatives()).collect(Collectors.toSet());
 
         mMethodReplacers = Arrays.stream(createInfo.getMethodReplacers()).collect(Collectors.toSet());
-
-        mRenameStaticInitializerClasses =
-                Arrays.stream(createInfo.getDeferredStaticInitializerClasses()).collect(Collectors.toSet());
     }
 
     /**
@@ -421,10 +416,6 @@ public class AsmGenerator {
         }
         if (!mPromotedClasses.isEmpty()) {
             cv = new PromoteClassClassAdapter(cv, mPromotedClasses);
-        }
-
-        if (mRenameStaticInitializerClasses.contains(className)) {
-            cv = new DeferStaticInitializerClassAdapter(cv);
         }
 
         // Make sure no class file has a version above 52 (corresponding to Java 8),

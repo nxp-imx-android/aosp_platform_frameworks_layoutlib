@@ -101,9 +101,4 @@ class CreateInfoAdapter implements ICreateInfo {
     public Map<String, InjectMethodRunnable> getInjectedMethodsMap() {
         return Collections.emptyMap();
     }
-
-    @Override
-    public String[] getDeferredStaticInitializerClasses() {
-        return EMPTY_STRING_ARRAY;
-    }
 }
