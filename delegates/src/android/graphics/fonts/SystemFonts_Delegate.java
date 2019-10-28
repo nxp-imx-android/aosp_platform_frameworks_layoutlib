@@ -51,7 +51,7 @@ public class SystemFonts_Delegate {
             @NonNull ArrayMap<String, FontFamily[]> fallbackMap,
             @NonNull ArrayList<Font> availableFonts) {
         sIsTypefaceInitialized = true;
-        return SystemFonts.buildSystemFallback_Original(sFontLocation + "fonts.xml",
+        return SystemFonts.buildSystemFallback_Original(sFontLocation + "native/fonts.xml",
                 sFontLocation, oemCustomization, fallbackMap, availableFonts);
     }
 }
