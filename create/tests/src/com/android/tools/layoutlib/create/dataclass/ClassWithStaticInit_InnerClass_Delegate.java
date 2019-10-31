@@ -15,14 +15,22 @@
  */
 package com.android.tools.layoutlib.create.dataclass;
 
+import com.android.tools.layoutlib.create.DelegateClassAdapterTest;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClassWithStaticInit {
+/**
+ * The delegate that receives the call to {@link ClassWithStaticInit$InnerClass}'s overridden
+ * methods.
+ *
+ * Used by {@link DelegateClassAdapterTest}.
+ */
+public class ClassWithStaticInit_InnerClass_Delegate {
 
-    public static List<String> sList = new ArrayList<>();
+        public static List<String> sList = null;
 
-    public static class InnerClass {
-        public static List<String> sInnerList = new ArrayList<>();
-    }
+        public static void staticInit() {
+            sList = new ArrayList<>();
+        }
 }
