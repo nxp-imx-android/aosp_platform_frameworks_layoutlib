@@ -127,6 +127,8 @@ public interface ICreateInfo {
      */
     Map<String, InjectMethodRunnable> getInjectedMethodsMap();
 
+    String[] getDeferredStaticInitializerClasses();
+
     interface MethodReplacer {
         boolean isNeeded(String owner, String name, String desc, String sourceClass);
 
