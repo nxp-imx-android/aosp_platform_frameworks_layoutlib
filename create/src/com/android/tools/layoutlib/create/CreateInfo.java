@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.ZipEntry;
 
 /**
  * Describes the work to be done by {@link AsmGenerator}.
@@ -625,6 +626,26 @@ public final class CreateInfo implements ICreateInfo {
         @Override
         public void replace(MethodInformation mi) {
             mi.owner = "com/android/tools/layoutlib/java/text/DateFormat_Delegate";
+        }
+    }
+
+    /**
+     * Replace references to ZipEntry.getDataOffset with a delegate, since it does not exist in the JDK.
+     * @see {@link com.android.tools.layoutlib.java.util.zip.ZipEntry_Delegate#getDataOffset(ZipEntry)}
+     */
+    public static class ZipEntryGetDataOffsetReplacer implements MethodReplacer {
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return Type.getInternalName(ZipEntry.class).equals(owner)
+                    && "getDataOffset".equals(name);
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.opcode = Opcodes.INVOKESTATIC;
+            mi.owner = "com/android/tools/layoutlib/java/util/zip/ZipEntry_Delegate";
+            mi.desc = Type.getMethodDescriptor(
+                    Type.getType(long.class), Type.getType(ZipEntry.class));
         }
     }
 }
