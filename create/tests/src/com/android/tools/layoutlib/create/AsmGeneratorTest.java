@@ -19,7 +19,6 @@ package com.android.tools.layoutlib.create;
 
 
 import com.android.tools.layoutlib.create.ICreateInfo.MethodReplacer;
-import com.android.tools.layoutlib.create.dataclass.JavaClass;
 
 import org.junit.After;
 import org.junit.Before;
@@ -126,7 +125,7 @@ public class AsmGeneratorTest {
             public Class<?>[] getInjectedClasses() {
                 // classes to inject in the final JAR
                 return new Class<?>[] {
-                        JavaClass.class
+                        com.android.tools.layoutlib.create.dataclass.JavaClass.class
                 };
             }
 
@@ -134,7 +133,7 @@ public class AsmGeneratorTest {
             public String[] getJavaPkgClasses() {
              // classes to refactor (so that we can replace them)
                 return new String[] {
-                        JAVA_CLASS_NAME, "JavaClass",
+                        JAVA_CLASS_NAME, "com.android.tools.layoutlib.create.dataclass.JavaClass",
                 };
             }
 
@@ -179,7 +178,7 @@ public class AsmGeneratorTest {
             public Class<?>[] getInjectedClasses() {
                 // classes to inject in the final JAR
                 return new Class<?>[] {
-                        JavaClass.class
+                        com.android.tools.layoutlib.create.dataclass.JavaClass.class
                 };
             }
 
