@@ -115,6 +115,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     private final static Map<String, SoftReference<Bitmap>> sFrameworkBitmapCache = new HashMap<>();
 
     private static Map<String, Map<String, Integer>> sEnumValueMap;
+    private static Map<String, String> sPlatformProperties;
 
     /**
      * A default log than prints to stdout/stderr.
@@ -158,6 +159,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             String icuDataPath,
             Map<String, Map<String, Integer>> enumValueMap,
             LayoutLog log) {
+        sPlatformProperties = platformProperties;
         sEnumValueMap = enumValueMap;
         sIcuDataPath = icuDataPath;
 
@@ -195,10 +197,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         }
 
         try {
-            for (Entry<String, String> property : platformProperties.entrySet()) {
-                SystemProperties.set(property.getKey(), property.getValue());
-            }
-
             BridgeAssetManager.initSystem();
 
             // load the fonts.
@@ -271,6 +269,17 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         }
 
         return true;
+    }
+
+    /**
+     * Sets System properties using the Android framework code.
+     * This is accessed by the native libraries through JNI.
+     */
+    @SuppressWarnings("unused")
+    private static void setSystemProperties() {
+        for (Entry<String, String> property : sPlatformProperties.entrySet()) {
+            SystemProperties.set(property.getKey(), property.getValue());
+        }
     }
 
     /**
