@@ -484,6 +484,11 @@ public class RenderTestBase {
                     }
                     failWithMsg(message);
                 }
+
+                @Override
+                public void logAndroidFramework(int priority, String tag, String message) {
+                    System.out.println("Android framework message " + tag + ": " + message);
+                }
             };
         }
         return sLayoutLibLog;
