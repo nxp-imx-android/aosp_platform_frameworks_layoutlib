@@ -220,6 +220,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.fonts.Font$Builder#nGetNativeAsset",
         "android.graphics.fonts.Font$Builder#nGetReleaseNativeAssetFunc",
         "android.graphics.fonts.SystemFonts#buildSystemFallback",
+        "android.graphics.fonts.SystemFonts#mmap",
         "android.os.Binder#getNativeBBinderHolder",
         "android.os.Binder#getNativeFinalizer",
         "android.os.Handler#sendMessageAtTime",
