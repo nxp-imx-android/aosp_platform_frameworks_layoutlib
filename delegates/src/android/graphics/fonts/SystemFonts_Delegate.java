@@ -21,8 +21,14 @@ import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 import android.annotation.NonNull;
 import android.text.FontConfig;
 import android.util.ArrayMap;
+import android.util.Log;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Delegate implementing the native methods of android.graphics.fonts.SystemFonts
@@ -37,6 +43,7 @@ import java.util.ArrayList;
  */
 public class SystemFonts_Delegate {
 
+    private static final String TAG = "SystemFonts_Delegate";
     private static String sFontLocation;
     public static boolean sIsTypefaceInitialized = false;
 
@@ -53,5 +60,30 @@ public class SystemFonts_Delegate {
         sIsTypefaceInitialized = true;
         return SystemFonts.buildSystemFallback_Original(sFontLocation + "native/fonts.xml",
                 sFontLocation, oemCustomization, fallbackMap, availableFonts);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static ByteBuffer mmap(@NonNull String fullPath) {
+        // Android does memory mapping for font files. But Windows keeps files open
+        // until the byte buffer from the memory mapping is garbage collected.
+        // To avoid that, on Windows, read the file into a byte buffer instead.
+        // See JDK-4715154.
+        String osName = System.getProperty("os.name").toLowerCase(Locale.US);
+        if (osName.startsWith("windows")) {
+            try (FileInputStream file = new FileInputStream(fullPath)) {
+                final FileChannel fileChannel = file.getChannel();
+                final int size = (int) fileChannel.size();
+                // Native code requires the ByteBuffer to be direct
+                // (see android/graphics/fonts/Font.cpp)
+                ByteBuffer buffer = ByteBuffer.allocateDirect(size);
+                fileChannel.read(buffer);
+                return buffer;
+            } catch (IOException e) {
+                Log.e(TAG, "Error mapping font file " + fullPath);
+                return null;
+            }
+        } else {
+            return SystemFonts.mmap_Original(fullPath);
+        }
     }
 }

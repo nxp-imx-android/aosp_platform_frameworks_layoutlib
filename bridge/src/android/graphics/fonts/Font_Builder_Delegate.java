@@ -16,18 +16,13 @@
 
 package android.graphics.fonts;
 
-import com.android.ide.common.rendering.api.LayoutLog;
-import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.impl.DelegateManager;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import android.annotation.NonNull;
 import android.content.res.AssetManager;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 
 import libcore.util.NativeAllocationRegistry_Delegate;
 
@@ -59,14 +54,7 @@ public class Font_Builder_Delegate {
         if (fullPath == null) {
             return null;
         }
-        try (FileInputStream fis = new FileInputStream(fullPath)) {
-            final FileChannel fc = fis.getChannel();
-            return fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-        } catch (IOException e) {
-            Bridge.getLog().error(LayoutLog.TAG_MISSING_ASSET,
-                    "Error reading font file " + fullPath, null, null, null);
-            return null;
-        }
+        return SystemFonts_Delegate.mmap(fullPath);
     }
 
     @LayoutlibDelegate
