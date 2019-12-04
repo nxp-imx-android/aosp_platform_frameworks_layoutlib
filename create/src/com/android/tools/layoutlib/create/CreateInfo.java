@@ -303,6 +303,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.Region",
         "android.graphics.RegionIterator",
         "android.graphics.RenderNode",
+        "android.graphics.RuntimeShader",
         "android.graphics.Shader",
         "android.graphics.SumPathEffect",
         "android.graphics.SweepGradient",
