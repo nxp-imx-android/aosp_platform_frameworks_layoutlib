@@ -203,6 +203,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.content.res.TypedArray#getValueAt",
         "android.content.res.TypedArray#obtain",
         "android.graphics.FontFamily#addFontFromAssetManager",
+        "android.graphics.ImageDecoder#decodeBitmapImpl",
         "android.graphics.Typeface#create",
         "android.graphics.Typeface$Builder#createAssetUid",
         "android.graphics.drawable.AdaptiveIconDrawable#<init>",
@@ -376,6 +377,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.animation.PropertyValuesHolder$FloatPropertyValuesHolder#sJNISetterPropertyMap",
         "android.animation.PropertyValuesHolder$MultiFloatValuesHolder#sJNISetterPropertyMap",
         "android.animation.PropertyValuesHolder$MultiIntValuesHolder#sJNISetterPropertyMap",
+        "android.graphics.ImageDecoder$InputStreamSource#mInputStream",
         "android.graphics.Typeface#DEFAULT_FAMILY",
         "android.graphics.Typeface#sDynamicTypefaceCache",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI#mSet",
@@ -397,6 +399,7 @@ public final class CreateInfo implements ICreateInfo {
      * if possible.
      */
     private final static String[] PROMOTED_CLASSES = new String[] {
+        "android.graphics.ImageDecoder$InputStreamSource",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI",
         "libcore.util.NativeAllocationRegistry$CleanerRunner",
         "libcore.util.NativeAllocationRegistry$CleanerThunk",

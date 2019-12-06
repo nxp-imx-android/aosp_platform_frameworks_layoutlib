@@ -1739,4 +1739,31 @@ public class RenderTests extends RenderTestBase {
 
         Assert.assertArrayEquals(compiledBitmap.getNinePatchChunk(), ninePatch.getChunk().getSerializedChunk());
     }
+
+    @Test
+    public void testNinePatchDrawable() throws Exception {
+        String layout =
+                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "              android:padding=\"16dp\"\n" +
+                        "              android:orientation=\"horizontal\"\n" +
+                        "              android:layout_width=\"fill_parent\"\n" +
+                        "              android:layout_height=\"fill_parent\">\n" +
+                        "    <ImageView\n" +
+                        "             android:layout_height=\"fill_parent\"\n" +
+                        "             android:layout_width=\"fill_parent\"\n" +
+                        "             android:src=\"@drawable/ninepatch_drawable\" />\n" +
+                        "</LinearLayout>\n";
+        LayoutPullParser parser = LayoutPullParser.createFromString(layout);
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .disableDecoration()
+                .build();
+
+        renderAndVerify(params, "ninepatch_drawable.png");
+    }
 }
