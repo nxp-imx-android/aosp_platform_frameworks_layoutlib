@@ -35,6 +35,7 @@ import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
 import com.android.layoutlib.bridge.android.UnresolvedResourceValue;
 import com.android.layoutlib.bridge.impl.ParserFactory;
 import com.android.layoutlib.bridge.impl.ResourceHelper;
+import com.android.layoutlib.bridge.util.NinePatchInputStream;
 import com.android.resources.ResourceType;
 import com.android.resources.ResourceUrl;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
@@ -1024,6 +1025,9 @@ public class Resources_Delegate {
             InputStream stream = repository.openNonAsset(0, path, ACCESS_STREAMING);
             if (stream == null) {
                 throw new NotFoundException(path);
+            }
+            if (path.endsWith(".9.png")) {
+                stream = new NinePatchInputStream(stream, path);
             }
             return stream;
         } catch (IOException e) {
