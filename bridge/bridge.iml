@@ -73,7 +73,7 @@
     <orderEntry type="module-library">
       <library name="ninepatch-prebuilt">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../out/soong/.intermediates/prebuilts/misc/common/ninepatch/ninepatch-prebuilt/linux_glibc_common/combined/ninepatch-prebuilt.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/misc/common/ninepatch/ninepatch-prebuilt.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
