@@ -134,6 +134,11 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         public void warning(String tag, String message, Object data) {
             System.out.println(message);
         }
+
+        @Override
+        public void logAndroidFramework(int priority, String tag, String message) {
+            System.out.println(message);
+        }
     };
 
     /**
@@ -143,10 +148,13 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
 
     private static String sIcuDataPath;
 
-    private static final String[] LINUX_NATIVE_LIBRARIES = {"libandroid_runtime.so"};
-    private static final String[] MAC_NATIVE_LIBRARIES = {"libandroid_runtime.dylib"};
+    private static final String[] LINUX_NATIVE_LIBRARIES =
+            {"liblog_jni.so", "libandroid_runtime.so"};
+    private static final String[] MAC_NATIVE_LIBRARIES =
+            {"liblog_jni.dylib","libandroid_runtime.dylib"};
     private static final String[] WINDOWS_NATIVE_LIBRARIES =
-            {"libicuuc_stubdata.dll", "libicuuc-host.dll", "libandroid_runtime.dll"};
+            {"liblog_jni.dll", "libicuuc_stubdata.dll", "libicuuc-host.dll",
+                    "libandroid_runtime.dll"};
 
     @Override
     public boolean init(Map<String,String> platformProperties,
@@ -158,6 +166,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         sPlatformProperties = platformProperties;
         sEnumValueMap = enumValueMap;
         sIcuDataPath = icuDataPath;
+        sCurrentLog = log;
 
         if (!loadNativeLibrariesIfNeeded(log, nativeLibPath)) {
             return false;
