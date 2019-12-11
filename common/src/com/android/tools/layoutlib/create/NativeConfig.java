@@ -53,6 +53,7 @@ public class NativeConfig {
             "android.graphics.BitmapFactory",
             "android.graphics.ByteBufferStreamAdaptor",
             "android.graphics.Canvas",
+            "android.graphics.CanvasProperty",
             "android.graphics.ColorFilter",
             "android.graphics.ColorSpace",
             "android.graphics.CreateJavaOutputStreamAdaptor",
@@ -89,6 +90,7 @@ public class NativeConfig {
             "android.text.AndroidCharacter",
             "android.util.Log",
             "android.util.PathParser",
+            "android.view.MotionEvent",
             "android.view.Surface",
             "com.android.internal.util.VirtualRefBasePtr",
     };
