@@ -426,7 +426,8 @@ public final class CreateInfo implements ICreateInfo {
      */
     private final static String[] PROMOTED_METHODS = new String[] {
         "android.animation.AnimationHandler#doAnimationFrame",
-        "android.media.ImageReader#nativeClassInit"
+        "android.media.ImageReader#nativeClassInit",
+        "android.view.Choreographer#doFrame"
     };
 
     /**
