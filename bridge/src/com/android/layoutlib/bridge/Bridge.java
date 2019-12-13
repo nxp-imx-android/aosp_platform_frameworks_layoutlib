@@ -149,12 +149,11 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     private static String sIcuDataPath;
 
     private static final String[] LINUX_NATIVE_LIBRARIES =
-            {"liblog_jni.so", "libandroid_runtime.so"};
+            {"liblog.so", "libandroid_runtime.so"};
     private static final String[] MAC_NATIVE_LIBRARIES =
-            {"liblog_jni.dylib","libandroid_runtime.dylib"};
+            {"liblog.dylib","libandroid_runtime.dylib"};
     private static final String[] WINDOWS_NATIVE_LIBRARIES =
-            {"liblog_jni.dll", "libicuuc_stubdata.dll", "libicuuc-host.dll",
-                    "libandroid_runtime.dll"};
+            {"liblog.dll", "libicuuc_stubdata.dll", "libicuuc-host.dll", "libandroid_runtime.dll"};
 
     @Override
     public boolean init(Map<String,String> platformProperties,
@@ -682,6 +681,8 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             System.setProperty("native_classes", String.join(",",
                     NativeConfig.CLASS_NATIVES));
             System.setProperty("icu.dir", Bridge.getIcuDataPath());
+            System.setProperty("use_bridge_for_logging", "true");
+            System.setProperty("register_properties_during_load", "true");
             for (String library : getNativeLibraries()) {
                 String path = new File(nativeLibDir, library).getAbsolutePath();
                 System.load(path);
