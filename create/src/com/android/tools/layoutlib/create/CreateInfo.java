@@ -231,6 +231,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.fonts.SystemFonts#mmap",
         "android.os.Binder#getNativeBBinderHolder",
         "android.os.Binder#getNativeFinalizer",
+        "android.os.Handler#sendMessageAtFrontOfQueue",
         "android.os.Handler#sendMessageAtTime",
         "android.os.HandlerThread#run",
         "android.preference.Preference#getView",
