@@ -16,6 +16,7 @@
 
 package com.android.layoutlib.bridge;
 
+import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.RenderParams;
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceReference;
@@ -27,6 +28,7 @@ import com.android.tools.layoutlib.java.System_Delegate;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.os.Handler_Delegate;
 import android.view.Choreographer;
 import android.view.MotionEvent;
 
@@ -145,18 +147,26 @@ public class BridgeRenderSession extends RenderSession {
 
     @Override
     public boolean executeCallbacks(long nanos) {
-        // So far, for Compose, we only have to call doFrame since Compose relies on the frame
-        // callback only. If we want to animate platform widgets as well we will also have to
-        // execute callbacks passes to the Handler (Handler_Delegate in our case) with
-        // sendMessageAtTime. For this purpose, we will have to save those messages with uptimes
-        // and execute appropriate (if uptime has passed) callbacks here.
+        // Currently, Compose relies on Choreographer frame callback and Handler#postAtFrontOfQueue.
+        // Calls to Handler are handled by Handler_Delegate and can be executed by Handler_Delegate#
+        // executeCallbacks. Choreographer frame callback is handled by Choreographer#doFrame.
+        //
+        // If we want to animate platform widgets as well we will also have to execute callbacks
+        // passed to the Handler (Handler_Delegate in our case) with sendMessageAtTime. For this
+        // purpose, we will have to save those messages with uptimes and execute appropriate (if
+        // uptime has passed) callbacks here.
         try {
             Bridge.prepareThread();
+            boolean hasMoreCallbacks = Handler_Delegate.executeCallbacks();
             Choreographer.getInstance().doFrame(nanos, 0);
+            return hasMoreCallbacks;
+        } catch (Throwable t) {
+            Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Failed executing Choreographer#doFrame "
+                    , t, null, null);
+            return false;
         } finally {
             Bridge.cleanupThread();
         }
-        return false;
     }
 
     private static int toMotionEventType(TouchEventType eventType) {
