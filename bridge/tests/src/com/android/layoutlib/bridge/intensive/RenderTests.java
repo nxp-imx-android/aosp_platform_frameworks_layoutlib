@@ -89,7 +89,6 @@ public class RenderTests extends RenderTestBase {
         com.android.layoutlib.bridge.test.widgets.HookWidget.reset();
     }
 
-    @Ignore // b/146875031
     @Test
     public void testActivity() throws ClassNotFoundException, FileNotFoundException {
         renderAndVerify("activity.xml", "activity.png", true);
@@ -158,7 +157,6 @@ public class RenderTests extends RenderTestBase {
         renderAndVerify(params, "four_corners.png");
     }
 
-    @Ignore // b/146875031
     @Test
     public void testAllWidgets() throws ClassNotFoundException, FileNotFoundException {
         LayoutPullParser parser = createParserFromPath("allwidgets.xml");
@@ -187,7 +185,6 @@ public class RenderTests extends RenderTestBase {
                 message -> message.equals("Font$Builder.nAddAxis is not supported."));
     }
 
-    @Ignore // b/146875031
     @Test
     public void testAllWidgetsTablet() throws ClassNotFoundException, FileNotFoundException {
         LayoutPullParser parser = createParserFromPath("allwidgets.xml");
@@ -1670,7 +1667,6 @@ public class RenderTests extends RenderTestBase {
         renderAndVerify("justified_none.xml", "justified_none.png", false);
     }
 
-    @Ignore // b/146875031
     @Test
     public void testManyLineBreaks() throws Exception {
         String layout =
