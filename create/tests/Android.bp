@@ -37,3 +37,10 @@ java_test_host {
         ],
     },
 }
+
+java_library_host {
+    name: "mock_android",
+
+    srcs: ["mock_data/**/*.java"],
+    java_resource_dirs: ["mock_data"],
+}
