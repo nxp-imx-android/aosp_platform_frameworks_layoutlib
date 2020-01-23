@@ -157,6 +157,7 @@ public class BridgeRenderSession extends RenderSession {
         // uptime has passed) callbacks here.
         try {
             Bridge.prepareThread();
+            mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
             boolean hasMoreCallbacks = Handler_Delegate.executeCallbacks();
             Choreographer.getInstance().doFrame(nanos, 0);
             return hasMoreCallbacks;
@@ -165,6 +166,7 @@ public class BridgeRenderSession extends RenderSession {
                     , t, null, null);
             return false;
         } finally {
+            mSession.release();
             Bridge.cleanupThread();
         }
     }
