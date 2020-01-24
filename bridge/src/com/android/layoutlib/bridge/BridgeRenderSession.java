@@ -149,12 +149,7 @@ public class BridgeRenderSession extends RenderSession {
     public boolean executeCallbacks(long nanos) {
         // Currently, Compose relies on Choreographer frame callback and Handler#postAtFrontOfQueue.
         // Calls to Handler are handled by Handler_Delegate and can be executed by Handler_Delegate#
-        // executeCallbacks. Choreographer frame callback is handled by Choreographer#doFrame.
-        //
-        // If we want to animate platform widgets as well we will also have to execute callbacks
-        // passed to the Handler (Handler_Delegate in our case) with sendMessageAtTime. For this
-        // purpose, we will have to save those messages with uptimes and execute appropriate (if
-        // uptime has passed) callbacks here.
+        // executeCallbacks. Choreographer frame callback is handled by Choreographer#doFrame.  
         try {
             Bridge.prepareThread();
             mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
