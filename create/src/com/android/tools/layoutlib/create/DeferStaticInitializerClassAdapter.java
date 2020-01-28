@@ -16,7 +16,9 @@
 package com.android.tools.layoutlib.create;
 
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 import java.lang.reflect.Modifier;
 
@@ -37,5 +39,16 @@ public class DeferStaticInitializerClassAdapter extends ClassVisitor {
            access |= Modifier.PUBLIC;
         }
         return super.visitMethod(access, name, desc, signature, exceptions);
+    }
+
+    @Override
+    public FieldVisitor visitField(int access, String name, String desc, String signature,
+            Object value) {
+        // Java 9 does not allow static final field to be modified outside of <clinit>.
+        // So if a field is static, it has to be non-final.
+        if ((access & Opcodes.ACC_STATIC) != 0 ) {
+            access = access & ~Opcodes.ACC_FINAL;;
+        }
+        return super.visitField(access, name, desc, signature, value);
     }
 }
