@@ -46,13 +46,11 @@ import com.android.layoutlib.bridge.android.support.FragmentTabHostUtil;
 import com.android.layoutlib.bridge.android.support.SupportPreferencesUtil;
 import com.android.layoutlib.bridge.impl.binding.FakeAdapter;
 import com.android.layoutlib.bridge.impl.binding.FakeExpandableAdapter;
-import com.android.tools.layoutlib.java.System_Delegate;
 import com.android.util.Pair;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.HardwareRenderer;
 import android.graphics.LayoutlibRenderer;
@@ -86,9 +84,6 @@ import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 import android.widget.TabWidget;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.nio.IntBuffer;
@@ -1193,6 +1188,12 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             }
             mImage = null;
             mViewRoot = null;
+            if (mContentRoot != null) {
+                View firstChild = mContentRoot.getChildAt(0);
+                if (firstChild != null && mInflater != null) {
+                    mInflater.disposeView(firstChild);
+                }
+            }
             mContentRoot = null;
 
             if (createdLooper) {
