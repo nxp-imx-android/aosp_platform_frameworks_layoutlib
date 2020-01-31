@@ -30,6 +30,16 @@ import java.lang.reflect.Proxy;
 public class ReflectionUtils {
 
     @NonNull
+    public static Method getMethod(@NonNull String className, @NonNull String name,
+            @Nullable Class<?>... params) throws ReflectionException {
+        try {
+            return getMethod(Class.forName(className), name, params);
+        } catch (ClassNotFoundException e) {
+            throw new ReflectionException(e);
+        }
+    }
+
+    @NonNull
     public static Method getMethod(@NonNull Class<?> clazz, @NonNull String name,
             @Nullable Class<?>... params) throws ReflectionException {
         try {

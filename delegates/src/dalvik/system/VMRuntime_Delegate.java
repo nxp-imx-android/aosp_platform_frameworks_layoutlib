@@ -16,7 +16,19 @@
 
 package dalvik.system;
 
+import com.android.internal.util.Preconditions;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
+import com.android.tools.layoutlib.annotations.VisibleForTesting;
+
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * Delegate used to provide implementation of a select few native methods of {@link VMRuntime}
@@ -25,6 +37,15 @@ import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
  * by calls to methods of the same name in this delegate class.
  */
 public class VMRuntime_Delegate {
+
+    /**
+     * A map of allocated non movable arrays to the (Direct)ByteBuffer backing it
+     *
+     * The JVM does not directly support newNonMovableArray. So as a workaround, this class will
+     * allocate a (direct) ByteBuffer for use in native code, and provide methods to copy from native to
+     * java array.
+     */
+    private static Map<Object, ByteBuffer> sNonMovableArrays = new WeakHashMap<>();
 
     // Copied from libcore/libdvm/src/main/java/dalvik/system/VMRuntime
     @LayoutlibDelegate
@@ -76,9 +97,105 @@ public class VMRuntime_Delegate {
     }
 
     @LayoutlibDelegate
+    /*package*/ static Object newNonMovableArray(VMRuntime runtime, Class<?> componentType,
+            int length) {
+        // currently only support int types - since that seems to be the only usage in Android
+        Preconditions.checkArgument(componentType == int.class,
+                "unsupported type " + componentType.getName());
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * length);
+        byteBuffer.order(ByteOrder.nativeOrder());
+        int[] javaArray = new int[length];
+        sNonMovableArrays.put(javaArray, byteBuffer);
+        return javaArray;
+    }
+
+    @LayoutlibDelegate
+    static long addressOf(VMRuntime runtime, Object array) {
+        ByteBuffer byteBuffer = sNonMovableArrays.get(array);
+        Preconditions.checkNotNull(byteBuffer, "Trying to get address of unknown object");
+        // TODO: implement this in JNI and use GetDirectBufferAddress
+        try {
+            Method addressMethod = getAccessibleMethod(Class.forName("java.nio.DirectByteBuffer"),
+                    "address");
+            return (long)addressMethod.invoke(byteBuffer);
+
+        } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @VisibleForTesting
+    static ByteBuffer getBackingBuffer(int[] javaArray) {
+        return sNonMovableArrays.get(javaArray);
+    }
+
+    /**
+     * Copies the data from the native memory allocated with newNonMovableArray back to a java
+     * array.
+     */
+    public static void copyNonMovableArray(int[] javaArray) {
+        ByteBuffer byteBuffer = getBackingBuffer(javaArray);
+        Preconditions.checkNotNull(byteBuffer, "javaArray is not a known non-movable array");
+        byteBuffer.order(ByteOrder.nativeOrder()).asIntBuffer().get(javaArray);
+    }
+
+    private static long getNativeArrayAddress(long memoryAddress, int index) {
+        return memoryAddress + index * 4;
+    }
+
+    @LayoutlibDelegate
     /*package*/ static int getNotifyNativeInterval() {
         // This cannot return 0, otherwise it is responsible for triggering an exception
         // whenever trying to use a NativeAllocationRegistry with size 0
         return 128; // see art/runtime/gc/heap.h -> kNotifyNativeInterval
+    }
+
+    static boolean is64Bit(VMRuntime vmRuntime) {
+        return false;
+    }
+
+    static void registerSensitiveThread() {
+        // ignore
+    }
+
+    static  void setProcessPackageName(String packageName) {
+        // ignore
+    }
+
+    static  void setProcessDataDirectory(String dataDir) {
+        // ignore
+    }
+
+    static void setDedupeHiddenApiWarnings(boolean ignored) {
+        // ignore
+    }
+
+    static void clampGrowthLimit(VMRuntime runtime) {
+        // ignore
+    }
+
+    static String vmLibrary(VMRuntime runtime) {
+        return "";
+    }
+
+    static void updateProcessState(VMRuntime runtime, int var1) {}
+
+    static  void notifyStartupCompleted(VMRuntime runtime) {}
+
+    static  void preloadDexCaches(VMRuntime runtime) {}
+
+    @NonNull
+    public static Method getMethod(@NonNull Class<?> clazz, @NonNull String name,
+            @Nullable Class<?>... params) throws NoSuchMethodException {
+            return clazz.getMethod(name, params);
+    }
+
+    @NonNull
+    public static Method getAccessibleMethod(@NonNull Class<?> clazz, @NonNull String name,
+            @Nullable Class<?>... params) throws NoSuchMethodException {
+        Method method = getMethod(clazz, name, params);
+        method.setAccessible(true);
+
+        return method;
     }
 }
