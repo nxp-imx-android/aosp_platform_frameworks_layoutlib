@@ -51,9 +51,12 @@ import android.widget.NumberPicker;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import static com.android.layoutlib.bridge.android.BridgeContext.getBaseContext;
 
@@ -72,6 +75,8 @@ public final class BridgeInflater extends LayoutInflater {
             "android.support.v7.app.AppCompatViewInflater";
     private static final String ANDROIDX_DEFAULT_APPCOMPAT_INFLATER_NAME =
             "androidx.appcompat.app.AppCompatViewInflater";
+    public static final String CLASS_COMPOSE_VIEW_ADAPTER =
+            "androidx.ui.tooling.preview.ComposeViewAdapter";
     private final LayoutlibCallback mLayoutlibCallback;
 
     private boolean mIsInMerge = false;
@@ -591,6 +596,64 @@ public final class BridgeInflater extends LayoutInflater {
     public void onDoneInflation() {
         if (mOpenDrawerLayouts != null) {
             mOpenDrawerLayouts.clear();
+        }
+    }
+
+    /**
+     * This method is supposed to find the dispose method of the ComposeViewAdapter. Kotlin compiler
+     * changes the name of the method (to e.g. dispose$ui_tooling_release) so that it is not
+     * possible to find it directly. A workaround is to find a method which name starts with
+     * "dispose".
+     * @param disposableViewClass ComposeViewAdapter (or similar, for future use) class that is
+     * intended to be disposed
+     * @return dispose method or null if not found
+     */
+    @Nullable
+    private static Method getDisposeMethod(@NotNull Class<?> disposableViewClass) {
+        List<Method> disposeMethods =
+                Arrays.stream(disposableViewClass.getMethods())
+                        .filter(m -> m.getName().startsWith("dispose"))
+                        .collect(Collectors.toList());
+        if (disposeMethods.size() == 1) {
+            return disposeMethods.get(0);
+        } else if (disposeMethods.isEmpty()) {
+            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+                    "Failed to find dispose method in " + disposableViewClass.getTypeName(),
+                    (Object)null, null);
+        } else {
+            Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Failed to find the correct dispose " +
+                    "method in " + disposableViewClass.getTypeName() + ". The candidates are: " +
+                    disposeMethods.stream().map(Method::getName).collect(Collectors.joining(", ")),
+                    (Object)null, null);
+        }
+        return null;
+    }
+
+    public void disposeView(@NotNull View view) {
+        // We can dispose compose views
+        try {
+            Class<?> composeViewClass = mLayoutlibCallback.findClass(CLASS_COMPOSE_VIEW_ADAPTER);
+            Class<?> viewClass = view.getClass();
+            if (viewClass.isAssignableFrom(composeViewClass)) {
+                Method disposeMethod = getDisposeMethod(composeViewClass);
+                if (disposeMethod == null) {
+                    return;
+                }
+                try {
+                    disposeMethod.setAccessible(true);
+                    disposeMethod.invoke(view);
+                } catch (IllegalAccessException | InvocationTargetException ex) {
+                    Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+                            "Failed to dispose instance of " + viewClass.getTypeName(),
+                            ex, null, null);
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            // That's ok, we do not have compose View class loaded meaning we do not have to
+            // dispose the passed view
+        } catch (Throwable t) {
+            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+                    "Unexpected error while disposing " + view, t, null, null);
         }
     }
 }
