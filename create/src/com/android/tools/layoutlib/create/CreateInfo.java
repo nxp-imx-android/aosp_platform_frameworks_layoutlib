@@ -422,8 +422,6 @@ public final class CreateInfo implements ICreateInfo {
         new String[] {
             null };                         // separator, for next class/methods list.
 
-
-
     private final static String[] DEFERRED_STATIC_INITIALIZER_CLASSES = new String[] {
 
     };

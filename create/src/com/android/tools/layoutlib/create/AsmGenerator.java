@@ -423,7 +423,7 @@ public class AsmGenerator {
             cv = new PromoteClassClassAdapter(cv, mPromotedClasses);
         }
 
-        if (mRenameStaticInitializerClasses.contains(className)) {
+        if (mRenameStaticInitializerClasses.contains(binaryNewName)) {
             cv = new DeferStaticInitializerClassAdapter(cv);
         }
 
