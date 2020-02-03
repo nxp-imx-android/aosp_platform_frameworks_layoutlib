@@ -86,6 +86,7 @@ public class AsmAnalyzerTest {
                 "mock_android.dummy2.keep.DoNotRemove",
                 "mock_android.util.EmptyArray",
                 "mock_android.util.NotNeeded",
+                "mock_android.view.LibLoader",
                 "mock_android.view.View",
                 "mock_android.view.ViewGroup",
                 "mock_android.view.ViewGroup$LayoutParams",
