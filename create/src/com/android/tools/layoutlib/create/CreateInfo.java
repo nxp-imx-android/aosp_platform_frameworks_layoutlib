@@ -256,8 +256,6 @@ public final class CreateInfo implements ICreateInfo {
         "com.android.internal.view.menu.MenuBuilder#createNewMenuItem",
         "dalvik.system.VMRuntime#getNotifyNativeInterval",
         "dalvik.system.VMRuntime#newUnpaddedArray",
-        "dalvik.system.VMRuntime#newNonMovableArray",
-        "dalvik.system.VMRuntime#addressOf",
         "libcore.io.MemoryMappedFile#bigEndianIterator",
         "libcore.io.MemoryMappedFile#close",
         "libcore.io.MemoryMappedFile#mmapRO",
@@ -436,7 +434,7 @@ public final class CreateInfo implements ICreateInfo {
                         InjectMethodRunnables.CONTEXT_GET_FRAMEWORK_CLASS_LOADER);
             }};
 
-    private static class LinkedHashMapEldestReplacer implements MethodReplacer {
+    public static class LinkedHashMapEldestReplacer implements MethodReplacer {
 
         private final String VOID_TO_MAP_ENTRY =
                 Type.getMethodDescriptor(Type.getType(Map.Entry.class));
