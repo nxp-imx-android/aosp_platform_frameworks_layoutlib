@@ -165,11 +165,11 @@ public class RenderTestBase {
     private static String getFontDir() {
         String fontDir = System.getProperty(FONT_DIR_PROPERTY);
         if (fontDir == null) {
-            // The fonts are built into out/host/common/obj/PACKAGING/sdk-fonts_intermediates
-            // as specified in build/make/core/sdk_font.mk, and PLATFORM_DIR is
+            // The fonts are built into out/host/common/obj/PACKAGING/fonts_intermediates
+            // as specified in build/make/core/layoutlib_fonts.mk, and PLATFORM_DIR is
             // out/host/[arch]/sdk/sdk*/android-sdk*/platforms/android*
             fontDir = PLATFORM_DIR +
-                    "/../../../../../../common/obj/PACKAGING/sdk-fonts_intermediates";
+                    "/../../../../../../common/obj/PACKAGING/fonts_intermediates";
         }
         return fontDir;
     }
