@@ -59,6 +59,7 @@ java_library_host {
         "tools-common-prebuilt",
         "ninepatch-prebuilt",
         "layoutlib-common",
+        "layoutlib-common-delegates",
         "layoutlib-native-delegates",
     ],
 
