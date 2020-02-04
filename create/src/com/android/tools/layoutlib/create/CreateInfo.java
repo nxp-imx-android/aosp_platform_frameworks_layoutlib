@@ -239,6 +239,8 @@ public final class CreateInfo implements ICreateInfo {
         "android.text.format.DateFormat#is24HourFormat",
         "android.util.Xml#newPullParser",
         "android.view.Choreographer#getRefreshRate",
+        "android.view.Choreographer#postCallbackDelayedInternal",
+        "android.view.Choreographer#removeCallbacksInternal",
         "android.view.Display#getWindowManager",
         "android.view.Display#updateDisplayInfoLocked",
         "android.view.HandlerActionQueue#postDelayed",
@@ -426,7 +428,9 @@ public final class CreateInfo implements ICreateInfo {
     private final static String[] PROMOTED_METHODS = new String[] {
         "android.animation.AnimationHandler#doAnimationFrame",
         "android.media.ImageReader#nativeClassInit",
-        "android.view.Choreographer#doFrame"
+        "android.view.Choreographer#doFrame",
+        "android.view.Choreographer#postCallbackDelayedInternal",
+        "android.view.Choreographer#removeCallbacksInternal",
     };
 
     /**

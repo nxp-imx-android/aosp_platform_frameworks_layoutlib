@@ -64,6 +64,7 @@ import android.os.Looper;
 import android.preference.Preference_Delegate;
 import android.view.AttachInfo_Accessor;
 import android.view.BridgeInflater;
+import android.view.Choreographer_Delegate;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -1194,6 +1195,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                     mInflater.disposeView(firstChild);
                 }
             }
+            Choreographer_Delegate.dispose(getContext());
             mContentRoot = null;
 
             if (createdLooper) {
