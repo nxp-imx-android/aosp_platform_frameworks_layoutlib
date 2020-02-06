@@ -203,7 +203,14 @@ public class BridgeRenderSession extends RenderSession {
     @Override
     public void dispose() {
         if (mSession != null) {
-            mSession.dispose();
+            try {
+                Bridge.prepareThread();
+                mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
+                mSession.dispose();
+            } finally {
+                mSession.release();
+                Bridge.cleanupThread();
+            }
         }
     }
 
