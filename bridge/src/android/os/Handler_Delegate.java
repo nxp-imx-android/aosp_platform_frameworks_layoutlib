@@ -18,8 +18,12 @@ package android.os;
 
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.layoutlib.bridge.Bridge;
+import com.android.layoutlib.bridge.android.BridgeContext;
+import com.android.layoutlib.bridge.impl.RenderAction;
 import com.android.layoutlib.bridge.util.HandlerMessageQueue;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
+
+import java.util.WeakHashMap;
 
 /**
  * Delegate overriding selected methods of android.os.Handler
@@ -32,7 +36,8 @@ import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 public class Handler_Delegate {
 
     // -------- Delegate methods
-    private static final HandlerMessageQueue sRunnablesQueue = new HandlerMessageQueue();
+    private static final WeakHashMap<BridgeContext, HandlerMessageQueue> sRunnablesQueues =
+            new WeakHashMap<>();
 
     @LayoutlibDelegate
     /*package*/ static boolean sendMessageAtTime(Handler handler, Message msg, long uptimeMillis) {
@@ -42,7 +47,7 @@ public class Handler_Delegate {
             callback.sendMessageAtTime(handler, msg, uptimeMillis);
         } else {
             if (msg.callback != null) {
-                sRunnablesQueue.add(handler, uptimeMillis, msg.callback);
+                currentQueue().add(handler, uptimeMillis, msg.callback);
             }
         }
         return true;
@@ -60,7 +65,7 @@ public class Handler_Delegate {
     /*package*/ static boolean sendMessageAtFrontOfQueue(Handler handler, Message msg) {
         // We will also catch calls from the Choreographer that have no callback.
         if (msg.callback != null) {
-            sRunnablesQueue.add(handler, 0, msg.callback);
+            currentQueue().add(handler, 0, msg.callback);
         }
 
         return true;
@@ -73,17 +78,18 @@ public class Handler_Delegate {
      * @return if there are more callbacks to execute
      */
     public static boolean executeCallbacks() {
+        HandlerMessageQueue queue = currentQueue();
         try {
             long uptimeMillis = SystemClock_Delegate.uptimeMillis();
             Runnable r;
-            while ((r = sRunnablesQueue.extractFirst(uptimeMillis)) != null) {
+            while ((r = queue.extractFirst(uptimeMillis)) != null) {
                 r.run();
             }
         } catch (Throwable t) {
             Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Failed executing Handler callback", t,
                 null, null);
         }
-        return sRunnablesQueue.isNotEmpty();
+        return queue.isNotEmpty();
     }
 
     public interface IHandlerCallback {
@@ -97,7 +103,12 @@ public class Handler_Delegate {
         sCallbacks.set(callback);
     }
 
-    public static void clear() {
-        sRunnablesQueue.clear();
+    public static void dispose(BridgeContext context) {
+        sRunnablesQueues.remove(context);
+    }
+
+    private static HandlerMessageQueue currentQueue() {
+        return sRunnablesQueues.computeIfAbsent(RenderAction.getCurrentContext(),
+                c -> new HandlerMessageQueue());
     }
 }
