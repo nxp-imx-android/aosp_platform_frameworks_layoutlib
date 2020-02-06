@@ -1167,14 +1167,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
     public void dispose() {
         try {
-            boolean createdLooper = false;
-            if (Looper.myLooper() == null) {
-                // Detaching the root view from the window will try to stop any running animations.
-                // The stop method checks that it can run in the looper so, if there is no current
-                // looper, we create a temporary one to complete the shutdown.
-                Bridge.prepareThread();
-                createdLooper = true;
-            }
             mRenderer.destroy();
             AttachInfo_Accessor.detachFromWindow(mViewRoot);
             if (mImageReader != null) {
@@ -1197,10 +1189,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             }
             Choreographer_Delegate.dispose(getContext());
             mContentRoot = null;
-
-            if (createdLooper) {
-                Bridge.cleanupThread();
-            }
         } catch (Throwable t) {
             getContext().error("Error while disposing a RenderSession", t);
         }
