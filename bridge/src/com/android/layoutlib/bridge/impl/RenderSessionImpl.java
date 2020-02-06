@@ -60,7 +60,7 @@ import android.graphics.drawable.AnimatedVectorDrawable_VectorDrawableAnimatorUI
 import android.media.Image;
 import android.media.Image.Plane;
 import android.media.ImageReader;
-import android.os.Looper;
+import android.os.Handler_Delegate;
 import android.preference.Preference_Delegate;
 import android.view.AttachInfo_Accessor;
 import android.view.BridgeInflater;
@@ -1189,6 +1189,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             }
             Choreographer_Delegate.dispose(getContext());
             mContentRoot = null;
+            Handler_Delegate.dispose(getContext());
         } catch (Throwable t) {
             getContext().error("Error while disposing a RenderSession", t);
         }
