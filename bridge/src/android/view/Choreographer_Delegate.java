@@ -73,6 +73,10 @@ public class Choreographer_Delegate {
                 if (action instanceof FrameCallback) {
                     FrameCallback callback = (FrameCallback)action;
                     Choreographer.getInstance().removeFrameCallback(callback);
+                } else if (action instanceof Runnable) {
+                    Runnable runnable = (Runnable)action;
+                    Choreographer.getInstance().removeCallbacksInternal_Original(
+                            Choreographer.CALLBACK_ANIMATION, runnable, null);
                 } else {
                     Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Unexpected action as " +
                             "ANIMATION_CALLBACK", (Object)null, null);
