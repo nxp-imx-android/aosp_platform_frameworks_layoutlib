@@ -61,6 +61,7 @@ public class NativeConfig {
             "android.graphics.Graphics",
             "android.graphics.HardwareRenderer",
             "android.graphics.ImageDecoder",
+            "android.graphics.Interpolator",
             "android.graphics.MaskFilter",
             "android.graphics.Matrix",
             "android.graphics.NinePatch",
