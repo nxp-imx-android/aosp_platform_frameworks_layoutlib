@@ -59,7 +59,6 @@ public class NativeConfig {
             "android.graphics.DrawFilter",
             "android.graphics.FontFamily",
             "android.graphics.Graphics",
-            "android.graphics.HardwareRenderer",
             "android.graphics.ImageDecoder",
             "android.graphics.Interpolator",
             "android.graphics.MaskFilter",
