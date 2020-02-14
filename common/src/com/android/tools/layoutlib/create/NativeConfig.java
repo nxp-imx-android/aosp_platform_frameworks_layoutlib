@@ -74,6 +74,7 @@ public class NativeConfig {
             "android.graphics.RenderNode",
             "android.graphics.Shader",
             "android.graphics.Typeface",
+            "android.graphics.animation.NativeInterpolatorFactory",
             "android.graphics.drawable.AnimatedVectorDrawable",
             "android.graphics.drawable.VectorDrawable",
             "android.graphics.fonts.Font",
@@ -87,6 +88,5 @@ public class NativeConfig {
             "android.util.PathParser",
             "android.view.Surface",
             "com.android.internal.util.VirtualRefBasePtr",
-            "com.android.internal.view.animation.NativeInterpolatorFactoryHelper",
     };
 }

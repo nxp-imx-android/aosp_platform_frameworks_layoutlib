@@ -318,6 +318,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.SumPathEffect",
         "android.graphics.SweepGradient",
         "android.graphics.TableMaskFilter",
+        "android.graphics.animation.NativeInterpolatorFactory",
         "android.graphics.drawable.AnimatedVectorDrawable",
         "android.graphics.drawable.VectorDrawable",
         "android.graphics.fonts.SystemFonts",
@@ -330,7 +331,6 @@ public final class CreateInfo implements ICreateInfo {
         "android.util.Log",
         "android.util.PathParser",
         "android.view.Surface",
-        "com.android.internal.view.animation.NativeInterpolatorFactoryHelper",
         "com.android.internal.util.VirtualRefBasePtr",
     };
 
