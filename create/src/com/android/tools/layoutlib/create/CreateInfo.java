@@ -297,6 +297,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.DiscretePathEffect",
         "android.graphics.DrawFilter",
         "android.graphics.EmbossMaskFilter",
+        "android.graphics.HardwareRenderer",
         "android.graphics.Interpolator",
         "android.graphics.LightingColorFilter",
         "android.graphics.LinearGradient",
