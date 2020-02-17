@@ -95,6 +95,13 @@ public class HandlerMessageQueue {
     }
 
     /**
+     * @return number of runnables in the queue
+     */
+    public int size() {
+        return runnablesMap.values().stream().mapToInt(LinkedList::size).sum();
+    }
+
+    /**
      * Completely clears the entire queue
      */
     public void clear() {

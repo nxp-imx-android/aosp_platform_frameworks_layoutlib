@@ -1187,9 +1187,9 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                     mInflater.disposeView(firstChild);
                 }
             }
-            Choreographer_Delegate.dispose(getContext());
             mContentRoot = null;
             Handler_Delegate.dispose(getContext());
+            Choreographer_Delegate.dispose(getContext());
         } catch (Throwable t) {
             getContext().error("Error while disposing a RenderSession", t);
         }
