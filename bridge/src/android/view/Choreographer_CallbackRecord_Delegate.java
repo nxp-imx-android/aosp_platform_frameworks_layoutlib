@@ -16,13 +16,12 @@
 
 package android.view;
 
+import com.android.layoutlib.bridge.util.CallbacksDisposer.SessionKey;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import android.view.Choreographer.CallbackRecord;
 
-import java.util.Set;
-
-import static android.view.Choreographer_Delegate.currentContext;
+import static com.android.layoutlib.bridge.impl.RenderAction.getCurrentContext;
 
 /**
  * Delegate used to provide new implementation of a select few methods of {@link CallbackRecord}
@@ -34,9 +33,9 @@ import static android.view.Choreographer_Delegate.currentContext;
 public class Choreographer_CallbackRecord_Delegate {
     @LayoutlibDelegate
     public static void run(CallbackRecord thiz, long frameTimeNanos) {
-        Set<Object> callbacks = Choreographer_Delegate.sFrameCallbacks.get(currentContext());
-        if (callbacks != null && thiz.action != null) {
-            callbacks.remove(thiz.action);
+        if (thiz.action != null) {
+            Choreographer_Delegate.sCallbacksDisposer.onCallbackRemoved(
+                    new SessionKey(getCurrentContext()), thiz.action);
         }
         thiz.run_Original(frameTimeNanos);
     }
