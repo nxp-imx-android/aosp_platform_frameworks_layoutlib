@@ -19,6 +19,7 @@ package com.android.layoutlib.common.util;
 import com.android.tools.layoutlib.annotations.NonNull;
 import com.android.tools.layoutlib.annotations.Nullable;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -56,6 +57,19 @@ public class ReflectionUtils {
         method.setAccessible(true);
 
         return method;
+    }
+
+    @NonNull
+    public static Object getFieldValue(@NonNull Class<?> clazz, Object object, @NonNull String name) throws ReflectionException {
+        try {
+            Field field = clazz.getDeclaredField(name);
+            field.setAccessible(true);
+            return field.get(object);
+        } catch (NoSuchFieldException e) {
+            throw new ReflectionException(e);
+        } catch (IllegalAccessException e) {
+            throw new ReflectionException(e);
+        }
     }
 
     @Nullable
