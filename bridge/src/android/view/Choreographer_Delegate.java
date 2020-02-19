@@ -35,8 +35,7 @@ import java.util.WeakHashMap;
  *
  */
 public class Choreographer_Delegate {
-    private static final WeakHashMap<BridgeContext, Set<Object>> sFrameCallbacks =
-            new WeakHashMap<>();
+    static final WeakHashMap<BridgeContext, Set<Object>> sFrameCallbacks = new WeakHashMap<>();
 
     @LayoutlibDelegate
     public static float getRefreshRate() {
@@ -86,7 +85,7 @@ public class Choreographer_Delegate {
         }
     }
 
-    private static BridgeContext currentContext() {
+    static BridgeContext currentContext() {
         return RenderAction.getCurrentContext();
     }
 }
