@@ -273,6 +273,7 @@ public final class CreateInfo implements ICreateInfo {
         "libcore.io.MemoryMappedFile#close",
         "libcore.io.MemoryMappedFile#mmapRO",
         "libcore.util.NativeAllocationRegistry#applyFreeFunction",
+        "libcore.util.NativeAllocationRegistry#registerNativeAllocation",
     };
 
     /**
@@ -384,7 +385,6 @@ public final class CreateInfo implements ICreateInfo {
     private final static String[] REFACTOR_CLASSES =
             new String[] {
                     "android.os.Build",                                "android.os._Original_Build",
-                    "sun.misc.Cleaner",                                "libcore.util.Cleaner",
             };
 
     private final static String[] EXCLUDED_CLASSES =
@@ -393,6 +393,7 @@ public final class CreateInfo implements ICreateInfo {
             "java.**",
             "org.kxml2.io.KXmlParser",
             "org.xmlpull.**",
+            "sun.**",
         };
 
     /**
@@ -415,6 +416,8 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.drawable.AnimatedVectorDrawable#mAnimatorSet",
         "android.graphics.drawable.AdaptiveIconDrawable#sMask",
         "android.graphics.drawable.DrawableInflater#mRes",
+        "libcore.util.NativeAllocationRegistry#freeFunction",
+        "libcore.util.NativeAllocationRegistry#size",
     };
 
     /**
@@ -436,6 +439,8 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.ImageDecoder$InputStreamSource",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimator",
+        "libcore.util.NativeAllocationRegistry$CleanerRunner",
+        "libcore.util.NativeAllocationRegistry$CleanerThunk",
     };
 
     /**
