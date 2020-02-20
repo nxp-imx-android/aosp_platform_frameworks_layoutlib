@@ -135,6 +135,11 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         public void warning(String tag, String message, Object data) {
             System.out.println(message);
         }
+
+        @Override
+        public void logAndroidFramework(int priority, String tag, String message) {
+            System.out.println(message);
+        }
     };
 
     /**
@@ -159,6 +164,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         sPlatformProperties = platformProperties;
         sEnumValueMap = enumValueMap;
         sIcuDataPath = icuDataPath;
+        sCurrentLog = log;
 
         if (!loadNativeLibrariesIfNeeded(log, nativeLibPath)) {
             return false;
@@ -674,6 +680,8 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             System.setProperty("native_classes", String.join(",",
                     NativeConfig.CLASS_NATIVES));
             System.setProperty("icu.dir", Bridge.getIcuDataPath());
+            System.setProperty("use_bridge_for_logging", "true");
+            System.setProperty("register_properties_during_load", "true");
             for (String library : getNativeLibraries()) {
                 String path = new File(nativeLibDir, library).getAbsolutePath();
                 System.load(path);
