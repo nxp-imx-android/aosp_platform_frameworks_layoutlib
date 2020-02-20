@@ -9,7 +9,7 @@ readonly SCRIPT_DIR="$(dirname "$0")"
 readonly FAILURE_DIR=layoutlib-test-failures
 readonly FAILURE_ZIP=layoutlib-test-failures.zip
 
-STUDIO_JDK=${SCRIPT_DIR}"/../../../../prebuilts/jdk/jdk11/linux-x86"
+STUDIO_JDK=${SCRIPT_DIR}"/../../../../prebuilts/studio/jdk/linux"
 MISC_COMMON=${SCRIPT_DIR}"/../../../../prebuilts/misc/common"
 M2_REPO=${SCRIPT_DIR}"/../../../../prebuilts/tools/common/m2/repository"
 JAVA_LIBRARIES=${SCRIPT_DIR}"/../../../../out/host/common/obj/JAVA_LIBRARIES"

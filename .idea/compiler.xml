@@ -15,9 +15,4 @@
       <entry name="!?*.clj" />
     </wildcardResourcePatterns>
   </component>
-  <component name="JavacSettings">
-    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="bridge" options="--add-exports java.desktop/sun.font=ALL-UNNAMED" />
-    </option>
-  </component>
 </project>

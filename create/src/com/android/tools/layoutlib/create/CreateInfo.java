@@ -340,7 +340,6 @@ public final class CreateInfo implements ICreateInfo {
     private final static String[] REFACTOR_CLASSES =
             new String[] {
                     "android.os.Build",                                "android.os._Original_Build",
-                    "sun.misc.Cleaner",                                "libcore.util.Cleaner",
             };
 
     private final static String[] EXCLUDED_CLASSES =
@@ -349,6 +348,7 @@ public final class CreateInfo implements ICreateInfo {
             "java.**",
             "org.kxml2.io.KXmlParser",
             "org.xmlpull.**",
+            "sun.**",
         };
 
     /**
@@ -378,6 +378,8 @@ public final class CreateInfo implements ICreateInfo {
      * if possible.
      */
     private final static String[] PROMOTED_CLASSES = new String[] {
+        "libcore.util.NativeAllocationRegistry$CleanerRunner",
+        "libcore.util.NativeAllocationRegistry$CleanerThunk",
     };
 
     /**

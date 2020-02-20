@@ -486,12 +486,8 @@ public class AsmAnalyzer {
             }
 
             try {
-                // Exclude classes that have a package name that starts with java. or sun. as
-                // they are part of the default JRE (the one executing this program).
-                // But keep sun.misc.Cleaner as it was removed in JDK 9 but is still used by the
-                // Android framework for native allocation tracking.
-                if (className.startsWith("java.") ||
-                        (className.startsWith("sun.") && !("sun.misc.Cleaner").equals(className)) ||
+                // exclude classes that are part of the default JRE (the one executing this program)
+                if (className.startsWith("java.") || className.startsWith("sun.") ||
                         getClass().getClassLoader().loadClass(className) != null) {
                     return;
                 }

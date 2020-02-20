@@ -33,9 +33,6 @@ built_framework_classes := $(call java-lib-files,framework)
 built_core_dep := $(call java-lib-deps,core-libart)
 built_core_classes := $(call java-lib-files,core-libart)
 
-built_oj_dep := $(call java-lib-deps,core-oj)
-built_oj_classes := $(call java-lib-files,core-oj)
-
 built_ext_dep := $(call java-lib-deps,ext)
 built_ext_classes := $(call java-lib-files,ext)
 
@@ -55,8 +52,7 @@ LOCAL_BUILT_MODULE_STEM := classes.jar
 include $(BUILD_SYSTEM)/base_rules.mk
 #######################################
 
-$(LOCAL_BUILT_MODULE): $(built_oj_dep) \
-                       $(built_core_dep) \
+$(LOCAL_BUILT_MODULE): $(built_core_dep) \
                        $(built_framework_dep) \
                        $(built_ext_dep) \
 		               $(built_icudata_dep) \
@@ -69,7 +65,6 @@ $(LOCAL_BUILT_MODULE): $(built_oj_dep) \
 	$(hide) java -ea -jar $(built_layoutlib_create_jar) \
 		     --create-stub \
 	             $@ \
-	             $(built_oj_classes) \
 	             $(built_core_classes) \
 	             $(built_framework_classes) \
 	             $(built_ext_classes) \
