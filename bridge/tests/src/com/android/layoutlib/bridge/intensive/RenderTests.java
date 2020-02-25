@@ -20,6 +20,7 @@ import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValueImpl;
+import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
 import com.android.ide.common.rendering.api.ViewInfo;
@@ -38,6 +39,7 @@ import com.android.ninepatch.NinePatch;
 import com.android.resources.Density;
 import com.android.resources.Navigation;
 import com.android.resources.ResourceType;
+import com.android.tools.layoutlib.java.System_Delegate;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -60,6 +62,8 @@ import android.graphics.Color;
 import android.util.DisplayMetrics;
 import android.util.StateSet;
 import android.util.TypedValue;
+import android.widget.Button;
+import android.widget.LinearLayout;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
@@ -1836,5 +1840,77 @@ public class RenderTests extends RenderTestBase {
                 .build();
 
         renderAndVerify(params, "textclock.png");
+    }
+
+    @Test
+    public void testChangeSize() throws ClassNotFoundException {
+        final String layout =
+                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "              android:orientation=\"vertical\"\n" +
+                        "              android:layout_width=\"wrap_content\"\n" +
+                        "              android:layout_height=\"wrap_content\">\n" +
+                        "    <Button\n" +
+                        "             android:layout_height=\"50dp\"\n" +
+                        "             android:layout_width=\"100dp\"\n" +
+                        "             android:text=\"Hello\" />\n" +
+                        "</LinearLayout>\n";
+
+        // Create the layout pull parser.
+        LayoutPullParser parser = LayoutPullParser.createFromString(layout);
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback = new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setRenderingMode(RenderingMode.SHRINK)
+                .disableDecoration()
+                .build();
+
+        System_Delegate.setBootTimeNanos(TimeUnit.MILLISECONDS.toNanos(871732800000L));
+        System_Delegate.setNanosTime(TimeUnit.MILLISECONDS.toNanos(871732800000L));
+        RenderSession session = sBridge.createSession(params);
+
+        try {
+            session.setElapsedFrameTimeNanos(TimeUnit.SECONDS.toNanos(2));
+
+            if (!session.getResult().isSuccess()) {
+                getLogger().error(session.getResult().getException(),
+                        session.getResult().getErrorMessage());
+            }
+            else {
+                // Render the session with a timeout of 50s.
+                Result renderResult = session.render(50000);
+                if (!renderResult.isSuccess()) {
+                    getLogger().error(session.getResult().getException(),
+                            session.getResult().getErrorMessage());
+                }
+            }
+
+            BufferedImage resultImage = session.getImage();
+
+            assertNotNull(resultImage);
+            verify("button_resize.png", resultImage);
+
+            Object viewObject = session.getRootViews().get(0)
+                    .getChildren().get(0).getViewObject();
+
+            Button btn = (Button) viewObject;
+            btn.setLayoutParams(new LinearLayout.LayoutParams(300, 300));
+
+            Result renderResult = session.render(50000);
+            if (!renderResult.isSuccess()) {
+                getLogger().error(session.getResult().getException(),
+                        session.getResult().getErrorMessage());
+            }
+
+            resultImage = session.getImage();
+
+            assertNotNull(resultImage);
+            verify("button_resize2.png", resultImage);
+        } finally {
+            session.dispose();
+        }
     }
 }
