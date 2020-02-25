@@ -24,15 +24,15 @@ public class NativeConfig {
 
     private NativeConfig() {}
 
-    public final static String[] DELEGATE_CLASS_NATIVES_TO_NATIVES = new String [] {
-            "android.graphics.ColorSpace$Rgb",
+    public final static String[] DEFERRED_STATIC_INITIALIZER_CLASSES = new String [] {
+            "android.graphics.ColorSpace",
             "android.graphics.FontFamily",
-            "android.graphics.ImageDecoder",
             "android.graphics.Matrix",
             "android.graphics.Path",
-            "android.graphics.Typeface",
+            // Order is important! Fonts and FontFamily have to be initialized before Typeface
             "android.graphics.fonts.Font$Builder",
             "android.graphics.fonts.FontFamily$Builder",
+            "android.graphics.Typeface",
             "android.graphics.text.LineBreaker",
     };
 

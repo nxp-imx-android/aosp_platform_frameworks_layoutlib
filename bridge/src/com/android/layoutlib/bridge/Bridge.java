@@ -24,16 +24,23 @@ import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.Result.Status;
 import com.android.ide.common.rendering.api.SessionParams;
+import com.android.ide.common.rendering.api.XmlParserFactory;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
+import com.android.layoutlib.bridge.impl.ParserFactory;
 import com.android.layoutlib.bridge.impl.RenderDrawable;
 import com.android.layoutlib.bridge.impl.RenderSessionImpl;
 import com.android.layoutlib.bridge.util.DynamicIdMap;
+import com.android.layoutlib.common.util.ReflectionUtils;
 import com.android.resources.ResourceType;
+import com.android.tools.layoutlib.annotations.NonNull;
 import com.android.tools.layoutlib.annotations.Nullable;
 import com.android.tools.layoutlib.create.MethodAdapter;
 import com.android.tools.layoutlib.create.NativeConfig;
 import com.android.tools.layoutlib.create.OverrideMethod;
 import com.android.util.Pair;
+
+import org.kxml2.io.KXmlParser;
+import org.xmlpull.v1.XmlPullParser;
 
 import android.content.res.BridgeAssetManager;
 import android.graphics.Bitmap;
@@ -202,9 +209,34 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         try {
             BridgeAssetManager.initSystem();
 
-            // load the fonts.
+            // Do the static initialization of all the classes for which it was deferred.
+            // In order to initialize Typeface, we first need to specify the location of fonts
+            // and set a parser factory that will be used to parse the fonts.xml file.
             SystemFonts_Delegate.setFontLocation(fontLocation.getAbsolutePath() + File.separator);
             MemoryMappedFile_Delegate.setDataDir(fontLocation.getAbsoluteFile().getParentFile());
+            ParserFactory.setParserFactory(new XmlParserFactory() {
+                @Override
+                @Nullable
+                public XmlPullParser createXmlParserForPsiFile(@NonNull String fileName) {
+                    return null;
+                }
+
+                @Override
+                @Nullable
+                public XmlPullParser createXmlParserForFile(@NonNull String fileName) {
+                    return null;
+                }
+
+                @Override
+                @NonNull
+                public XmlPullParser createXmlParser() {
+                    return new KXmlParser();
+                }
+            });
+            for (String deferredClass : NativeConfig.DEFERRED_STATIC_INITIALIZER_CLASSES) {
+                ReflectionUtils.invokeStatic(deferredClass, "deferredStaticInitializer");
+            }
+            ParserFactory.setParserFactory(null);
         } catch (Throwable t) {
             if (log != null) {
                 log.error(LayoutLog.TAG_BROKEN, "Layoutlib Bridge initialization failed", t,
@@ -675,8 +707,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         }
         try {
             // set the system property so LayoutLibLoader.cpp can read it
-            System.setProperty("delegate_natives_to_natives", String.join(",",
-                    NativeConfig.DELEGATE_CLASS_NATIVES_TO_NATIVES).replace('.', '/'));
             System.setProperty("native_classes", String.join(",",
                     NativeConfig.CLASS_NATIVES));
             System.setProperty("icu.dir", Bridge.getIcuDataPath());

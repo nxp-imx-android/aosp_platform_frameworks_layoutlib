@@ -274,8 +274,7 @@ public final class CreateInfo implements ICreateInfo {
      */
     public final static String[] DELEGATE_CLASS_NATIVES = NativeConfig.DELEGATE_CLASS_NATIVES;
 
-    public final static String[] DELEGATE_CLASS_NATIVES_TO_NATIVES =
-            NativeConfig.DELEGATE_CLASS_NATIVES_TO_NATIVES;
+    public final static String[] DELEGATE_CLASS_NATIVES_TO_NATIVES = new String[] {};
 
     /**
      * The list of classes on which NOT to delegate any native method.
@@ -304,14 +303,18 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.DiscretePathEffect",
         "android.graphics.DrawFilter",
         "android.graphics.EmbossMaskFilter",
+        "android.graphics.FontFamily",
         "android.graphics.HardwareRenderer",
+        "android.graphics.ImageDecoder",
         "android.graphics.Interpolator",
         "android.graphics.LightingColorFilter",
         "android.graphics.LinearGradient",
         "android.graphics.MaskFilter",
+        "android.graphics.Matrix",
         "android.graphics.NinePatch",
         "android.graphics.Paint",
         "android.graphics.PaintFlagsDrawFilter",
+        "android.graphics.Path",
         "android.graphics.PathDashPathEffect",
         "android.graphics.PathEffect",
         "android.graphics.PathMeasure",
@@ -327,11 +330,15 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.SumPathEffect",
         "android.graphics.SweepGradient",
         "android.graphics.TableMaskFilter",
+        "android.graphics.Typeface",
         "android.graphics.animation.NativeInterpolatorFactory",
         "android.graphics.animation.RenderNodeAnimator",
         "android.graphics.drawable.AnimatedVectorDrawable",
         "android.graphics.drawable.VectorDrawable",
+        "android.graphics.fonts.Font$Builder",
+        "android.graphics.fonts.FontFamily$Builder",
         "android.graphics.fonts.SystemFonts",
+        "android.graphics.text.LineBreaker",
         "android.graphics.text.MeasuredText",
         "android.graphics.text.MeasuredText$Builder",
         "android.media.ImageReader",
@@ -444,9 +451,8 @@ public final class CreateInfo implements ICreateInfo {
         new String[] {
             null };                         // separator, for next class/methods list.
 
-    private final static String[] DEFERRED_STATIC_INITIALIZER_CLASSES = new String[] {
-
-    };
+    private final static String[] DEFERRED_STATIC_INITIALIZER_CLASSES =
+            NativeConfig.DEFERRED_STATIC_INITIALIZER_CLASSES;
 
     private final static Map<String, InjectMethodRunnable> INJECTED_METHODS =
             new HashMap<String, InjectMethodRunnable>(1) {{
