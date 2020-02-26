@@ -266,7 +266,6 @@ public final class CreateInfo implements ICreateInfo {
         "libcore.io.MemoryMappedFile#close",
         "libcore.io.MemoryMappedFile#mmapRO",
         "libcore.util.NativeAllocationRegistry#applyFreeFunction",
-        "libcore.util.NativeAllocationRegistry#registerNativeAllocation",
     };
 
     /**
@@ -374,6 +373,7 @@ public final class CreateInfo implements ICreateInfo {
      */
     private final static String[] JAVA_PKG_CLASSES =
         new String[] {
+                "sun.misc.Cleaner",                                "com.android.layoutlib.bridge.libcore.util.Cleaner",
         };
 
     /**
@@ -437,8 +437,6 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.ImageDecoder$InputStreamSource",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimator",
-        "libcore.util.NativeAllocationRegistry$CleanerRunner",
-        "libcore.util.NativeAllocationRegistry$CleanerThunk",
     };
 
     /**
