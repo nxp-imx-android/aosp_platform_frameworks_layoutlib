@@ -66,6 +66,7 @@ import android.os.Looper;
 import android.preference.Preference_Delegate;
 import android.view.AttachInfo_Accessor;
 import android.view.BridgeInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
@@ -139,6 +140,8 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
     private ImageReader mImageReader;
     private Image mNativeImage;
     private LayoutlibRenderer mRenderer = new LayoutlibRenderer();
+
+    private long mLastActionDownTimeNanos = -1;
 
     private static final class PostInflateException extends Exception {
         private static final long serialVersionUID = 1L;
@@ -1147,6 +1150,23 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
     public RenderSession getSession() {
         return mScene;
+    }
+
+    public void dispatchTouchEvent(int motionEventType, long currentTimeNanos, float x, float y) {
+        if (mViewRoot == null) {
+            return;
+        }
+        if (motionEventType == MotionEvent.ACTION_DOWN) {
+            mLastActionDownTimeNanos = currentTimeNanos;
+        }
+        // Ignore events not started with MotionEvent.ACTION_DOWN
+        if (mLastActionDownTimeNanos == -1) {
+            return;
+        }
+
+        MotionEvent event = MotionEvent.obtain(mLastActionDownTimeNanos, currentTimeNanos,
+                motionEventType, x, y, 0);
+        mViewRoot.dispatchTouchEvent(event);
     }
 
     public void dispose() {

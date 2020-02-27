@@ -16,6 +16,7 @@
 
 package com.android.layoutlib.bridge;
 
+import com.android.ide.common.rendering.api.RenderParams;
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
@@ -26,6 +27,8 @@ import com.android.tools.layoutlib.java.System_Delegate;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.view.Choreographer;
+import android.view.MotionEvent;
 
 import java.awt.image.BufferedImage;
 import java.util.Collections;
@@ -137,6 +140,49 @@ public class BridgeRenderSession extends RenderSession {
     public void setElapsedFrameTimeNanos(long nanos) {
         if (mSession != null) {
             mSession.setElapsedFrameTimeNanos(nanos);
+        }
+    }
+
+    @Override
+    public boolean executeCallbacks(long nanos) {
+        // So far, for Compose, we only have to call doFrame since Compose relies on the frame
+        // callback only. If we want to animate platform widgets as well we will also have to
+        // execute callbacks passes to the Handler (Handler_Delegate in our case) with
+        // sendMessageAtTime. For this purpose, we will have to save those messages with uptimes
+        // and execute appropriate (if uptime has passed) callbacks here.
+        try {
+            Bridge.prepareThread();
+            Choreographer.getInstance().doFrame(nanos, 0);
+        } finally {
+            Bridge.cleanupThread();
+        }
+        return false;
+    }
+
+    private static int toMotionEventType(TouchEventType eventType) {
+        switch (eventType) {
+            case PRESS:
+                return MotionEvent.ACTION_DOWN;
+            case RELEASE:
+                return MotionEvent.ACTION_UP;
+            case DRAG:
+                return MotionEvent.ACTION_MOVE;
+        }
+        throw new IllegalStateException("Unexpected touch event type: " + eventType);
+    }
+
+    @Override
+    public void triggerTouchEvent(TouchEventType type, int x, int y) {
+        int motionEventType = toMotionEventType(type);
+        if (mSession != null) {
+            try {
+                Bridge.prepareThread();
+                mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
+                mSession.dispatchTouchEvent(motionEventType, System_Delegate.nanoTime(), x, y);
+            } finally {
+                mSession.release();
+                Bridge.cleanupThread();
+            }
         }
     }
 
