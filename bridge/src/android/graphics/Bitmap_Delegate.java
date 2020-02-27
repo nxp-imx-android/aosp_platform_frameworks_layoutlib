@@ -458,8 +458,7 @@ public final class Bitmap_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static boolean nativeWriteToParcel(long nativeBitmap, boolean isMutable,
-            int density, Parcel p) {
+    /*package*/ static boolean nativeWriteToParcel(long nativeBitmap, int density, Parcel p) {
         // This is only called when sending a bitmap through aidl, so really this should not
         // be called.
         Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED,
@@ -630,13 +629,6 @@ public final class Bitmap_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static GraphicBuffer nativeCreateGraphicBufferHandle(long nativeBitmap) {
-        Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED,
-                "Bitmap.nativeCreateGraphicBufferHandle() is not supported", null /*data*/);
-        return null;
-    }
-
-    @LayoutlibDelegate
     /*package*/ static boolean nativeIsSRGB(long nativeBitmap) {
         Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED,
                 "Color spaces are not supported", null /*data*/);
@@ -679,6 +671,13 @@ public final class Bitmap_Delegate {
             return false;
         }
         return !bmpDelegate.mIsMutable;
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static HardwareBuffer nativeGetHardwareBuffer(long nativeBitmap) {
+        Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED,
+                "HardwareBuffer is not supported", null /*data*/);
+        return null;
     }
 
     // ---- Private delegate/helper methods ----
