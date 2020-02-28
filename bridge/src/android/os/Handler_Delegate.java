@@ -18,10 +18,8 @@ package android.os;
 
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.layoutlib.bridge.Bridge;
+import com.android.layoutlib.bridge.util.HandlerMessageQueue;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
-
-import java.util.LinkedList;
-import java.util.WeakHashMap;
 
 /**
  * Delegate overriding selected methods of android.os.Handler
@@ -34,7 +32,7 @@ import java.util.WeakHashMap;
 public class Handler_Delegate {
 
     // -------- Delegate methods
-    private static WeakHashMap<Handler, LinkedList<Runnable>> sRunnablesMap = new WeakHashMap<>();
+    private static final HandlerMessageQueue sRunnablesQueue = new HandlerMessageQueue();
 
     @LayoutlibDelegate
     /*package*/ static boolean sendMessageAtTime(Handler handler, Message msg, long uptimeMillis) {
@@ -42,6 +40,10 @@ public class Handler_Delegate {
         IHandlerCallback callback = sCallbacks.get();
         if (callback != null) {
             callback.sendMessageAtTime(handler, msg, uptimeMillis);
+        } else {
+            if (msg.callback != null) {
+                sRunnablesQueue.add(handler, uptimeMillis, msg.callback);
+            }
         }
         return true;
     }
@@ -58,9 +60,7 @@ public class Handler_Delegate {
     /*package*/ static boolean sendMessageAtFrontOfQueue(Handler handler, Message msg) {
         // We will also catch calls from the Choreographer that have no callback.
         if (msg.callback != null) {
-            LinkedList<Runnable> runnables =
-                    sRunnablesMap.computeIfAbsent(handler, k -> new LinkedList<>());
-            runnables.add(msg.callback);
+            sRunnablesQueue.add(handler, 0, msg.callback);
         }
 
         return true;
@@ -74,19 +74,16 @@ public class Handler_Delegate {
      */
     public static boolean executeCallbacks() {
         try {
-            while (sRunnablesMap.values().stream().anyMatch(runnables -> !runnables.isEmpty())) {
-                for (LinkedList<Runnable> runnables : sRunnablesMap.values()) {
-                    while (!runnables.isEmpty()) {
-                        Runnable r = runnables.poll();
-                        r.run();
-                    }
-                }
+            long uptimeMillis = SystemClock_Delegate.uptimeMillis();
+            Runnable r;
+            while ((r = sRunnablesQueue.extractFirst(uptimeMillis)) != null) {
+                r.run();
             }
         } catch (Throwable t) {
             Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Failed executing Handler callback", t,
                 null, null);
         }
-        return false;
+        return sRunnablesQueue.isNotEmpty();
     }
 
     public interface IHandlerCallback {
@@ -100,4 +97,7 @@ public class Handler_Delegate {
         sCallbacks.set(callback);
     }
 
+    public static void clear() {
+        sRunnablesQueue.clear();
+    }
 }
