@@ -418,8 +418,6 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.drawable.AnimatedVectorDrawable#mAnimatorSet",
         "android.graphics.drawable.AdaptiveIconDrawable#sMask",
         "android.graphics.drawable.DrawableInflater#mRes",
-        "libcore.util.NativeAllocationRegistry#freeFunction",
-        "libcore.util.NativeAllocationRegistry#size",
     };
 
     /**
