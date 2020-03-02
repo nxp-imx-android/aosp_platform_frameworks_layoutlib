@@ -16,8 +16,10 @@
 
 package android.os;
 
+import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.layoutlib.bridge.Bridge;
+import com.android.layoutlib.bridge.util.HandlerMessageQueue;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
-
 
 /**
  * Delegate overriding selected methods of android.os.Handler
@@ -30,6 +32,7 @@ import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 public class Handler_Delegate {
 
     // -------- Delegate methods
+    private static final HandlerMessageQueue sRunnablesQueue = new HandlerMessageQueue();
 
     @LayoutlibDelegate
     /*package*/ static boolean sendMessageAtTime(Handler handler, Message msg, long uptimeMillis) {
@@ -37,11 +40,51 @@ public class Handler_Delegate {
         IHandlerCallback callback = sCallbacks.get();
         if (callback != null) {
             callback.sendMessageAtTime(handler, msg, uptimeMillis);
+        } else {
+            if (msg.callback != null) {
+                sRunnablesQueue.add(handler, uptimeMillis, msg.callback);
+            }
         }
         return true;
     }
 
+    /**
+     * Current implementation of Compose uses {@link Handler#postAtFrontOfQueue} to execute state
+     * updates. We can not intercept postAtFrontOfQueue Compose calls, however we can intecept
+     * internal Handler calls. Since postAtFrontOfQueue is just a wrapper of
+     * sendMessageAtFrontOfQueue we re-define sendMessageAtFrontOfQueue here to catch Compose calls
+     * (we are only interested in them) and execute them.
+     * TODO(b/137794558): Clean/rework this when Compose reworks Handler usage.
+     */
+    @LayoutlibDelegate
+    /*package*/ static boolean sendMessageAtFrontOfQueue(Handler handler, Message msg) {
+        // We will also catch calls from the Choreographer that have no callback.
+        if (msg.callback != null) {
+            sRunnablesQueue.add(handler, 0, msg.callback);
+        }
+
+        return true;
+    }
+
     // -------- Delegate implementation
+    /**
+     * Executed all the collected callbacks
+     *
+     * @return if there are more callbacks to execute
+     */
+    public static boolean executeCallbacks() {
+        try {
+            long uptimeMillis = SystemClock_Delegate.uptimeMillis();
+            Runnable r;
+            while ((r = sRunnablesQueue.extractFirst(uptimeMillis)) != null) {
+                r.run();
+            }
+        } catch (Throwable t) {
+            Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Failed executing Handler callback", t,
+                null, null);
+        }
+        return sRunnablesQueue.isNotEmpty();
+    }
 
     public interface IHandlerCallback {
         void sendMessageAtTime(Handler handler, Message msg, long uptimeMillis);
@@ -54,4 +97,7 @@ public class Handler_Delegate {
         sCallbacks.set(callback);
     }
 
+    public static void clear() {
+        sRunnablesQueue.clear();
+    }
 }

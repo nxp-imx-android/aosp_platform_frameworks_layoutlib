@@ -65,4 +65,9 @@ public class System_Delegate {
     public static long bootTimeMillis() {
         return TimeUnit.NANOSECONDS.toMillis(mBootNanosTime.get());
     }
+
+    // This is no-op since layoutlib infrastructure loads all the native libraries.
+    public static void loadLibrary(String libname) {
+        // ignore.
+    }
 }

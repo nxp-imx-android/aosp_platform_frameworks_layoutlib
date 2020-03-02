@@ -16,6 +16,8 @@
 
 package com.android.layoutlib.bridge;
 
+import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.RenderParams;
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
@@ -26,6 +28,9 @@ import com.android.tools.layoutlib.java.System_Delegate;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.os.Handler_Delegate;
+import android.view.Choreographer;
+import android.view.MotionEvent;
 
 import java.awt.image.BufferedImage;
 import java.util.Collections;
@@ -137,6 +142,57 @@ public class BridgeRenderSession extends RenderSession {
     public void setElapsedFrameTimeNanos(long nanos) {
         if (mSession != null) {
             mSession.setElapsedFrameTimeNanos(nanos);
+        }
+    }
+
+    @Override
+    public boolean executeCallbacks(long nanos) {
+        // Currently, Compose relies on Choreographer frame callback and Handler#postAtFrontOfQueue.
+        // Calls to Handler are handled by Handler_Delegate and can be executed by Handler_Delegate#
+        // executeCallbacks. Choreographer frame callback is handled by Choreographer#doFrame.
+        if (mSession == null) {
+            return false;
+        }
+        try {
+            Bridge.prepareThread();
+            mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
+            boolean hasMoreCallbacks = Handler_Delegate.executeCallbacks();
+            Choreographer.getInstance().doFrame(nanos, 0);
+            return hasMoreCallbacks;
+        } catch (Throwable t) {
+            Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Failed executing Choreographer#doFrame "
+                    , t, null, null);
+            return false;
+        } finally {
+            mSession.release();
+            Bridge.cleanupThread();
+        }
+    }
+
+    private static int toMotionEventType(TouchEventType eventType) {
+        switch (eventType) {
+            case PRESS:
+                return MotionEvent.ACTION_DOWN;
+            case RELEASE:
+                return MotionEvent.ACTION_UP;
+            case DRAG:
+                return MotionEvent.ACTION_MOVE;
+        }
+        throw new IllegalStateException("Unexpected touch event type: " + eventType);
+    }
+
+    @Override
+    public void triggerTouchEvent(TouchEventType type, int x, int y) {
+        int motionEventType = toMotionEventType(type);
+        if (mSession != null) {
+            try {
+                Bridge.prepareThread();
+                mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
+                mSession.dispatchTouchEvent(motionEventType, System_Delegate.nanoTime(), x, y);
+            } finally {
+                mSession.release();
+                Bridge.cleanupThread();
+            }
         }
     }
 

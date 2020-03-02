@@ -77,6 +77,9 @@ public class ImageUtils {
         else {
             try {
                 BufferedImage goldenImage = ImageIO.read(is);
+                maxDimension = Math.max(goldenImage.getWidth(), goldenImage.getHeight());
+                scale = THUMBNAIL_SIZE / (double)maxDimension;
+                goldenImage = scale(goldenImage, scale, scale);
                 assertImageSimilar(relativePath, goldenImage, thumbnail, MAX_PERCENT_DIFFERENCE);
             } finally {
                 is.close();

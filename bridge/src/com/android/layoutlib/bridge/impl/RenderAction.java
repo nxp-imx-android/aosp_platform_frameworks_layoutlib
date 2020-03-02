@@ -31,7 +31,6 @@ import com.android.resources.ScreenSize;
 import com.android.tools.layoutlib.annotations.VisibleForTesting;
 
 import android.animation.PropertyValuesHolder_Accessor;
-import android.animation.PropertyValuesHolder_Delegate;
 import android.content.res.Configuration;
 import android.os.HandlerThread_Delegate;
 import android.util.DisplayMetrics;

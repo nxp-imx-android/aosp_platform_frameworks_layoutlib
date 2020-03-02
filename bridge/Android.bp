@@ -18,7 +18,6 @@ java_library_host {
     name: "layoutlib",
 
     srcs: ["src/**/*.java"],
-    java_version: "1.8",
     java_resource_dirs: ["resources"],
 
     libs: [
@@ -32,6 +31,7 @@ java_library_host {
         "temp_layoutlib",
         "ninepatch-prebuilt",
         "layoutlib-common",
+        "layoutlib-common-delegates",
     ],
 
     dist: {
@@ -43,7 +43,6 @@ java_library_host {
     name: "layoutlib-no-framework",
 
     srcs: ["src/**/*.java"],
-    java_version: "1.8",
     java_resource_dirs: ["resources"],
 
     libs: [
@@ -58,6 +57,8 @@ java_library_host {
         "tools-common-prebuilt",
         "ninepatch-prebuilt",
         "layoutlib-common",
+        "layoutlib-common-delegates",
+        "layoutlib-native-delegates",
     ],
 
     dist: {
