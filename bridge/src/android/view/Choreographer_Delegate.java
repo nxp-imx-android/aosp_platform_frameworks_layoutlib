@@ -60,8 +60,12 @@ public class Choreographer_Delegate {
     @LayoutlibDelegate
     public static void postCallbackDelayedInternal(
             Choreographer thiz, int callbackType, Object action, Object token, long delayMillis) {
+        BridgeContext context = getCurrentContext();
+        if (context == null) {
+            return;
+        }
         if (callbackType == Choreographer.CALLBACK_ANIMATION && action != null) {
-            sCallbacksDisposer.onCallbackAdded(new SessionKey(getCurrentContext()), action);
+            sCallbacksDisposer.onCallbackAdded(new SessionKey(context), action);
         }
         thiz.postCallbackDelayedInternal_Original(callbackType, action, token, delayMillis);
     }
@@ -69,8 +73,12 @@ public class Choreographer_Delegate {
     @LayoutlibDelegate
     public static void removeCallbacksInternal(
             Choreographer thiz, int callbackType, Object action, Object token) {
+        BridgeContext context = getCurrentContext();
+        if (context == null) {
+            return;
+        }
         if (callbackType == Choreographer.CALLBACK_ANIMATION && action != null) {
-            sCallbacksDisposer.onCallbackRemoved(new SessionKey(getCurrentContext()), action);
+            sCallbacksDisposer.onCallbackRemoved(new SessionKey(context), action);
         }
         thiz.removeCallbacksInternal_Original(callbackType, action, token);
     }
