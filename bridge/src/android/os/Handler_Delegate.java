@@ -49,7 +49,11 @@ public class Handler_Delegate {
             callback.sendMessageAtTime(handler, msg, uptimeMillis);
         } else {
             if (msg.callback != null) {
-                currentQueue().add(handler, uptimeMillis, msg.callback);
+                HandlerMessageQueue queue = currentQueue();
+                if (queue == null) {
+                    return true;
+                }
+                queue.add(handler, uptimeMillis, msg.callback);
             }
         }
         return true;
@@ -67,7 +71,11 @@ public class Handler_Delegate {
     /*package*/ static boolean sendMessageAtFrontOfQueue(Handler handler, Message msg) {
         // We will also catch calls from the Choreographer that have no callback.
         if (msg.callback != null) {
-            currentQueue().add(handler, 0, msg.callback);
+            HandlerMessageQueue queue = currentQueue();
+            if (queue == null) {
+                return true;
+            }
+            queue.add(handler, 0, msg.callback);
         }
 
         return true;
@@ -81,6 +89,9 @@ public class Handler_Delegate {
      */
     public static boolean executeCallbacks() {
         HandlerMessageQueue queue = currentQueue();
+        if (queue == null) {
+            return false;
+        }
         try {
             long uptimeMillis = SystemClock_Delegate.uptimeMillis();
             Runnable r;
@@ -135,7 +146,10 @@ public class Handler_Delegate {
     }
 
     private static HandlerMessageQueue currentQueue() {
-        return sRunnablesQueues.computeIfAbsent(RenderAction.getCurrentContext(),
-                c -> new HandlerMessageQueue());
+        BridgeContext context = RenderAction.getCurrentContext();
+        if (context == null) {
+            return null;
+        }
+        return sRunnablesQueues.computeIfAbsent(context, c -> new HandlerMessageQueue());
     }
 }
