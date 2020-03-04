@@ -327,6 +327,7 @@ public final class CreateInfo implements ICreateInfo {
      */
     private final static String[] JAVA_PKG_CLASSES =
         new String[] {
+                "sun.misc.Cleaner",                                "com.android.layoutlib.bridge.libcore.util.Cleaner",
         };
 
     /**
@@ -368,8 +369,6 @@ public final class CreateInfo implements ICreateInfo {
         "android.animation.PropertyValuesHolder$FloatPropertyValuesHolder#sJNISetterPropertyMap",
         "android.animation.PropertyValuesHolder$MultiFloatValuesHolder#sJNISetterPropertyMap",
         "android.animation.PropertyValuesHolder$MultiIntValuesHolder#sJNISetterPropertyMap",
-        "libcore.util.NativeAllocationRegistry#freeFunction",
-        "libcore.util.NativeAllocationRegistry#size",
     };
 
     /**
@@ -377,8 +376,6 @@ public final class CreateInfo implements ICreateInfo {
      * if possible.
      */
     private final static String[] PROMOTED_CLASSES = new String[] {
-        "libcore.util.NativeAllocationRegistry$CleanerRunner",
-        "libcore.util.NativeAllocationRegistry$CleanerThunk",
     };
 
     /**
