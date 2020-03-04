@@ -1181,12 +1181,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             }
             mImage = null;
             mViewRoot = null;
-            if (mContentRoot != null) {
-                View firstChild = mContentRoot.getChildAt(0);
-                if (firstChild != null && mInflater != null) {
-                    mInflater.disposeView(firstChild);
-                }
-            }
             mContentRoot = null;
             Handler_Delegate.dispose(getContext());
             Choreographer_Delegate.dispose(getContext());
