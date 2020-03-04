@@ -52,12 +52,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -624,36 +621,6 @@ public final class BridgeInflater extends LayoutInflater {
         }
     }
 
-    /**
-     * This method is supposed to find the dispose method of the ComposeViewAdapter. Kotlin compiler
-     * changes the name of the method (to e.g. dispose$ui_tooling_release) so that it is not
-     * possible to find it directly. A workaround is to find a method which name starts with
-     * "dispose".
-     * @param disposableViewClass ComposeViewAdapter (or similar, for future use) class that is
-     * intended to be disposed
-     * @return dispose method or null if not found
-     */
-    @Nullable
-    private static Method getDisposeMethod(@NotNull Class<?> disposableViewClass) {
-        List<Method> disposeMethods =
-                Arrays.stream(disposableViewClass.getMethods())
-                        .filter(m -> m.getName().startsWith("dispose"))
-                        .collect(Collectors.toList());
-        if (disposeMethods.size() == 1) {
-            return disposeMethods.get(0);
-        } else if (disposeMethods.isEmpty()) {
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                    "Failed to find dispose method in " + disposableViewClass.getTypeName(),
-                    (Object)null, null);
-        } else {
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Failed to find the correct dispose " +
-                    "method in " + disposableViewClass.getTypeName() + ". The candidates are: " +
-                    disposeMethods.stream().map(Method::getName).collect(Collectors.joining(", ")),
-                    (Object)null, null);
-        }
-        return null;
-    }
-
     public void resetCompose() {
         try {
             resetRecomposer();
@@ -677,34 +644,6 @@ public final class BridgeInflater extends LayoutInflater {
         Field frameScheduledField = androidRecomposerClass.getDeclaredField("frameScheduled");
         frameScheduledField.setAccessible(true);
         frameScheduledField.setBoolean(androidRecomposer, false);
-    }
-
-    public void disposeView(@NotNull View view) {
-        // We can dispose compose views
-        try {
-            Class<?> composeViewClass = mComposeViewAdapterClass.get();
-            if (composeViewClass == null) {
-                return;
-            }
-            Class<?> viewClass = view.getClass();
-            if (viewClass.isAssignableFrom(composeViewClass)) {
-                Method disposeMethod = getDisposeMethod(composeViewClass);
-                if (disposeMethod == null) {
-                    return;
-                }
-                try {
-                    disposeMethod.setAccessible(true);
-                    disposeMethod.invoke(view);
-                } catch (IllegalAccessException | InvocationTargetException ex) {
-                    Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                            "Failed to dispose instance of " + viewClass.getTypeName(),
-                            ex, null, null);
-                }
-            }
-        } catch (Throwable t) {
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                    "Unexpected error while disposing " + view, t, null, null);
-        }
     }
 
     @Nullable
