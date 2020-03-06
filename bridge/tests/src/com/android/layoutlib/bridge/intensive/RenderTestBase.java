@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import com.google.android.collect.Lists;
@@ -413,7 +414,14 @@ public class RenderTestBase {
      */
     protected static void verify(@NonNull String goldenImageName, @NonNull BufferedImage image) {
         try {
-            String goldenImagePath = APP_TEST_DIR + "/golden/" + goldenImageName;
+            boolean isMac = System.getProperty("os.name").toLowerCase(Locale.US).contains("mac");
+            String goldenImagePath = APP_TEST_DIR;
+            if (isMac) {
+                goldenImagePath += "/golden-mac/";
+            } else {
+                goldenImagePath += "/golden/";
+            }
+            goldenImagePath += goldenImageName;
             ImageUtils.requireSimilar(goldenImagePath, image);
         } catch (IOException e) {
             getLogger().error(e, e.getMessage());
