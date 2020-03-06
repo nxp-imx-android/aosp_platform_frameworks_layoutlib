@@ -220,10 +220,10 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         mMeasuredScreenHeight = hardwareConfig.getScreenHeight();
 
         if (renderingMode != RenderingMode.NORMAL) {
-            int widthMeasureSpecMode = renderingMode.isHorizExpand() ?
+            int widthMeasureSpecMode = renderingMode.getHorizAction() == SizeAction.EXPAND ?
                     MeasureSpec.UNSPECIFIED // this lets us know the actual needed size
                     : MeasureSpec.EXACTLY;
-            int heightMeasureSpecMode = renderingMode.isVertExpand() ?
+            int heightMeasureSpecMode = renderingMode.getVertAction() == SizeAction.EXPAND ?
                     MeasureSpec.UNSPECIFIED // this lets us know the actual needed size
                     : MeasureSpec.EXACTLY;
 
@@ -241,6 +241,9 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             // and apply this to the screen size.
 
             View measuredView = mContentRoot.getChildAt(0);
+            if (measuredView == null) {
+                return;
+            }
 
             // first measure the full layout, with EXACTLY to get the size of the
             // content as it is inside the decor/dialog
@@ -254,44 +257,44 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             // the rendering mode). This will give us the size the content needs.
             @SuppressWarnings("deprecation")
             Pair<Integer, Integer> neededMeasure = measureView(
-                    mContentRoot, mContentRoot.getChildAt(0),
+                    mContentRoot, measuredView,
                     mMeasuredScreenWidth, widthMeasureSpecMode,
                     mMeasuredScreenHeight, heightMeasureSpecMode);
-            int neededWidth = neededMeasure.getFirst();
-            int neededHeight = neededMeasure.getSecond();
 
             // If measuredView is not null, exactMeasure nor result will be null.
-            assert (exactMeasure != null && neededMeasure != null) || measuredView == null;
+            assert (exactMeasure != null && neededMeasure != null);
 
             // now look at the difference and add what is needed.
-            if (renderingMode.getHorizAction() == SizeAction.EXPAND) {
-                int measuredWidth = exactMeasure.getFirst();
-                if (neededWidth > measuredWidth) {
-                    mMeasuredScreenWidth += neededWidth - measuredWidth;
-                }
-                if (mMeasuredScreenWidth < measuredWidth) {
-                    // If the screen width is less than the exact measured width,
-                    // expand to match.
-                    mMeasuredScreenWidth = measuredWidth;
-                }
-            } else if (renderingMode.getHorizAction() == SizeAction.SHRINK) {
-                mMeasuredScreenWidth = neededWidth;
-            }
-
-            if (renderingMode.getVertAction() == SizeAction.EXPAND) {
-                int measuredHeight = exactMeasure.getSecond();
-                if (neededHeight > measuredHeight) {
-                    mMeasuredScreenHeight += neededHeight - measuredHeight;
-                }
-                if (mMeasuredScreenHeight < measuredHeight) {
-                    // If the screen height is less than the exact measured height,
-                    // expand to match.
-                    mMeasuredScreenHeight = measuredHeight;
-                }
-            } else if (renderingMode.getVertAction() == SizeAction.SHRINK) {
-                mMeasuredScreenHeight = neededHeight;
-            }
+            mMeasuredScreenWidth = calcSize(mMeasuredScreenWidth, neededMeasure.getFirst(),
+                    exactMeasure.getFirst(), renderingMode.getHorizAction());
+            mMeasuredScreenHeight = calcSize(mMeasuredScreenHeight, neededMeasure.getSecond(),
+                    exactMeasure.getSecond(), renderingMode.getVertAction());
         }
+    }
+
+    /**
+     * Calculate the required vertical (height) or horizontal (width) size of the canvas for the
+     * view, given current size requirements.
+     * @param currentSize current size of the canvas
+     * @param neededSize the size the content actually needs
+     * @param measuredSize the measured size of the content (restricted by the current size)
+     * @param action the {@link SizeAction} of the view
+     * @return the size the canvas should be
+     */
+    private static int calcSize(int currentSize, int neededSize, int measuredSize,
+            SizeAction action) {
+        if (action == SizeAction.EXPAND) {
+            if (neededSize > measuredSize) {
+                currentSize += neededSize - measuredSize;
+            }
+            if (currentSize < measuredSize) {
+                // If the screen size is less than the exact measured size, expand to match.
+                currentSize = measuredSize;
+            }
+        } else if (action == SizeAction.SHRINK) {
+            currentSize = neededSize;
+        }
+        return currentSize;
     }
 
     /**
