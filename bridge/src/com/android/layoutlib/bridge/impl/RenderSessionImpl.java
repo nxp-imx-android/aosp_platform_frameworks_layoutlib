@@ -1177,19 +1177,19 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
     public void dispose() {
         try {
             mRenderer.destroy();
-            AttachInfo_Accessor.detachFromWindow(mViewRoot);
             disposeImageSurface();
+            mImage = null;
+            Handler_Delegate.dispose(getContext());
+            Choreographer_Delegate.dispose(getContext());
+            AttachInfo_Accessor.detachFromWindow(mViewRoot);
             if (mViewInfoList != null) {
                 mViewInfoList.clear();
             }
             if (mSystemViewInfoList != null) {
                 mSystemViewInfoList.clear();
             }
-            mImage = null;
             mViewRoot = null;
             mContentRoot = null;
-            Handler_Delegate.dispose(getContext());
-            Choreographer_Delegate.dispose(getContext());
         } catch (Throwable t) {
             getContext().error("Error while disposing a RenderSession", t);
         }
