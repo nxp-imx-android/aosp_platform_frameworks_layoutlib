@@ -30,6 +30,7 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SizeAction;
 import com.android.ide.common.rendering.api.ViewInfo;
 import com.android.ide.common.rendering.api.ViewType;
+import com.android.internal.R;
 import com.android.internal.view.menu.ActionMenuItemView;
 import com.android.internal.view.menu.BridgeMenuItemImpl;
 import com.android.internal.view.menu.IconMenuItemView;
@@ -46,10 +47,12 @@ import com.android.layoutlib.bridge.android.support.FragmentTabHostUtil;
 import com.android.layoutlib.bridge.android.support.SupportPreferencesUtil;
 import com.android.layoutlib.bridge.impl.binding.FakeAdapter;
 import com.android.layoutlib.bridge.impl.binding.FakeExpandableAdapter;
+import com.android.tools.idea.validator.ValidatorResult;
 import com.android.util.Pair;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.HardwareRenderer;
@@ -93,9 +96,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.android.internal.R;
-import android.content.res.TypedArray;
-
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_INFLATION;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_NOT_INFLATED;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN;
@@ -138,6 +138,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
     private LayoutlibRenderer mRenderer = new LayoutlibRenderer();
 
     private long mLastActionDownTimeNanos = -1;
+    @Nullable private ValidatorResult mValidatorResult = null;
 
     private static final class PostInflateException extends Exception {
         private static final long serialVersionUID = 1L;
@@ -1140,6 +1141,15 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
     public Map<Object, ResourceReference> getDefaultNamespacedStyles() {
         return getContext().getDefaultNamespacedStyles();
+    }
+
+    @Nullable
+    public ValidatorResult getValidatorResult() {
+        return mValidatorResult;
+    }
+
+    public void setValidatorResult(ValidatorResult result) {
+        mValidatorResult = result;
     }
 
     public void setScene(RenderSession session) {
