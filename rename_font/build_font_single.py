@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright (C) 2014 The Android Open Source Project
 #
@@ -62,12 +62,16 @@ NAMEID_STYLE = 2
 NAMEID_FULLNAME = 4
 NAMEID_VERSION = 5
 
+NAMEID_LIST = [NAMEID_FAMILY, NAMEID_STYLE, NAMEID_FULLNAME, NAMEID_VERSION]
+NAMEID_LIST_MIN = min(NAMEID_LIST)
+NAMEID_LIST_MAX = max(NAMEID_LIST)
+
 # A list of extensions to process.
 EXTENSIONS = ['.ttf', '.ttc', '.otf', '.xml']
 
 def main(argv):
   if len(argv) < 2:
-    print 'Incorrect usage: ' + str(argv)
+    print('Incorrect usage: ' + str(argv))
     sys.exit('Usage: build_font_single.py /path/to/input/font.ttf /path/to/out/font.ttf')
   dest_path = argv[-1]
   input_path = argv[0]
@@ -81,13 +85,13 @@ def main(argv):
 
 def convert_font(input_path, dest_path):
   filename = os.path.basename(input_path)
-  print 'Converting font: ' + filename
+  print('Converting font: ' + filename)
   # the path to the output file. The file name is the fontfilename.ttx
   ttx_path = dest_path[:-1] + 'x'
   try:
     # run ttx to generate an xml file in the output folder which represents all
     # its info
-    ttx_args = ['-q', '-o', ttx_path, input_path]
+    ttx_args = ['--no-recalc-timestamp', '-q', '-o', ttx_path, input_path]
     ttx.main(ttx_args)
     # now parse the xml file to change its PS name.
     tree = etree.parse(ttx_path)
@@ -99,12 +103,12 @@ def convert_font(input_path, dest_path):
     ttx_args = ['-q', '-o', dest_path, ttx_path]
     ttx.main(ttx_args)
   except InvalidFontException:
-    # In case of invalid fonts, we exit.
-    print filename + ' is not a valid font'
-    raise
+    # assume, like for .ttc and .otf that font might be valid, but warn.
+    print('Family and/or Style nameIDs not found in '+ filename)
+    shutil.copy(input_path, dest_path)
   except Exception as e:
-    print 'Error converting font: ' + filename
-    print e
+    print('Error converting font: ' + filename)
+    print(e)
     # Some fonts are too big to be handled by the ttx library.
     # Just copy paste them.
     shutil.copy(input_path, dest_path)
@@ -120,10 +124,13 @@ def get_font_info(tag):
       found in the name table of the font. """
   fonts = []
   font = None
-  last_name_id = sys.maxint
+  last_name_id = sys.maxsize
   for namerecord in tag.iter('namerecord'):
     if 'nameID' in namerecord.attrib:
       name_id = int(namerecord.attrib['nameID'])
+      # skip irrelevant records
+      if name_id < NAMEID_LIST_MIN or name_id > NAMEID_LIST_MAX:
+        continue
       # A new font should be created for each platform, encoding and language
       # id. But, since the nameIDs are sorted, we use the easy approach of
       # creating a new one when the nameIDs reset.
@@ -148,14 +155,17 @@ def get_font_info(tag):
 
 
 def update_tag(tag, fonts):
-  last_name_id = sys.maxint
+  last_name_id = sys.maxsize
   fonts_iterator = fonts.__iter__()
   font = None
   for namerecord in tag.iter('namerecord'):
     if 'nameID' in namerecord.attrib:
       name_id = int(namerecord.attrib['nameID'])
+      # skip irrelevant records
+      if name_id < NAMEID_LIST_MIN or name_id > NAMEID_LIST_MAX:
+        continue
       if name_id <= last_name_id:
-        font = fonts_iterator.next()
+        font = next(fonts_iterator)
         font = update_font_name(font)
       last_name_id = name_id
       if name_id == NAMEID_FAMILY:
@@ -176,7 +186,7 @@ def update_font_name(font):
     new_family = font.family + font.version
   else:
     new_family = font.family
-  if font.style is 'Regular' and not font.ends_in_regular:
+  if font.style == 'Regular' and not font.ends_in_regular:
     font.fullname = new_family
   else:
     font.fullname = new_family + ' ' + font.style
@@ -189,7 +199,7 @@ def ends_in_regular(string):
       'Regular' for plain fonts. However, some fonts don't obey this rule. We
       keep the style info, to minimize the diff. """
   string = string.strip().split()[-1]
-  return string is 'Regular'
+  return string == 'Regular'
 
 
 def get_version(string):
