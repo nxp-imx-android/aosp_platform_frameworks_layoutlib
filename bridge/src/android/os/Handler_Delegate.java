@@ -36,7 +36,7 @@ import java.util.WeakHashMap;
  */
 public class Handler_Delegate {
 
-    private static final int MAX_SIZE_GROWTHS = 100;
+    private static final int MAX_DISPOSE_ITERATIONS = 10;
     // -------- Delegate methods
     private static final WeakHashMap<BridgeContext, HandlerMessageQueue> sRunnablesQueues =
             new WeakHashMap<>();
@@ -92,15 +92,10 @@ public class Handler_Delegate {
         if (queue == null) {
             return false;
         }
-        try {
-            long uptimeMillis = SystemClock_Delegate.uptimeMillis();
-            Runnable r;
-            while ((r = queue.extractFirst(uptimeMillis)) != null) {
-                r.run();
-            }
-        } catch (Throwable t) {
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Failed executing Handler callback", t,
-                null, null);
+        long uptimeMillis = SystemClock_Delegate.uptimeMillis();
+        Runnable r;
+        while ((r = queue.extractFirst(uptimeMillis)) != null) {
+            executeSafely(r);
         }
         return queue.isNotEmpty();
     }
@@ -122,26 +117,35 @@ public class Handler_Delegate {
         // runnables will be lost and other sessions could operate properly.
         // These runnables will either change some data/state in the related composables or
         // schedule frame callbacks. The latter is important for proper animated behaviour.
-        HandlerMessageQueue q = sRunnablesQueues.remove(context);
-        if (q != null) {
-            // Tracking if the queue grows after the execution (runnable adds other runnables).
-            int sizeGrowths = 0;
-            while (q.isNotEmpty()) {
-                int queueSize = q.size();
-                Runnable r = q.extractFirst(Long.MAX_VALUE);
-                r.run();
-                if (q.size() >= queueSize) {
-                    sizeGrowths++;
-                    // Better to stop executing runnables than to loop infinitely
-                    if (sizeGrowths > MAX_SIZE_GROWTHS) {
-                        Bridge.getLog().error(
-                                LayoutLog.TAG_BROKEN,
-                                "Infinite loop detected while executing Handler callbacks",
-                                (Object) null, null);
-                        break;
-                    }
-                }
+        for (int i = 0; i < MAX_DISPOSE_ITERATIONS; ++i) {
+            HandlerMessageQueue q = sRunnablesQueues.remove(context);
+            if (q == null) {
+                return;
             }
+            while (q.isNotEmpty()) {
+                executeSafely(q.extractFirst(Long.MAX_VALUE));
+            }
+        }
+        // We end up here if after MAX_DISPOSE_ITERATIONS iterations we still have non-empty queue
+        // meaning it was recreated by the current callback executions MAX_DISPOSE_ITERATIONS times.
+        Bridge.getLog().warning(
+                LayoutLog.TAG_INFO,
+                "Infinite loop detected while executing Handler callbacks",
+                (Object) null, null);
+    }
+
+    /**
+     * The runnables we are executing are mostly library/user code and we have no guarantee that it
+     * is safe to execute them. Thus, we have to wrap each executing in try/catch block to isolate
+     * dangerous executions.
+     * @param r a runnable to be executed
+     */
+    private static void executeSafely(@NotNull Runnable r) {
+        try {
+            r.run();
+        } catch (Throwable t) {
+            Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Failed executing Handler callback", t,
+                    null, null);
         }
     }
 
