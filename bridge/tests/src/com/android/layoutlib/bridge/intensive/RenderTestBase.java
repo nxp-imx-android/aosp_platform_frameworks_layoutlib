@@ -340,6 +340,14 @@ public class RenderTestBase {
     protected static RenderResult render(com.android.ide.common.rendering.api.Bridge bridge,
             SessionParams params,
             long frameTimeNanos) {
+        return render(bridge, params, frameTimeNanos, true);
+    }
+
+    @NonNull
+    protected static RenderResult render(com.android.ide.common.rendering.api.Bridge bridge,
+            SessionParams params,
+            long frameTimeNanos,
+            boolean disposeSessionAtTheEnd) {
         // TODO: Set up action bar handler properly to test menu rendering.
         // Create session params.
         System_Delegate.setBootTimeNanos(TimeUnit.MILLISECONDS.toNanos(871732800000L));
@@ -366,7 +374,9 @@ public class RenderTestBase {
 
             return RenderResult.getFromSession(session);
         } finally {
-            session.dispose();
+            if (disposeSessionAtTheEnd) {
+                session.dispose();
+            }
         }
     }
 
