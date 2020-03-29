@@ -23,6 +23,7 @@ import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.ViewInfo;
+import com.android.internal.util.ArrayUtils_Delegate;
 import com.android.layoutlib.bridge.impl.RenderSessionImpl;
 import com.android.tools.layoutlib.java.System_Delegate;
 
@@ -212,6 +213,7 @@ public class BridgeRenderSession extends RenderSession {
                 Bridge.cleanupThread();
             }
         }
+        ArrayUtils_Delegate.clearCache();
     }
 
     /*package*/ BridgeRenderSession(@Nullable RenderSessionImpl scene, @NonNull Result lastResult) {
