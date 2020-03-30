@@ -2055,6 +2055,11 @@ public class BridgeContext extends Context {
         return true;
     }
 
+    @Override
+    public boolean isUiContext() {
+        return true;
+    }
+
     /**
      * Returns whether shadows should be rendered or not
      */
