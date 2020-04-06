@@ -43,6 +43,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.SystemServiceRegistry;
 import android.content.BroadcastReceiver;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -166,6 +167,7 @@ public class BridgeContext extends Context {
     private final WindowManager mWindowManager;
     private final DisplayManager mDisplayManager;
     private final AutofillManager mAutofillManager;
+    private final ClipboardManager mClipboardManager;
     private final HashMap<View, Integer> mScrollYPos = new HashMap<>();
     private final HashMap<View, Integer> mScrollXPos = new HashMap<>();
 
@@ -252,6 +254,7 @@ public class BridgeContext extends Context {
         mWindowManager = new WindowManagerImpl(this, mMetrics);
         mDisplayManager = new DisplayManager(this);
         mAutofillManager = new AutofillManager(this, new Default());
+        mClipboardManager = new ClipboardManager(this, null);
 
         if (mLayoutlibCallback.isResourceNamespacingRequired()) {
             if (mLayoutlibCallback.hasAndroidXAppCompat()) {
@@ -637,6 +640,9 @@ public class BridgeContext extends Context {
 
             case AUTOFILL_MANAGER_SERVICE:
                 return mAutofillManager;
+
+            case CLIPBOARD_SERVICE:
+                return mClipboardManager;
 
             case AUDIO_SERVICE:
             case TEXT_CLASSIFICATION_SERVICE:
