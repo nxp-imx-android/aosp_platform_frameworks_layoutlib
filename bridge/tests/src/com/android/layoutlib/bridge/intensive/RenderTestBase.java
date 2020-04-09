@@ -46,6 +46,7 @@ import org.junit.runner.Description;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.os.Handler_Delegate;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -141,6 +142,16 @@ public class RenderTestBase {
             if (!sRenderMessages.isEmpty()) {
                 fail(description.getMethodName() + " render error message: " +
                         sRenderMessages.get(0));
+            }
+        }
+    };
+
+    @Rule
+    public TestWatcher sMemoryLeakChecker = new TestWatcher() {
+        @Override
+        protected void succeeded(Description description) {
+            if (!Handler_Delegate.sRunnablesQueues.isEmpty()) {
+                fail("Memory leak: leftover callbacks are detected in Handler_Delegate");
             }
         }
     };
