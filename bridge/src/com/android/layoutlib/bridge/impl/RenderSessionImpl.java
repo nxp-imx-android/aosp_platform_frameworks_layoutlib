@@ -1189,9 +1189,10 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             mRenderer.destroy();
             disposeImageSurface();
             mImage = null;
+            // detachFromWindow might create Handler callbacks, thus before Handler_Delegate.dispose
+            AttachInfo_Accessor.detachFromWindow(mViewRoot);
             Handler_Delegate.dispose(getContext());
             Choreographer_Delegate.dispose(getContext());
-            AttachInfo_Accessor.detachFromWindow(mViewRoot);
             if (mViewInfoList != null) {
                 mViewInfoList.clear();
             }

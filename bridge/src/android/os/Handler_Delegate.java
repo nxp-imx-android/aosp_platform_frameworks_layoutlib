@@ -23,6 +23,7 @@ import com.android.layoutlib.bridge.impl.RenderAction;
 import com.android.layoutlib.bridge.util.HandlerMessageQueue;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 import com.android.tools.layoutlib.annotations.NotNull;
+import com.android.tools.layoutlib.annotations.VisibleForTesting;
 
 import java.util.WeakHashMap;
 
@@ -38,7 +39,8 @@ public class Handler_Delegate {
 
     private static final int MAX_DISPOSE_ITERATIONS = 10;
     // -------- Delegate methods
-    private static final WeakHashMap<BridgeContext, HandlerMessageQueue> sRunnablesQueues =
+    @VisibleForTesting
+    public static final WeakHashMap<BridgeContext, HandlerMessageQueue> sRunnablesQueues =
             new WeakHashMap<>();
 
     @LayoutlibDelegate
@@ -128,6 +130,7 @@ public class Handler_Delegate {
         }
         // We end up here if after MAX_DISPOSE_ITERATIONS iterations we still have non-empty queue
         // meaning it was recreated by the current callback executions MAX_DISPOSE_ITERATIONS times.
+        sRunnablesQueues.remove(context);
         Bridge.getLog().warning(
                 LayoutLog.TAG_INFO,
                 "Infinite loop detected while executing Handler callbacks",

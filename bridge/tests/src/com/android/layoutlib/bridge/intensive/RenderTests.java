@@ -772,6 +772,7 @@ public class RenderTests extends RenderTestBase {
         assertEquals(90, rootLayout.getChildren().get(5).getChildren().get(0).getLeft());
         assertEquals(-270, rootLayout.getChildren().get(5).getChildren().get(0).getBottom());
         assertEquals(690, rootLayout.getChildren().get(5).getChildren().get(0).getRight());
+        session.dispose();
 
         // Do a full render pass
         parser = createParserFromPath("scrolled.xml");
