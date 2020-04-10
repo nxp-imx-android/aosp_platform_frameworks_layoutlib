@@ -84,8 +84,6 @@ public class Choreographer_Delegate {
     }
 
     public static void dispose(@NotNull BridgeContext bridgeContext) {
-        if (sCallbacksDisposer.onDispose(new SessionKey(bridgeContext))) {
-            ((BridgeInflater) bridgeContext.getSystemService(LAYOUT_INFLATER_SERVICE)).resetCompose();
-        }
+        sCallbacksDisposer.onDispose(new SessionKey(bridgeContext));
     }
 }
