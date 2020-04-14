@@ -20,19 +20,11 @@ import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.tools.layoutlib.annotations.NotNull;
 import com.android.tools.layoutlib.annotations.VisibleForTesting;
 
-import android.view.BridgeInflater;
-
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 
 /**
  * Tracks Choreographer callbacks with corresponding RenderSessions (represented by BridgeContext)
@@ -40,23 +32,18 @@ import static android.content.Context.LAYOUT_INFLATER_SERVICE;
  */
 public class CallbacksDisposer {
     /**
-     * An abstraction not to keep heavy session-related object like BridgeContext. Also,
+     * An abstraction not to keep heavy session-related object like BridgeContext.
      */
     public static class SessionKey {
         private final int bridgeContextHash;
-        private final int classLoaderHash;
 
         public SessionKey(@NotNull BridgeContext bc) {
             bridgeContextHash = System.identityHashCode(bc);
-            BridgeInflater currentInflater =
-                    (BridgeInflater) bc.getSystemService(LAYOUT_INFLATER_SERVICE);
-            classLoaderHash = System.identityHashCode(currentInflater.getComposeClassLoader());
         }
 
         @VisibleForTesting
-        public SessionKey(int bridgeContextHash, int classLoaderHash) {
+        public SessionKey(int bridgeContextHash) {
             this.bridgeContextHash = bridgeContextHash;
-            this.classLoaderHash = classLoaderHash;
         }
 
         @Override
@@ -80,8 +67,6 @@ public class CallbacksDisposer {
     // anything since it is not referenced by the Choreographer.
     @NotNull private final Map<SessionKey, WeakHashMap<Object, Object>> mFrameCallbacks =
             new HashMap<>();
-    // Tracking disposed sessions
-    @NotNull private final Set<SessionKey> mDisposedSessions = new HashSet<>();
 
     /**
      * Constructs disposer
@@ -116,53 +101,18 @@ public class CallbacksDisposer {
     /**
      * Inform the disposer that the session is being disposed
      * @param sessionKey representing the session
-     * @return true if the session can be fully disposed
      */
-    public boolean onDispose(@NotNull SessionKey sessionKey) {
-        mDisposedSessions.add(sessionKey);
-
-        // Get all the session records for the current classloader
-        Set<SessionKey> currentClassLoaderSessions =
-                mFrameCallbacks
-                        .keySet()
-                        .stream()
-                        .filter(r -> r.classLoaderHash == sessionKey.classLoaderHash)
-                        .collect(Collectors.toSet());
-        // If all the sessions for the current classloader are disposed, we can dispose all the
-        // frame callbacks for the current class loader
-        boolean disposeSession = false;
-        if (mDisposedSessions.containsAll(currentClassLoaderSessions)) {
-            for (SessionKey r: currentClassLoaderSessions) {
-                WeakHashMap<Object, Object> actionSet = mFrameCallbacks.get(r);
-                List<Object> actionSetCopy =
-                        actionSet.keySet().stream().filter(Objects::nonNull).collect(Collectors.toList());
-                for (Object action : actionSetCopy) {
-                    mActionDisposer.accept(action);
-                }
+    public void onDispose(@NotNull SessionKey sessionKey) {
+        WeakHashMap<Object, Object> actionSet = mFrameCallbacks.remove(sessionKey);
+        if (actionSet != null) {
+            for (Object action : actionSet.keySet()) {
+                mActionDisposer.accept(action);
             }
-
-            currentClassLoaderSessions.forEach(mFrameCallbacks::remove);
-
-            disposeSession = true;
         }
-
-        // If there are no frame callbacks for some disposed session because it is
-        // 1) not compose
-        // 2) compose but just not animated/interactive
-        // 3) they have just been removed (current session was the last for the class loader)
-        // We just remove the session record from the set as there is no need to keep it.
-        mDisposedSessions.removeIf(s -> !mFrameCallbacks.containsKey(s));
-
-        return disposeSession;
     }
 
     @VisibleForTesting
     public Set<SessionKey> getSessionsWithCallbacks() {
         return mFrameCallbacks.keySet();
-    }
-
-    @VisibleForTesting
-    public Set<SessionKey> getDisposedSessions() {
-        return mDisposedSessions;
     }
 }
