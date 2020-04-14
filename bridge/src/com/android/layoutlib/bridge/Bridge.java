@@ -129,17 +129,18 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
      */
     private final static LayoutLog sDefaultLog = new LayoutLog() {
         @Override
-        public void error(String tag, String message, Object data) {
+        public void error(String tag, String message, Object viewCookie, Object data) {
             System.err.println(message);
         }
 
         @Override
-        public void error(String tag, String message, Throwable throwable, Object data) {
+        public void error(String tag, String message, Throwable throwable,
+                Object viewCookie, Object data) {
             System.err.println(message);
         }
 
         @Override
-        public void warning(String tag, String message, Object data) {
+        public void warning(String tag, String message, Object viewCookie, Object data) {
             System.out.println(message);
         }
 
@@ -193,7 +194,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
                 @Override
                 public void onInvokeV(String signature, boolean isNative, Object caller) {
                     sDefaultLog.error(null, "Missing Stub: " + signature +
-                            (isNative ? " (native)" : ""), null /*data*/);
+                            (isNative ? " (native)" : ""), null, null /*data*/);
 
                     if (debug.equalsIgnoreCase("throw")) {
                         // Throwing this exception doesn't seem that useful. It breaks
@@ -298,7 +299,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             if (log != null) {
                 log.error(LayoutLog.TAG_BROKEN,
                         "Failed to load com.android.internal.R from the layout library jar",
-                        throwable, null);
+                        throwable, null, null);
             }
             return false;
         }

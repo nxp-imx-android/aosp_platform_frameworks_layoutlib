@@ -205,13 +205,13 @@ public final class ResourceHelper {
             }
         } catch (XmlPullParserException e) {
             Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                    "Failed to configure parser for " + value, e, null /*data*/);
+                    "Failed to configure parser for " + value, e, null,null /*data*/);
             // we'll return null below.
         } catch (Exception e) {
             // this is an error and not warning since the file existence is
             // checked before attempting to parse it.
             Bridge.getLog().error(LayoutLog.TAG_RESOURCES_READ,
-                    "Failed to parse file " + value, e, null /*data*/);
+                    "Failed to parse file " + value, e, null, null /*data*/);
 
             return null;
         }
@@ -340,7 +340,8 @@ public final class ResourceHelper {
                         context.putUserData(KEY_GET_DRAWABLE, visitedValues);
                     }
                     if (!visitedValues.add(value)) {
-                        Bridge.getLog().error(null, "Cyclic dependency in " + stringValue, null);
+                        Bridge.getLog().error(null, "Cyclic dependency in " + stringValue, null,
+                                null);
                         return null;
                     }
 
@@ -355,7 +356,7 @@ public final class ResourceHelper {
                 // this is an error and not warning since the file existence is checked before
                 // attempting to parse it.
                 Bridge.getLog().error(null, "Failed to parse file " + stringValue, e,
-                        null /*data*/);
+                        null, null /*data*/);
             }
 
             return null;
@@ -410,7 +411,7 @@ public final class ResourceHelper {
                 } catch (IOException e) {
                     // we'll return null below
                     Bridge.getLog().error(LayoutLog.TAG_RESOURCES_READ,
-                            "Failed to load " + stringValue, e, null /*data*/);
+                            "Failed to load " + stringValue, e, null, null /*data*/);
                 }
             }
         }
@@ -601,7 +602,7 @@ public final class ResourceHelper {
                                 String.format(
                                         "Dimension \"%1$s\" in attribute \"%2$s\" is missing unit!",
                                         value, attribute),
-                                null);
+                                null, null);
                     }
                     return true;
                 }
