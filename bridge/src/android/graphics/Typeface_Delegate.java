@@ -96,13 +96,14 @@ public final class Typeface_Delegate {
                             FontResourcesParser.parse(blockParser, context.getResources());
                     typeface = Typeface.createFromResources(entry, context.getAssets(), path);
                 } catch (XmlPullParserException | IOException e) {
-                    Bridge.getLog().error(null, "Failed to parse file " + path, e, null /*data*/);
+                    Bridge.getLog().error(null, "Failed to parse file " + path, e, null, null /*data
+                    */);
                 } finally {
                     blockParser.ensurePopped();
                 }
             } else {
                 Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                        String.format("File %s does not exist (or is not a file)", path),
+                        String.format("File %s does not exist (or is not a file)", path), null,
                         null /*data*/);
             }
         } else {
