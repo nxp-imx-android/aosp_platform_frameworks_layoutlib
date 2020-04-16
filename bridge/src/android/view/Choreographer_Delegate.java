@@ -64,9 +64,15 @@ public class Choreographer_Delegate {
         if (context == null) {
             return;
         }
-        if (callbackType == Choreographer.CALLBACK_ANIMATION && action != null) {
-            sCallbacksDisposer.onCallbackAdded(new SessionKey(context), action);
+        if (callbackType != Choreographer.CALLBACK_ANIMATION) {
+            // Ignore non-animation callbacks
+            return;
         }
+        if (action == null) {
+            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+                    "Callback with null action", (Object) null, null);
+        }
+        sCallbacksDisposer.onCallbackAdded(new SessionKey(context), action);
         thiz.postCallbackDelayedInternal_Original(callbackType, action, token, delayMillis);
     }
 
@@ -77,9 +83,15 @@ public class Choreographer_Delegate {
         if (context == null) {
             return;
         }
-        if (callbackType == Choreographer.CALLBACK_ANIMATION && action != null) {
-            sCallbacksDisposer.onCallbackRemoved(new SessionKey(context), action);
+        if (callbackType != Choreographer.CALLBACK_ANIMATION) {
+            // Ignore non-animation callbacks
+            return;
         }
+        if (action == null) {
+            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+                    "Callback with null action", (Object) null, null);
+        }
+        sCallbacksDisposer.onCallbackRemoved(new SessionKey(context), action);
         thiz.removeCallbacksInternal_Original(callbackType, action, token);
     }
 

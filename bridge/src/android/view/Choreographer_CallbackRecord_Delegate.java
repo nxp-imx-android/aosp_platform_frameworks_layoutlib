@@ -33,10 +33,15 @@ import static com.android.layoutlib.bridge.impl.RenderAction.getCurrentContext;
 public class Choreographer_CallbackRecord_Delegate {
     @LayoutlibDelegate
     public static void run(CallbackRecord thiz, long frameTimeNanos) {
-        if (thiz.action != null) {
-            Choreographer_Delegate.sCallbacksDisposer.onCallbackRemoved(
-                    new SessionKey(getCurrentContext()), thiz.action);
+        SessionKey sessionKey = new SessionKey(getCurrentContext());
+        if (Choreographer_Delegate.sCallbacksDisposer.onCallbackRemoved(sessionKey, thiz.action)) {
+            // The callback is for this session and we can execute it
+            thiz.run_Original(frameTimeNanos);
+        } else {
+            // The callback is for another session, we should put it back using the minimum
+            // delay (but not now to prevent potential infinite loop).
+            Choreographer.getInstance().postCallbackDelayedInternal_Original(
+                    Choreographer.CALLBACK_ANIMATION, thiz.action, thiz.token, 1);
         }
-        thiz.run_Original(frameTimeNanos);
     }
 }
