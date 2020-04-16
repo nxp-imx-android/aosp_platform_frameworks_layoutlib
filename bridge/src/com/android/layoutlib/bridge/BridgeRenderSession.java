@@ -52,6 +52,8 @@ public class BridgeRenderSession extends RenderSession {
     @NonNull
     private Result mLastResult;
 
+    private static final Runnable NOOP_RUNNABLE = () -> { };
+
     @Override
     public Result getResult() {
         return mLastResult;
@@ -158,6 +160,10 @@ public class BridgeRenderSession extends RenderSession {
             Bridge.prepareThread();
             mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
             boolean hasMoreCallbacks = Handler_Delegate.executeCallbacks();
+            // Put a no-op callback to make sure Choreographer.mFrameScheduled is true and
+            // therefore frame callbacks will be executed
+            Choreographer.getInstance().postCallbackDelayedInternal(
+                    Choreographer.CALLBACK_ANIMATION, NOOP_RUNNABLE, null, 0);
             Choreographer.getInstance().doFrame(nanos, 0);
             return hasMoreCallbacks;
         } catch (Throwable t) {

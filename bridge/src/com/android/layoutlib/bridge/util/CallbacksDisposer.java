@@ -89,13 +89,14 @@ public class CallbacksDisposer {
      * Inform disposer that an action was removed during the session
      * @param sessionKey representing the session
      * @param action callback that was removed
+     * @return true if the callback for the session was stored and removed, false otherwise
      */
-    public void onCallbackRemoved(@NotNull SessionKey sessionKey, @NotNull Object action) {
-        // The frame callback that is might have been added by another session. Thus, we do not
-        // know which session it belongs to and have to try to remove from every session.
-        for (WeakHashMap<Object, Object> actions : mFrameCallbacks.values()) {
-            actions.remove(action);
+    public boolean onCallbackRemoved(@NotNull SessionKey sessionKey, @NotNull Object action) {
+        WeakHashMap<Object, Object> sessionCallbacks = mFrameCallbacks.get(sessionKey);
+        if (sessionCallbacks == null) {
+            return false;
         }
+        return sessionCallbacks.remove(action, null);
     }
 
     /**

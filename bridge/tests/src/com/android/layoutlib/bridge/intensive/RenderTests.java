@@ -175,10 +175,6 @@ public class RenderTests extends RenderTestBase {
                 .build();
 
         renderAndVerify(params, "allwidgets.png");
-
-        // Caused by Editor$Blink
-        sRenderMessages.removeIf(message -> message.equals(
-                "Infinite loop detected while executing Handler callbacks"));
     }
 
     @Test
@@ -199,10 +195,6 @@ public class RenderTests extends RenderTestBase {
                 .disableShadows()
                 .build();
         renderAndVerify(params, "allwidgets_tab.png");
-
-        // Caused by Editor$Blink
-        sRenderMessages.removeIf(message -> message.equals(
-                "Infinite loop detected while executing Handler callbacks"));
     }
 
     @Test
