@@ -37,7 +37,6 @@ import java.util.WeakHashMap;
  */
 public class Handler_Delegate {
 
-    private static final int MAX_DISPOSE_ITERATIONS = 10;
     // -------- Delegate methods
     @VisibleForTesting
     public static final WeakHashMap<BridgeContext, HandlerMessageQueue> sRunnablesQueues =
@@ -114,27 +113,7 @@ public class Handler_Delegate {
     }
 
     public static void dispose(@NotNull BridgeContext context) {
-        // Before disposing execute all the runnables. Some runnables may contain data for other
-        // sessions (due to bad session isolation). This way no data stored in this session
-        // runnables will be lost and other sessions could operate properly.
-        // These runnables will either change some data/state in the related composables or
-        // schedule frame callbacks. The latter is important for proper animated behaviour.
-        for (int i = 0; i < MAX_DISPOSE_ITERATIONS; ++i) {
-            HandlerMessageQueue q = sRunnablesQueues.remove(context);
-            if (q == null) {
-                return;
-            }
-            while (q.isNotEmpty()) {
-                executeSafely(q.extractFirst(Long.MAX_VALUE));
-            }
-        }
-        // We end up here if after MAX_DISPOSE_ITERATIONS iterations we still have non-empty queue
-        // meaning it was recreated by the current callback executions MAX_DISPOSE_ITERATIONS times.
         sRunnablesQueues.remove(context);
-        Bridge.getLog().warning(
-                LayoutLog.TAG_INFO,
-                "Infinite loop detected while executing Handler callbacks",
-                (Object) null, null);
     }
 
     /**
