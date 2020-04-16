@@ -257,7 +257,7 @@ abstract class CustomBar extends LinearLayout {
                     Bridge.getLog().warning(LayoutLog.TAG_RESOURCES_FORMAT,
                             "Theme attribute @android:" + attr +
                                     " does not reference a color, instead is '" +
-                                    resource.getValue() + "'.", resource);
+                                    resource.getValue() + "'.", null, resource);
                 }
             }
         }
