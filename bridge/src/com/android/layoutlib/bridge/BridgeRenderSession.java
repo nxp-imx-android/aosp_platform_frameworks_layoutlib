@@ -228,6 +228,6 @@ public class BridgeRenderSession extends RenderSession {
 
     @Override
     public Object getValidationData() {
-        return mSession.getValidatorResult();
+        return mSession != null ? mSession.getValidatorResult() : null;
     }
 }
