@@ -207,9 +207,11 @@ public final class BridgeTypedArray extends TypedArray {
         }
         ResourceValue resourceValue = mResourceData[index];
         String value = resourceValue.getValue();
-        String rawValue = resourceValue.getRawXmlValue();
-        if (rawValue != null && !rawValue.equals(value)) {
-            return Html.fromHtml(rawValue, FROM_HTML_MODE_COMPACT);
+        if (resourceValue instanceof TextResourceValue) {
+            String rawValue = resourceValue.getRawXmlValue();
+            if (rawValue != null && !rawValue.equals(value)) {
+                return Html.fromHtml(rawValue, FROM_HTML_MODE_COMPACT);
+            }
         }
         return value;
     }
