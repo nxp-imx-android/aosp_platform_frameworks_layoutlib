@@ -32,6 +32,8 @@ import com.android.layoutlib.bridge.impl.RenderSessionImpl;
 import com.android.layoutlib.bridge.util.DynamicIdMap;
 import com.android.layoutlib.common.util.ReflectionUtils;
 import com.android.resources.ResourceType;
+import com.android.tools.idea.validator.LayoutValidator;
+import com.android.tools.idea.validator.ValidatorResult;
 import com.android.tools.layoutlib.annotations.NonNull;
 import com.android.tools.layoutlib.annotations.Nullable;
 import com.android.tools.layoutlib.create.MethodAdapter;
@@ -439,6 +441,13 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
                             params.getFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE));
                     if (lastResult.isSuccess() && !doNotRenderOnCreate) {
                         lastResult = scene.render(true /*freshRender*/);
+                    }
+
+                    boolean enableLayoutValidation = Boolean.TRUE.equals(
+                            params.getFlag(RenderParamsFlags.FLAG_ENABLE_LAYOUT_VALIDATOR));
+                    if (enableLayoutValidation && !scene.getViewInfos().isEmpty()) {
+                        ValidatorResult validatorResult = LayoutValidator.validate(((View) scene.getViewInfos().get(0).getViewObject()));
+                        lastResult = lastResult.getCopyWithData(validatorResult);
                     }
                 }
             } finally {
