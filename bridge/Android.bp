@@ -31,6 +31,7 @@ java_library_host {
         "temp_layoutlib",
         "ninepatch-prebuilt",
         "layoutlib-common",
+        "layoutlib-validator",
     ],
 
     dist: {
@@ -56,6 +57,7 @@ java_library_host {
         "tools-common-prebuilt",
         "ninepatch-prebuilt",
         "layoutlib-common",
+        "layoutlib-validator",
     ],
 
     dist: {
