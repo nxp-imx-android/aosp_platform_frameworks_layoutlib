@@ -239,6 +239,9 @@ public final class CreateInfo implements ICreateInfo {
         "android.text.format.DateFormat#is24HourFormat",
         "android.util.Xml#newPullParser",
         "android.view.Choreographer#getRefreshRate",
+        "android.view.Choreographer#postCallbackDelayedInternal",
+        "android.view.Choreographer#removeCallbacksInternal",
+        "android.view.Choreographer$CallbackRecord#run",
         "android.view.Display#getWindowManager",
         "android.view.Display#updateDisplayInfoLocked",
         "android.view.HandlerActionQueue#postDelayed",
@@ -427,7 +430,9 @@ public final class CreateInfo implements ICreateInfo {
         "android.animation.AnimationHandler#doAnimationFrame",
         "android.graphics.Bitmap#setNinePatchChunk",
         "android.media.ImageReader#nativeClassInit",
-        "android.view.Choreographer#doFrame"
+        "android.view.Choreographer#doFrame",
+        "android.view.Choreographer#postCallbackDelayedInternal",
+        "android.view.Choreographer#removeCallbacksInternal",
     };
 
     /**
@@ -438,6 +443,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.ImageDecoder$InputStreamSource",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimator",
+        "android.view.Choreographer$CallbackRecord"
     };
 
     /**

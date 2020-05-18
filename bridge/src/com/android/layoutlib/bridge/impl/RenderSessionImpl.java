@@ -46,13 +46,11 @@ import com.android.layoutlib.bridge.android.support.FragmentTabHostUtil;
 import com.android.layoutlib.bridge.android.support.SupportPreferencesUtil;
 import com.android.layoutlib.bridge.impl.binding.FakeAdapter;
 import com.android.layoutlib.bridge.impl.binding.FakeExpandableAdapter;
-import com.android.tools.layoutlib.java.System_Delegate;
 import com.android.util.Pair;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.HardwareRenderer;
 import android.graphics.LayoutlibRenderer;
@@ -62,10 +60,11 @@ import android.graphics.drawable.AnimatedVectorDrawable_VectorDrawableAnimatorUI
 import android.media.Image;
 import android.media.Image.Plane;
 import android.media.ImageReader;
-import android.os.Looper;
+import android.os.Handler_Delegate;
 import android.preference.Preference_Delegate;
 import android.view.AttachInfo_Accessor;
 import android.view.BridgeInflater;
+import android.view.Choreographer_Delegate;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -86,9 +85,6 @@ import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 import android.widget.TabWidget;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.nio.IntBuffer;
@@ -1171,14 +1167,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
     public void dispose() {
         try {
-            boolean createdLooper = false;
-            if (Looper.myLooper() == null) {
-                // Detaching the root view from the window will try to stop any running animations.
-                // The stop method checks that it can run in the looper so, if there is no current
-                // looper, we create a temporary one to complete the shutdown.
-                Bridge.prepareThread();
-                createdLooper = true;
-            }
             mRenderer.destroy();
             AttachInfo_Accessor.detachFromWindow(mViewRoot);
             if (mImageReader != null) {
@@ -1193,11 +1181,15 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             }
             mImage = null;
             mViewRoot = null;
-            mContentRoot = null;
-
-            if (createdLooper) {
-                Bridge.cleanupThread();
+            if (mContentRoot != null) {
+                View firstChild = mContentRoot.getChildAt(0);
+                if (firstChild != null && mInflater != null) {
+                    mInflater.disposeView(firstChild);
+                }
             }
+            Choreographer_Delegate.dispose(getContext());
+            mContentRoot = null;
+            Handler_Delegate.dispose(getContext());
         } catch (Throwable t) {
             getContext().error("Error while disposing a RenderSession", t);
         }
