@@ -87,6 +87,17 @@ import static org.junit.Assert.fail;
  */
 public class RenderTestBase {
 
+    /**
+     * Listener for render process.
+     */
+    public interface RenderSessionListener {
+
+        /**
+         * Called before session is disposed after rendering.
+         */
+        void beforeDisposed(RenderSession session);
+    }
+
     private static final String NATIVE_LIB_PATH_PROPERTY = "native.lib.path";
     private static final String FONT_DIR_PROPERTY = "font.dir";
     private static final String ICU_DIR_PROPERTY = "icu.dir";
@@ -379,6 +390,14 @@ public class RenderTestBase {
     protected static RenderResult render(com.android.ide.common.rendering.api.Bridge bridge,
             SessionParams params,
             long frameTimeNanos) {
+        return render(bridge, params, frameTimeNanos, null);
+    }
+
+    @NonNull
+    protected static RenderResult render(com.android.ide.common.rendering.api.Bridge bridge,
+            SessionParams params,
+            long frameTimeNanos,
+            @Nullable RenderSessionListener listener) {
         // TODO: Set up action bar handler properly to test menu rendering.
         // Create session params.
         System_Delegate.setBootTimeNanos(TimeUnit.MILLISECONDS.toNanos(871732800000L));
@@ -401,6 +420,9 @@ public class RenderTestBase {
                     getLogger().error(session.getResult().getException(),
                             session.getResult().getErrorMessage());
                 }
+            }
+            if (listener != null) {
+                listener.beforeDisposed(session);
             }
 
             return RenderResult.getFromSession(session);
