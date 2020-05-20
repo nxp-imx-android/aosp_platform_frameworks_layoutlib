@@ -49,15 +49,11 @@ import android.widget.ImageView;
 import android.widget.NumberPicker;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
-
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 
 import static com.android.layoutlib.bridge.android.BridgeContext.getBaseContext;
 
@@ -76,11 +72,7 @@ public final class BridgeInflater extends LayoutInflater {
             "android.support.v7.app.AppCompatViewInflater";
     private static final String ANDROIDX_DEFAULT_APPCOMPAT_INFLATER_NAME =
             "androidx.appcompat.app.AppCompatViewInflater";
-    public static final String CLASS_COMPOSE_VIEW_ADAPTER =
-            "androidx.ui.tooling.preview.ComposeViewAdapter";
     private final LayoutlibCallback mLayoutlibCallback;
-    private final Supplier<Class<?>> mComposeViewAdapterClass =
-            Suppliers.memoize(this::getComposeAdapterClass);
 
     private boolean mIsInMerge = false;
     private ResourceReference mResourceReference;
@@ -123,25 +115,6 @@ public final class BridgeInflater extends LayoutInflater {
         super(context);
         mLayoutlibCallback = layoutlibCallback;
         mConstructorArgs[0] = context;
-    }
-
-    @Nullable
-    private Class<?> getComposeAdapterClass() {
-        if (mLayoutlibCallback == null) {
-            return null;
-        }
-        try {
-            if (mLayoutlibCallback.isClassLoaded(CLASS_COMPOSE_VIEW_ADAPTER)) {
-                return mLayoutlibCallback.findClass(CLASS_COMPOSE_VIEW_ADAPTER);
-            }
-        } catch (ClassNotFoundException ex) {
-            // That's ok, we do not have compose View class loaded meaning we do not have to
-            // dispose the passed view
-        } catch (Throwable t) {
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                    "Unexpected error while loading " + CLASS_COMPOSE_VIEW_ADAPTER, t, null, null);
-        }
-        return null;
     }
 
     @Override
@@ -619,39 +592,5 @@ public final class BridgeInflater extends LayoutInflater {
         if (mOpenDrawerLayouts != null) {
             mOpenDrawerLayouts.clear();
         }
-    }
-
-    public void resetCompose() {
-        try {
-            resetRecomposer();
-        } catch (ClassNotFoundException ex) {
-            // That's ok, we do not have compose classes loaded meaning we do not have to reset it
-        } catch (Throwable t) {
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                    "Failed to reset compose global state", t, null, null);
-        }
-    }
-
-    private void resetRecomposer() throws ClassNotFoundException, NoSuchFieldException,
-            IllegalAccessException {
-        Class<?> recomposerClass = mLayoutlibCallback.findClass("androidx.compose.Recomposer");
-        Field threadRecomposerField = recomposerClass.getDeclaredField("threadRecomposer");
-        threadRecomposerField.setAccessible(true);
-        ThreadLocal<?> threadRecomposer = (ThreadLocal<?>) threadRecomposerField.get(null);
-        Class<?> androidRecomposerClass =
-                mLayoutlibCallback.findClass("androidx.compose.AndroidRecomposer");
-        Object androidRecomposer = threadRecomposer.get();
-        Field frameScheduledField = androidRecomposerClass.getDeclaredField("frameScheduled");
-        frameScheduledField.setAccessible(true);
-        frameScheduledField.setBoolean(androidRecomposer, false);
-    }
-
-    @Nullable
-    public ClassLoader getComposeClassLoader() {
-        Class<?> composeViewClass = mComposeViewAdapterClass.get();
-        if (composeViewClass == null) {
-            return null;
-        }
-        return composeViewClass.getClassLoader();
     }
 }

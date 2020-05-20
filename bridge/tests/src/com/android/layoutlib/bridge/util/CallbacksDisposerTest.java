@@ -32,7 +32,7 @@ public class CallbacksDisposerTest {
         Set<Object> callbacks = new HashSet<>();
         CallbacksDisposer disposer = new CallbacksDisposer(callbacks::remove);
 
-        SessionKey session1 = new SessionKey(1, 1);
+        SessionKey session1 = new SessionKey(1);
 
         Object action1 = new Object();
         Object action2 = new Object();
@@ -57,7 +57,6 @@ public class CallbacksDisposerTest {
         disposer.onDispose(session1);
 
         assertTrue(disposer.getSessionsWithCallbacks().isEmpty());
-        assertTrue(disposer.getDisposedSessions().isEmpty());
         assertTrue(callbacks.isEmpty());
     }
 
@@ -66,8 +65,8 @@ public class CallbacksDisposerTest {
         Set<Object> callbacks = new HashSet<>();
         CallbacksDisposer disposer = new CallbacksDisposer(callbacks::remove);
 
-        SessionKey session1 = new SessionKey(1, 1);
-        SessionKey session2 = new SessionKey(2, 2);
+        SessionKey session1 = new SessionKey(1);
+        SessionKey session2 = new SessionKey(2);
 
         Object action1 = new Object();
         Object action2 = new Object();
@@ -86,53 +85,12 @@ public class CallbacksDisposerTest {
 
         assertEquals(1, disposer.getSessionsWithCallbacks().size());
         assertTrue(disposer.getSessionsWithCallbacks().contains(session2));
-        assertTrue(disposer.getDisposedSessions().isEmpty());
         assertTrue(callbacks.contains(action2));
         assertEquals(1, callbacks.size());
 
         disposer.onDispose(session2);
 
         assertTrue(disposer.getSessionsWithCallbacks().isEmpty());
-        assertTrue(disposer.getDisposedSessions().isEmpty());
-        assertTrue(callbacks.isEmpty());
-    }
-
-    @Test
-    public void twoDependentSessions() {
-        Set<Object> callbacks = new HashSet<>();
-        CallbacksDisposer disposer = new CallbacksDisposer(callbacks::remove);
-
-        SessionKey session1 = new SessionKey(1, 1);
-        SessionKey session2 = new SessionKey(2, 1);
-
-        Object action1 = new Object();
-        Object action2 = new Object();
-
-        callbacks.add(action2);
-        callbacks.add(action1);
-
-        disposer.onCallbackAdded(session1, action1);
-        disposer.onCallbackAdded(session2, action2);
-
-        assertEquals(2, disposer.getSessionsWithCallbacks().size());
-        assertTrue(disposer.getSessionsWithCallbacks().contains(session1));
-        assertTrue(disposer.getSessionsWithCallbacks().contains(session2));
-
-        disposer.onDispose(session1);
-
-        assertEquals(2, disposer.getSessionsWithCallbacks().size());
-        assertTrue(disposer.getSessionsWithCallbacks().contains(session2));
-        assertTrue(disposer.getSessionsWithCallbacks().contains(session1));
-        assertTrue(disposer.getDisposedSessions().contains(session1));
-        assertEquals(1, disposer.getDisposedSessions().size());
-        assertTrue(callbacks.contains(action1));
-        assertTrue(callbacks.contains(action2));
-        assertEquals(2, callbacks.size());
-
-        disposer.onDispose(session2);
-
-        assertTrue(disposer.getSessionsWithCallbacks().isEmpty());
-        assertTrue(disposer.getDisposedSessions().isEmpty());
         assertTrue(callbacks.isEmpty());
     }
 }

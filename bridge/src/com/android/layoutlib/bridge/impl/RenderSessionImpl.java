@@ -208,16 +208,15 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
      */
     private void measureLayout(@NonNull SessionParams params) {
         // only do the screen measure when needed.
-        if (mMeasuredScreenWidth != -1) {
-            return;
+        int previousWidth = mMeasuredScreenWidth;
+        int previousHeight = mMeasuredScreenHeight;
+        HardwareConfig hardwareConfig = params.getHardwareConfig();
+        if (mMeasuredScreenWidth == -1) {
+            mMeasuredScreenWidth = hardwareConfig.getScreenWidth();
+            mMeasuredScreenHeight = hardwareConfig.getScreenHeight();
         }
 
         RenderingMode renderingMode = params.getRenderingMode();
-        HardwareConfig hardwareConfig = params.getHardwareConfig();
-
-        mNewRenderSize = true;
-        mMeasuredScreenWidth = hardwareConfig.getScreenWidth();
-        mMeasuredScreenHeight = hardwareConfig.getScreenHeight();
 
         if (renderingMode != RenderingMode.NORMAL) {
             int widthMeasureSpecMode = renderingMode.getHorizAction() == SizeAction.EXPAND ?
@@ -245,21 +244,23 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                 return;
             }
 
+            int maxWidth = hardwareConfig.getScreenWidth();
+            int maxHeight = hardwareConfig.getScreenHeight();
             // first measure the full layout, with EXACTLY to get the size of the
             // content as it is inside the decor/dialog
             @SuppressWarnings("deprecation")
             Pair<Integer, Integer> exactMeasure = measureView(
                     mViewRoot, measuredView,
-                    mMeasuredScreenWidth, MeasureSpec.EXACTLY,
-                    mMeasuredScreenHeight, MeasureSpec.EXACTLY);
+                    maxWidth, MeasureSpec.EXACTLY,
+                    maxHeight, MeasureSpec.EXACTLY);
 
             // now measure the content only using UNSPECIFIED (where applicable, based on
             // the rendering mode). This will give us the size the content needs.
             @SuppressWarnings("deprecation")
             Pair<Integer, Integer> neededMeasure = measureView(
                     mContentRoot, measuredView,
-                    mMeasuredScreenWidth, widthMeasureSpecMode,
-                    mMeasuredScreenHeight, heightMeasureSpecMode);
+                    maxWidth, widthMeasureSpecMode,
+                    maxHeight, heightMeasureSpecMode);
 
             // If measuredView is not null, exactMeasure nor result will be null.
             assert (exactMeasure != null && neededMeasure != null);
@@ -270,6 +271,8 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             mMeasuredScreenHeight = calcSize(mMeasuredScreenHeight, neededMeasure.getSecond(),
                     exactMeasure.getSecond(), renderingMode.getVertAction());
         }
+        mNewRenderSize =
+                mMeasuredScreenWidth != previousWidth || mMeasuredScreenHeight != previousHeight;
     }
 
     /**
@@ -490,10 +493,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             if (onlyMeasure) {
                 // delete the canvas and image to reset them on the next full rendering
                 mImage = null;
-                if (mImageReader != null) {
-                    mImageReader.close();
-                    mImageReader = null;
-                }
+                disposeImageSurface();
                 doLayout(getContext(), mViewRoot, mMeasuredScreenWidth, mMeasuredScreenHeight);
             } else {
                 // When disableBitmapCaching is true, we do not reuse mImage and
@@ -504,7 +504,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                     RenderParamsFlags.FLAG_KEY_DISABLE_BITMAP_CACHING));
 
                 if (mNewRenderSize || mImageReader == null || disableBitmapCaching) {
-                    mNewRenderSize = false;
                     if (params.getImageFactory() != null) {
                         mImage = params.getImageFactory().getImage(
                                 mMeasuredScreenWidth,
@@ -522,12 +521,11 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                                     Boolean.TRUE.equals(params.getFlag(
                                             RenderParamsFlags.FLAG_KEY_RESULT_IMAGE_AUTO_SCALE));
 
+                    if (enableImageResizing || mNewRenderSize) {
+                        disposeImageSurface();
+                    }
+
                     if (enableImageResizing) {
-                        // have to recreate
-                        if (mImageReader != null) {
-                            mImageReader.close();
-                            mImageReader = null;
-                        }
                         mRenderer.setScale(mImage.getWidth() * 1.0f / mMeasuredScreenWidth,
                                 mImage.getHeight() * 1.0f / mMeasuredScreenHeight);
                     } else {
@@ -539,6 +537,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                         mRenderer.setSurface(mImageReader.getSurface());
                         mNativeImage = mImageReader.acquireNextImage();
                     }
+                    mNewRenderSize = false;
                 }
 
                 doLayout(getContext(), mViewRoot, mMeasuredScreenWidth, mMeasuredScreenHeight);
@@ -1168,25 +1167,30 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         mViewRoot.dispatchTouchEvent(event);
     }
 
+    private void disposeImageSurface() {
+        if (mImageReader != null) {
+            mImageReader.close();
+            mImageReader = null;
+        }
+    }
+
     public void dispose() {
         try {
             mRenderer.destroy();
+            disposeImageSurface();
+            mImage = null;
+            // detachFromWindow might create Handler callbacks, thus before Handler_Delegate.dispose
             AttachInfo_Accessor.detachFromWindow(mViewRoot);
-            if (mImageReader != null) {
-                mImageReader.close();
-                mImageReader = null;
-            }
+            Handler_Delegate.dispose(getContext());
+            Choreographer_Delegate.dispose(getContext());
             if (mViewInfoList != null) {
                 mViewInfoList.clear();
             }
             if (mSystemViewInfoList != null) {
                 mSystemViewInfoList.clear();
             }
-            mImage = null;
             mViewRoot = null;
             mContentRoot = null;
-            Handler_Delegate.dispose(getContext());
-            Choreographer_Delegate.dispose(getContext());
         } catch (Throwable t) {
             getContext().error("Error while disposing a RenderSession", t);
         }
