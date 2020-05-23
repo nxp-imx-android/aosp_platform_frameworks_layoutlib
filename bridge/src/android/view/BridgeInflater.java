@@ -31,7 +31,7 @@ import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
 import com.android.layoutlib.bridge.android.support.DrawerLayoutUtil;
 import com.android.layoutlib.bridge.android.support.RecyclerViewUtil;
 import com.android.layoutlib.bridge.impl.ParserFactory;
-import com.android.layoutlib.bridge.util.ReflectionUtils;
+import com.android.layoutlib.common.util.ReflectionUtils;
 import com.android.tools.layoutlib.annotations.NotNull;
 import com.android.tools.layoutlib.annotations.Nullable;
 
@@ -264,8 +264,7 @@ public final class BridgeInflater extends LayoutInflater {
                                         true /*readAppTheme*/,
                                         true /*wrapContext*/);
                             } catch (IllegalAccessException | InvocationTargetException e) {
-                                Bridge.getLog().error(LayoutLog.TAG_BROKEN, e.getMessage(), e,
-                                        null, null);
+                                assert false : "Call to createView failed";
                             }
                             return null;
                         };

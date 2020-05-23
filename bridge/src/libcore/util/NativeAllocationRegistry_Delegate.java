@@ -63,10 +63,6 @@ public class NativeAllocationRegistry_Delegate {
     /*package*/ static Runnable registerNativeAllocation(NativeAllocationRegistry registry,
             Object referent,
             long nativePtr) {
-        // Mark the object as already "natively" tracked.
-        // This allows the DelegateManager to dispose objects without waiting
-        // for an explicit call when the referent does not exist anymore.
-        sManager.markAsNativeAllocation(referent, nativePtr);
         if (referent == null) {
             throw new IllegalArgumentException("referent is null");
         }

@@ -28,24 +28,22 @@ import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.layoutlib.bridge.impl.RenderDrawable;
 import com.android.layoutlib.bridge.impl.RenderSessionImpl;
 import com.android.layoutlib.bridge.util.DynamicIdMap;
-import com.android.ninepatch.NinePatchChunk;
 import com.android.resources.ResourceType;
 import com.android.tools.layoutlib.annotations.Nullable;
 import com.android.tools.layoutlib.create.MethodAdapter;
+import com.android.tools.layoutlib.create.NativeConfig;
 import com.android.tools.layoutlib.create.OverrideMethod;
 import com.android.util.Pair;
 
-import android.animation.PropertyValuesHolder;
-import android.animation.PropertyValuesHolder_Delegate;
 import android.content.res.BridgeAssetManager;
 import android.graphics.Bitmap;
-import android.graphics.FontFamily_Delegate;
 import android.graphics.Typeface;
 import android.graphics.Typeface_Builder_Delegate;
-import android.graphics.Typeface_Delegate;
+import android.graphics.fonts.SystemFonts_Delegate;
 import android.icu.util.ULocale;
 import android.os.Looper;
 import android.os.Looper_Accessor;
+import android.os.SystemProperties;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -56,9 +54,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -111,12 +110,8 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
 
     private final static Map<Object, Map<String, SoftReference<Bitmap>>> sProjectBitmapCache =
             new WeakHashMap<>();
-    private final static Map<Object, Map<String, SoftReference<NinePatchChunk>>> sProject9PatchCache =
-            new WeakHashMap<>();
 
     private final static Map<String, SoftReference<Bitmap>> sFrameworkBitmapCache = new HashMap<>();
-    private final static Map<String, SoftReference<NinePatchChunk>> sFramework9PatchCache =
-            new HashMap<>();
 
     private static Map<String, Map<String, Integer>> sEnumValueMap;
     private static Map<String, String> sPlatformProperties;
@@ -139,6 +134,11 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         public void warning(String tag, String message, Object data) {
             System.out.println(message);
         }
+
+        @Override
+        public void logAndroidFramework(int priority, String tag, String message) {
+            System.out.println(message);
+        }
     };
 
     /**
@@ -146,7 +146,14 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
      */
     private static LayoutLog sCurrentLog = sDefaultLog;
 
-    public static boolean sIsTypefaceInitialized;
+    private static String sIcuDataPath;
+
+    private static final String[] LINUX_NATIVE_LIBRARIES =
+            {"liblog.so", "libandroid_runtime.so"};
+    private static final String[] MAC_NATIVE_LIBRARIES =
+            {"liblog.dylib","libandroid_runtime.dylib"};
+    private static final String[] WINDOWS_NATIVE_LIBRARIES =
+            {"liblog.dll", "libicuuc_stubdata.dll", "libicuuc-host.dll", "libandroid_runtime.dll"};
 
     @Override
     public boolean init(Map<String,String> platformProperties,
@@ -157,8 +164,12 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             LayoutLog log) {
         sPlatformProperties = platformProperties;
         sEnumValueMap = enumValueMap;
+        sIcuDataPath = icuDataPath;
+        sCurrentLog = log;
 
-        BridgeAssetManager.initSystem();
+        if (!loadNativeLibrariesIfNeeded(log, nativeLibPath)) {
+            return false;
+        }
 
         // When DEBUG_LAYOUT is set and is not 0 or false, setup a default listener
         // on static (native) methods which prints the signature on the console and
@@ -189,9 +200,19 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             });
         }
 
-        // load the fonts.
-        FontFamily_Delegate.setFontLocation(fontLocation.getAbsolutePath());
-        MemoryMappedFile_Delegate.setDataDir(fontLocation.getAbsoluteFile().getParentFile());
+        try {
+            BridgeAssetManager.initSystem();
+
+            // load the fonts.
+            SystemFonts_Delegate.setFontLocation(fontLocation.getAbsolutePath() + File.separator);
+            MemoryMappedFile_Delegate.setDataDir(fontLocation.getAbsoluteFile().getParentFile());
+        } catch (Throwable t) {
+            if (log != null) {
+                log.error(LayoutLog.TAG_BROKEN, "Layoutlib Bridge initialization failed", t,
+                        null, null);
+            }
+            return false;
+        }
 
         // now parse com.android.internal.R (and only this one as android.R is a subset of
         // the internal version), and put the content in the maps.
@@ -252,6 +273,17 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         }
 
         return true;
+    }
+
+    /**
+     * Sets System properties using the Android framework code.
+     * This is accessed by the native libraries through JNI.
+     */
+    @SuppressWarnings("unused")
+    private static void setSystemProperties() {
+        for (Entry<String, String> property : sPlatformProperties.entrySet()) {
+            SystemProperties.set(property.getKey(), property.getValue());
+        }
     }
 
     /**
@@ -341,10 +373,9 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         BridgeAssetManager.clearSystem();
 
         // dispose of the default typeface.
-        if (sIsTypefaceInitialized) {
+        if (SystemFonts_Delegate.sIsTypefaceInitialized) {
             Typeface.sDynamicTypefaceCache.evictAll();
         }
-        sProject9PatchCache.clear();
         sProjectBitmapCache.clear();
 
         return true;
@@ -377,6 +408,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
                     if (lastResult.isSuccess() && !doNotRenderOnCreate) {
                         lastResult = scene.render(true /*freshRender*/);
                     }
+
                 }
             } finally {
                 scene.release();
@@ -426,14 +458,12 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     public void clearResourceCaches(Object projectKey) {
         if (projectKey != null) {
             sProjectBitmapCache.remove(projectKey);
-            sProject9PatchCache.remove(projectKey);
         }
     }
 
     @Override
     public void clearAllCaches(Object projectKey) {
         clearResourceCaches(projectKey);
-        PropertyValuesHolder_Delegate.clearCaches();
     }
 
     @Override
@@ -574,13 +604,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     }
 
     /**
-     * Returns the platform build properties.
-     */
-    public static Map<String, String> getPlatformProperties() {
-        return sPlatformProperties;
-    }
-
-    /**
      * Returns the bitmap for a specific path, from a specific project cache, or from the
      * framework cache.
      * @param value the path of the bitmap
@@ -624,52 +647,68 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     }
 
     /**
-     * Returns the 9 patch chunk for a specific path, from a specific project cache, or from the
-     * framework cache.
-     * @param value the path of the 9 patch
-     * @param projectKey the key of the project, or null to query the framework cache.
-     * @return the cached 9 patch or null if not found.
+     * This is called by the native layoutlib loader.
      */
-    public static NinePatchChunk getCached9Patch(String value, Object projectKey) {
-        if (projectKey != null) {
-            Map<String, SoftReference<NinePatchChunk>> map = sProject9PatchCache.get(projectKey);
-
-            if (map != null) {
-                SoftReference<NinePatchChunk> ref = map.get(value);
-                if (ref != null) {
-                    return ref.get();
-                }
-            }
-        } else {
-            SoftReference<NinePatchChunk> ref = sFramework9PatchCache.get(value);
-            if (ref != null) {
-                return ref.get();
-            }
-        }
-
-        return null;
+    @SuppressWarnings("unused")
+    public static String getIcuDataPath() {
+        return sIcuDataPath;
     }
 
-    /**
-     * Sets a 9 patch chunk in a project cache or in the framework cache.
-     * @param value the path of the 9 patch
-     * @param ninePatch the 9 patch object
-     * @param projectKey the key of the project, or null to put the bitmap in the framework cache.
-     */
-    public static void setCached9Patch(String value, NinePatchChunk ninePatch, Object projectKey) {
-        if (projectKey != null) {
-            Map<String, SoftReference<NinePatchChunk>> map =
-                    sProject9PatchCache.computeIfAbsent(projectKey, k -> new HashMap<>());
+    private static boolean sJniLibLoadAttempted;
+    private static boolean sJniLibLoaded;
 
-            map.put(value, new SoftReference<>(ninePatch));
-        } else {
-            sFramework9PatchCache.put(value, new SoftReference<>(ninePatch));
+    private synchronized static boolean loadNativeLibrariesIfNeeded(LayoutLog log,
+            String nativeLibDir) {
+        if (!sJniLibLoadAttempted) {
+            try {
+                loadNativeLibraries(nativeLibDir);
+            }
+            catch (Throwable t) {
+                log.error(LayoutLog.TAG_BROKEN, "Native layoutlib failed to load", t, null, null);
+            }
         }
+        return sJniLibLoaded;
+    }
+
+    private synchronized static void loadNativeLibraries(String nativeLibDir) {
+        if (sJniLibLoadAttempted) {
+            // Already attempted to load, nothing to do here.
+            return;
+        }
+        try {
+            // set the system property so LayoutLibLoader.cpp can read it
+            System.setProperty("delegate_natives_to_natives", String.join(",",
+                    NativeConfig.DELEGATE_CLASS_NATIVES_TO_NATIVES).replace('.', '/'));
+            System.setProperty("native_classes", String.join(",",
+                    NativeConfig.CLASS_NATIVES));
+            System.setProperty("icu.dir", Bridge.getIcuDataPath());
+            System.setProperty("use_bridge_for_logging", "true");
+            System.setProperty("register_properties_during_load", "true");
+            for (String library : getNativeLibraries()) {
+                String path = new File(nativeLibDir, library).getAbsolutePath();
+                System.load(path);
+            }
+        }
+        finally {
+            sJniLibLoadAttempted = true;
+        }
+        sJniLibLoaded = true;
+    }
+
+    private static String[] getNativeLibraries() {
+        String osName = System.getProperty("os.name").toLowerCase(Locale.US);
+        if (osName.startsWith("windows")) {
+            return WINDOWS_NATIVE_LIBRARIES;
+        }
+        if (osName.startsWith("mac")) {
+            return MAC_NATIVE_LIBRARIES;
+        }
+        return LINUX_NATIVE_LIBRARIES;
     }
 
     @Override
     public void clearFontCache(String path) {
-        if (sIsTypefaceInitialized) {
+        if (SystemFonts_Delegate.sIsTypefaceInitialized) {
             final String key =
                     Typeface_Builder_Delegate.createAssetUid(BridgeAssetManager.initSystem(), path,
                             0, null, RESOLVE_BY_FONT_TABLE, RESOLVE_BY_FONT_TABLE, DEFAULT_FAMILY);

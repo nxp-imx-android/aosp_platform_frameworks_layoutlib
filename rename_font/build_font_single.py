@@ -87,7 +87,7 @@ def convert_font(input_path, dest_path):
   try:
     # run ttx to generate an xml file in the output folder which represents all
     # its info
-    ttx_args = ['-q', '-o', ttx_path, input_path]
+    ttx_args = ['--no-recalc-timestamp', '-q', '-o', ttx_path, input_path]
     ttx.main(ttx_args)
     # now parse the xml file to change its PS name.
     tree = etree.parse(ttx_path)

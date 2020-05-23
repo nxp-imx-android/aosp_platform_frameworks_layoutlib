@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,11 +121,11 @@ public class PromoteClassClassAdapterTest {
         ClassReader reader = new ClassReader(PrivateClass.class.getName());
         LoggingClassVisitor log = new LoggingClassVisitor();
 
-        String rootClass = PromoteClassClassAdapterTest.class.getName();
         PromoteClassClassAdapter adapter = new PromoteClassClassAdapter(log, new HashSet<String>() {
             {
-                add(rootClass + "$PrivateClass");
-                add(rootClass + "$ClassWithPrivateInnerClass$InnerPrivateClass");
+                add("com.android.tools.layoutlib.create.PromoteClassClassAdapterTest$PrivateClass");
+                add("com.android.tools.layoutlib.create" +
+                        ".PromoteClassClassAdapterTest$ClassWithPrivateInnerClass$InnerPrivateClass");
             }
         });
         reader.accept(adapter, 0);
@@ -157,7 +157,7 @@ public class PromoteClassClassAdapterTest {
 
         PromoteClassClassAdapter adapter = new PromoteClassClassAdapter(log, new HashSet<String>() {
             {
-                add(PackageProtectedClass.class.getName());
+                add("com.android.tools.layoutlib.create.PackageProtectedClass");
             }
         });
 

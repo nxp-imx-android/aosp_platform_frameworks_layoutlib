@@ -15,13 +15,18 @@
  */
 package android.view;
 
+import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.layoutlib.bridge.Bridge;
+import com.android.layoutlib.bridge.android.BridgeContext;
+import com.android.layoutlib.bridge.util.CallbacksDisposer;
+import com.android.layoutlib.bridge.util.CallbacksDisposer.SessionKey;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
+import com.android.tools.layoutlib.annotations.NotNull;
 
-import android.animation.AnimationHandler;
-import android.util.TimeUtils;
-import android.view.animation.AnimationUtils;
+import android.view.Choreographer.FrameCallback;
 
-import java.util.concurrent.atomic.AtomicReference;
+import static android.content.Context.LAYOUT_INFLATER_SERVICE;
+import static com.android.layoutlib.bridge.impl.RenderAction.getCurrentContext;
 
 /**
  * Delegate used to provide new implementation of a select few methods of {@link Choreographer}
@@ -31,16 +36,21 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  */
 public class Choreographer_Delegate {
-    private static final AtomicReference<Choreographer> mInstance = new AtomicReference<Choreographer>();
-
-    @LayoutlibDelegate
-    public static Choreographer getInstance() {
-        if (mInstance.get() == null) {
-            mInstance.compareAndSet(null, Choreographer.getInstance_Original());
+    static final CallbacksDisposer sCallbacksDisposer = new CallbacksDisposer(
+        action -> {
+            if (action instanceof FrameCallback) {
+                FrameCallback callback = (FrameCallback) action;
+                Choreographer.getInstance().removeFrameCallback(callback);
+            } else if (action instanceof Runnable) {
+                Runnable runnable = (Runnable) action;
+                Choreographer.getInstance().removeCallbacksInternal_Original(
+                        Choreographer.CALLBACK_ANIMATION, runnable, null);
+            } else {
+                Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+                        "Unexpected action as " + "ANIMATION_CALLBACK", (Object) null, null);
+            }
         }
-
-        return mInstance.get();
-    }
+    );
 
     @LayoutlibDelegate
     public static float getRefreshRate() {
@@ -48,46 +58,44 @@ public class Choreographer_Delegate {
     }
 
     @LayoutlibDelegate
-    static void scheduleVsyncLocked(Choreographer thisChoreographer) {
-        // do nothing
-    }
-
-    public static void doFrame(long frameTimeNanos) {
-        Choreographer thisChoreographer = Choreographer.getInstance();
-
-        AnimationUtils.lockAnimationClock(frameTimeNanos / TimeUtils.NANOS_PER_MS);
-
-        try {
-            thisChoreographer.mLastFrameTimeNanos = frameTimeNanos - thisChoreographer.getFrameIntervalNanos();
-            thisChoreographer.mFrameInfo.markInputHandlingStart();
-            thisChoreographer.doCallbacks(Choreographer.CALLBACK_INPUT, frameTimeNanos);
-
-            thisChoreographer.mFrameInfo.markAnimationsStart();
-            thisChoreographer.doCallbacks(Choreographer.CALLBACK_ANIMATION, frameTimeNanos);
-
-            thisChoreographer.mFrameInfo.markPerformTraversalsStart();
-            thisChoreographer.doCallbacks(Choreographer.CALLBACK_TRAVERSAL, frameTimeNanos);
-
-            thisChoreographer.doCallbacks(Choreographer.CALLBACK_COMMIT, frameTimeNanos);
-        } finally {
-            AnimationUtils.unlockAnimationClock();
+    public static void postCallbackDelayedInternal(
+            Choreographer thiz, int callbackType, Object action, Object token, long delayMillis) {
+        BridgeContext context = getCurrentContext();
+        if (context == null) {
+            return;
         }
+        if (callbackType != Choreographer.CALLBACK_ANIMATION) {
+            // Ignore non-animation callbacks
+            return;
+        }
+        if (action == null) {
+            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+                    "Callback with null action", (Object) null, null);
+        }
+        sCallbacksDisposer.onCallbackAdded(new SessionKey(context), action);
+        thiz.postCallbackDelayedInternal_Original(callbackType, action, token, delayMillis);
     }
 
-    public static void clearFrames() {
-        Choreographer thisChoreographer = Choreographer.getInstance();
-
-        thisChoreographer.removeCallbacks(Choreographer.CALLBACK_INPUT, null, null);
-        thisChoreographer.removeCallbacks(Choreographer.CALLBACK_ANIMATION, null, null);
-        thisChoreographer.removeCallbacks(Choreographer.CALLBACK_TRAVERSAL, null, null);
-        thisChoreographer.removeCallbacks(Choreographer.CALLBACK_COMMIT, null, null);
-
-        // Release animation handler instance since it holds references to the callbacks
-        AnimationHandler.sAnimatorHandler.set(null);
+    @LayoutlibDelegate
+    public static void removeCallbacksInternal(
+            Choreographer thiz, int callbackType, Object action, Object token) {
+        BridgeContext context = getCurrentContext();
+        if (context == null) {
+            return;
+        }
+        if (callbackType != Choreographer.CALLBACK_ANIMATION) {
+            // Ignore non-animation callbacks
+            return;
+        }
+        if (action == null) {
+            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+                    "Callback with null action", (Object) null, null);
+        }
+        sCallbacksDisposer.onCallbackRemoved(new SessionKey(context), action);
+        thiz.removeCallbacksInternal_Original(callbackType, action, token);
     }
 
-    public static void dispose() {
-        clearFrames();
-        Choreographer.releaseInstance();
+    public static void dispose(@NotNull BridgeContext bridgeContext) {
+        sCallbacksDisposer.onDispose(new SessionKey(bridgeContext));
     }
 }

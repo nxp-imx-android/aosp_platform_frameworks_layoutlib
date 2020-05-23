@@ -22,7 +22,9 @@ java_binary_host {
     main_class: "com.android.tools.layoutlib.create.Main",
     static_libs: [
         "asm-6.0",
+        "asm-commons-6.0",
         "guava",
         "layoutlib-common",
+        "guava-prebuilt-host-jar",
     ],
 }

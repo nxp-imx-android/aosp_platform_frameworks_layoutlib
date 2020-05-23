@@ -20,7 +20,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.view.View.AttachInfo;
 
-import com.android.layoutlib.bridge.util.ReflectionUtils;
+import com.android.layoutlib.common.util.ReflectionUtils;
 
 /**
  * Class allowing access to package-protected methods/fields.
@@ -38,7 +38,9 @@ public class AttachInfo_Accessor {
         info.mHasWindowFocus = true;
         info.mWindowVisibility = View.VISIBLE;
         info.mInTouchMode = false; // this is so that we can display selections.
-        info.mHardwareAccelerated = false;
+        info.mHardwareAccelerated = true;
+        // We do not use this one at all, it is only needed to satisfy null checks in View
+        info.mThreadedRenderer = new ThreadedRenderer(context, false, "layoutlib-renderer");
         view.dispatchAttachedToWindow(info, 0);
     }
 
@@ -46,9 +48,16 @@ public class AttachInfo_Accessor {
         view.mAttachInfo.mTreeObserver.dispatchOnPreDraw();
     }
 
-    public static void detachFromWindow(View view) {
+    public static void detachFromWindow(final View view) {
         if (view != null) {
+            final View.AttachInfo attachInfo = view.mAttachInfo;
             view.dispatchDetachedFromWindow();
+            if (attachInfo != null) {
+                final ThreadedRenderer threadedRenderer = attachInfo.mThreadedRenderer;
+                if(threadedRenderer != null) {
+                    threadedRenderer.destroy();
+                }
+            }
         }
     }
 
