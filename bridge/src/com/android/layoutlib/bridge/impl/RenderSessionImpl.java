@@ -100,6 +100,8 @@ import java.util.Map;
 import com.android.internal.R;
 import android.content.res.TypedArray;
 
+import com.google.android.apps.common.testing.accessibility.framework.uielement.AccessibilityHierarchyAndroid_ViewElementClassNamesAndroid_Delegate;
+
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_INFLATION;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_NOT_INFLATED;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN;
@@ -592,6 +594,9 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                          params.getFlag(RenderParamsFlags.FLAG_ENABLE_LAYOUT_VALIDATOR_IMAGE_CHECK));
 
                 if (enableLayoutValidation && !getViewInfos().isEmpty()) {
+                    AccessibilityHierarchyAndroid_ViewElementClassNamesAndroid_Delegate.sLayoutlibCallback =
+                            getContext().getLayoutlibCallback();
+
                     BufferedImage imageToPass =
                             enableLayoutValidationImageCheck ? getImage() : null;
                     ValidatorResult validatorResult =
@@ -602,6 +607,8 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                 ValidatorResult.Builder builder = new Builder();
                 builder.mMetric.mErrorMessage = e.getMessage();
                 setValidatorResult(builder.build());
+            } finally {
+                AccessibilityHierarchyAndroid_ViewElementClassNamesAndroid_Delegate.sLayoutlibCallback = null;
             }
 
             // success!
