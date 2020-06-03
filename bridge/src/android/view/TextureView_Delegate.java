@@ -18,6 +18,8 @@ package android.view;
 
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
+import android.graphics.TextureLayer;
+
 public class TextureView_Delegate {
     @LayoutlibDelegate
     static TextureLayer getTextureLayer(TextureView thisTextureView) {
