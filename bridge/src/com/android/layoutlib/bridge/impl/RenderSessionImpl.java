@@ -48,7 +48,6 @@ import com.android.layoutlib.bridge.impl.binding.FakeAdapter;
 import com.android.layoutlib.bridge.impl.binding.FakeExpandableAdapter;
 import com.android.tools.idea.validator.ValidatorResult;
 import com.android.tools.idea.validator.LayoutValidator;
-import com.android.tools.idea.validator.ValidatorResult;
 import com.android.tools.idea.validator.ValidatorResult.Builder;
 import com.android.util.Pair;
 
@@ -127,7 +126,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
     private FrameLayout mContentRoot;
     private int mMeasuredScreenWidth = -1;
     private int mMeasuredScreenHeight = -1;
-    private boolean mIsAlphaChannelImage;
     /** If >= 0, a frame will be executed */
     private long mElapsedFrameTimeNanos = -1;
     /** True if one frame has been already executed to start the animations */
@@ -187,11 +185,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
         SessionParams params = getParams();
         BridgeContext context = getContext();
-
-        // use default of true in case it's not found to use alpha by default
-        mIsAlphaChannelImage =
-                ResourceHelper.getBooleanThemeFrameworkAttrValue(params.getResources(),
-                        "windowIsFloating", true);
 
         mLayoutBuilder = new Layout.Builder(params, context);
 
@@ -1140,10 +1133,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
     public BufferedImage getImage() {
         return mImage;
-    }
-
-    public boolean isAlphaChannelImage() {
-        return mIsAlphaChannelImage;
     }
 
     public List<ViewInfo> getViewInfos() {
