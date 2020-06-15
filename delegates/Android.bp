@@ -18,6 +18,7 @@ java_library_host {
     name: "layoutlib-common-delegates",
 
     srcs: ["src/**/*.java"],
+    java_version: "1.8",
 
     libs: [
         "temp_layoutlib",

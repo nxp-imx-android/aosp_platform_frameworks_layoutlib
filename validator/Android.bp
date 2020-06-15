@@ -18,6 +18,7 @@ java_library_host {
     name: "layoutlib-validator",
 
     srcs: ["src/**/*.java"],
+    java_version: "1.8",
     java_resource_dirs: ["resources"],
 
     libs: [

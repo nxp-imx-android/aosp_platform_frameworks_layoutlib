@@ -20,6 +20,7 @@ java_test_host {
         "src/**/*.java",
         "res/testApp/MyApplication/src/main/myapplication.widgets/**/*.java",
     ],
+    java_version: "1.8",
     java_resource_dirs: ["res"],
 
     libs: [

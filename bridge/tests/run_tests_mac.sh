@@ -9,7 +9,7 @@ readonly SCRIPT_DIR="$(dirname "$0")"
 readonly FAILURE_DIR=layoutlib-test-failures
 readonly FAILURE_ZIP=layoutlib-test-failures.zip
 
-STUDIO_JDK=${SCRIPT_DIR}"/../../../../prebuilts/jdk/jdk11/darwin-x86"
+STUDIO_JDK=${SCRIPT_DIR}"/../../../../prebuilts/jdk/jdk8/darwin-x86"
 MISC_COMMON=${SCRIPT_DIR}"/../../../../prebuilts/misc/common"
 OUT_INTERMEDIATES=${SCRIPT_DIR}"/../../../../out/soong/.intermediates"
 NATIVE_LIBRARIES=${SCRIPT_DIR}"/../../../../out/host/darwin-x86/lib64/"
