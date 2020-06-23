@@ -30,13 +30,15 @@ import com.android.layoutlib.bridge.impl.RenderSessionImpl;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Handler_Delegate;
-import android.view.Choreographer;
+import android.os.SystemClock_Delegate;
 import android.view.MotionEvent;
 
 import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static com.android.layoutlib.bridge.impl.RenderAction.getCurrentContext;
 
 /**
  * An implementation of {@link RenderSession}.
@@ -178,11 +180,11 @@ public class BridgeRenderSession extends RenderSession {
             Bridge.prepareThread();
             mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
             boolean hasMoreCallbacks = Handler_Delegate.executeCallbacks();
-            // Put a no-op callback to make sure Choreographer.mFrameScheduled is true and
-            // therefore frame callbacks will be executed
-            Choreographer.getInstance().postCallbackDelayedInternal(
-                    Choreographer.CALLBACK_ANIMATION, NOOP_RUNNABLE, null, 0);
-            Choreographer.getInstance().doFrame(nanos, 0);
+            long currentTimeMs = SystemClock_Delegate.uptimeMillis();
+            getCurrentContext()
+                    .getSessionInteractiveData()
+                    .getChoreographerCallbacks()
+                    .execute(currentTimeMs, Bridge.getLog());
             return hasMoreCallbacks;
         } catch (Throwable t) {
             Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Failed executing Choreographer#doFrame "

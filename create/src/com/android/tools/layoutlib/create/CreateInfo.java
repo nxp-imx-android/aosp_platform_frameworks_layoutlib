@@ -449,7 +449,6 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimator",
         "android.view.Choreographer$CallbackQueue", // required for tests only
-        "android.view.Choreographer$CallbackRecord",
         "libcore.util.NativeAllocationRegistry$CleanerRunner",
         "libcore.util.NativeAllocationRegistry$CleanerThunk",
     };
