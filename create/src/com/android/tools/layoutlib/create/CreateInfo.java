@@ -352,7 +352,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.text.AndroidCharacter",
         "android.util.Log",
         "android.util.PathParser",
-        // "android.view.MotionEvent",
+        "android.view.MotionEvent",
         "android.view.Surface",
         "com.android.internal.util.VirtualRefBasePtr",
     };
