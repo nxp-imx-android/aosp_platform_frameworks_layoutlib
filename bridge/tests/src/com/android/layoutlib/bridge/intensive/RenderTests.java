@@ -545,6 +545,35 @@ public class RenderTests extends RenderTestBase {
     }
 
     /**
+     * Test a vector drawable which is transparent.
+     */
+    @Test
+    public void testTransparentDrawable() throws ClassNotFoundException {
+        // Create the layout pull parser.
+        LayoutPullParser parser = LayoutPullParser.createFromString(
+                "<ImageView xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "    android:layout_height=\"fill_parent\"\n" +
+                        "    android:layout_width=\"fill_parent\"\n" +
+                        "    android:src=\"@drawable/transparent_drawable\" />");
+        // Create LayoutLibCallback.
+        LayoutLibTestCallback layoutLibCallback =
+                new LayoutLibTestCallback(getLogger(), mDefaultClassLoader);
+        layoutLibCallback.initResources();
+
+        SessionParams params = getSessionParamsBuilder()
+                .setParser(parser)
+                .setCallback(layoutLibCallback)
+                .setTheme("Theme.Material.Light.NoActionBar.Fullscreen", false)
+                .setRenderingMode(RenderingMode.V_SCROLL)
+                .disableDecoration()
+                .setTransparentBackground()
+                .build();
+
+        renderAndVerify(params, "transparent_drawable.png",
+                TimeUnit.SECONDS.toNanos(2));
+    }
+
+    /**
      * Test a vector drawable that uses trimStart and trimEnd. It also tests all the primitives
      * for vector drawables (lines, moves and cubic and quadratic curves).
      */
