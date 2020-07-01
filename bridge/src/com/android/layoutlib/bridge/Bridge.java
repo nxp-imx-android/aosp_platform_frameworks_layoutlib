@@ -17,7 +17,7 @@
 package com.android.layoutlib.bridge;
 
 import com.android.ide.common.rendering.api.DrawableParams;
-import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
@@ -61,7 +61,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -127,7 +126,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     /**
      * A default log than prints to stdout/stderr.
      */
-    private final static LayoutLog sDefaultLog = new LayoutLog() {
+    private final static ILayoutLog sDefaultLog = new ILayoutLog() {
         @Override
         public void error(String tag, String message, Object viewCookie, Object data) {
             System.err.println(message);
@@ -153,7 +152,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     /**
      * Current log.
      */
-    private static LayoutLog sCurrentLog = sDefaultLog;
+    private static ILayoutLog sCurrentLog = sDefaultLog;
 
     private static String sIcuDataPath;
 
@@ -168,7 +167,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             String nativeLibPath,
             String icuDataPath,
             Map<String, Map<String, Integer>> enumValueMap,
-            LayoutLog log) {
+            ILayoutLog log) {
         sPlatformProperties = platformProperties;
         sEnumValueMap = enumValueMap;
         sIcuDataPath = icuDataPath;
@@ -240,7 +239,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             ParserFactory.setParserFactory(null);
         } catch (Throwable t) {
             if (log != null) {
-                log.error(LayoutLog.TAG_BROKEN, "Layoutlib Bridge initialization failed", t,
+                log.error(ILayoutLog.TAG_BROKEN, "Layoutlib Bridge initialization failed", t,
                         null, null);
             }
             return false;
@@ -297,7 +296,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             }
         } catch (Exception throwable) {
             if (log != null) {
-                log.error(LayoutLog.TAG_BROKEN,
+                log.error(ILayoutLog.TAG_BROKEN,
                         "Failed to load com.android.internal.R from the layout library jar",
                         throwable, null, null);
             }
@@ -572,11 +571,11 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         Looper_Accessor.cleanupThread();
     }
 
-    public static LayoutLog getLog() {
+    public static ILayoutLog getLog() {
         return sCurrentLog;
     }
 
-    public static void setLog(LayoutLog log) {
+    public static void setLog(ILayoutLog log) {
         // check only the thread currently owning the lock can do this.
         if (!sLock.isHeldByCurrentThread()) {
             throw new IllegalStateException("scene must be acquired first. see #acquire(long)");
@@ -688,14 +687,14 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     private static boolean sJniLibLoadAttempted;
     private static boolean sJniLibLoaded;
 
-    private synchronized static boolean loadNativeLibrariesIfNeeded(LayoutLog log,
+    private synchronized static boolean loadNativeLibrariesIfNeeded(ILayoutLog log,
             String nativeLibDir) {
         if (!sJniLibLoadAttempted) {
             try {
                 loadNativeLibraries(nativeLibDir);
             }
             catch (Throwable t) {
-                log.error(LayoutLog.TAG_BROKEN, "Native layoutlib failed to load", t, null, null);
+                log.error(ILayoutLog.TAG_BROKEN, "Native layoutlib failed to load", t, null, null);
             }
         }
         return sJniLibLoaded;

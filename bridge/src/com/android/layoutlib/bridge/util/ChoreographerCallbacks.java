@@ -17,7 +17,6 @@
 package com.android.layoutlib.bridge.util;
 
 import com.android.ide.common.rendering.api.ILayoutLog;
-import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.tools.layoutlib.annotations.NotNull;
 import com.android.utils.Pair;
 
@@ -89,11 +88,11 @@ public class ChoreographerCallbacks {
                 Runnable runnable = (Runnable) action;
                 runnable.run();
             } else {
-                logger.error(LayoutLog.TAG_BROKEN,
+                logger.error(ILayoutLog.TAG_BROKEN,
                         "Unexpected action as Choreographer callback", (Object) null, null);
             }
         } catch (Throwable t) {
-            logger.error(LayoutLog.TAG_BROKEN, "Failed executing Choreographer callback", t,
+            logger.error(ILayoutLog.TAG_BROKEN, "Failed executing Choreographer callback", t,
                     null, null);
         }
     }

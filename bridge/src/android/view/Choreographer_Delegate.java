@@ -15,7 +15,7 @@
  */
 package android.view;
 
-import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
@@ -47,7 +47,7 @@ public class Choreographer_Delegate {
             return;
         }
         if (action == null) {
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+            Bridge.getLog().error(ILayoutLog.TAG_BROKEN,
                     "Callback with null action", (Object) null, null);
         }
         context.getSessionInteractiveData().getChoreographerCallbacks().add(action, delayMillis);
@@ -65,7 +65,7 @@ public class Choreographer_Delegate {
             return;
         }
         if (action == null) {
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+            Bridge.getLog().error(ILayoutLog.TAG_BROKEN,
                     "Callback with null action", (Object) null, null);
         }
         context.getSessionInteractiveData().getChoreographerCallbacks().remove(action);
