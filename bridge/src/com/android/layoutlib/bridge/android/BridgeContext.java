@@ -36,7 +36,7 @@ import com.android.layoutlib.bridge.impl.ResourceHelper;
 import com.android.layoutlib.bridge.impl.Stack;
 import com.android.resources.ResourceType;
 import com.android.tools.layoutlib.annotations.NotNull;
-import com.android.util.Pair;
+import com.android.utils.Pair;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
