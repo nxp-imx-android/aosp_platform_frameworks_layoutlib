@@ -15,7 +15,7 @@
  */
 package android.view;
 
-import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.util.CallbacksDisposer;
@@ -46,7 +46,7 @@ public class Choreographer_Delegate {
                 Choreographer.getInstance().removeCallbacksInternal_Original(
                         Choreographer.CALLBACK_ANIMATION, runnable, null);
             } else {
-                Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+                Bridge.getLog().error(ILayoutLog.TAG_BROKEN,
                         "Unexpected action as " + "ANIMATION_CALLBACK", (Object) null, null);
             }
         }
@@ -69,7 +69,7 @@ public class Choreographer_Delegate {
             return;
         }
         if (action == null) {
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+            Bridge.getLog().error(ILayoutLog.TAG_BROKEN,
                     "Callback with null action", (Object) null, null);
         }
         sCallbacksDisposer.onCallbackAdded(new SessionKey(context), action);
@@ -88,7 +88,7 @@ public class Choreographer_Delegate {
             return;
         }
         if (action == null) {
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+            Bridge.getLog().error(ILayoutLog.TAG_BROKEN,
                     "Callback with null action", (Object) null, null);
         }
         sCallbacksDisposer.onCallbackRemoved(new SessionKey(context), action);

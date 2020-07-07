@@ -239,7 +239,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             ParserFactory.setParserFactory(null);
         } catch (Throwable t) {
             if (log != null) {
-                log.error(LayoutLog.TAG_BROKEN, "Layoutlib Bridge initialization failed", t,
+                log.error(ILayoutLog.TAG_BROKEN, "Layoutlib Bridge initialization failed", t,
                         null, null);
             }
             return false;
@@ -687,14 +687,14 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     private static boolean sJniLibLoadAttempted;
     private static boolean sJniLibLoaded;
 
-    private synchronized static boolean loadNativeLibrariesIfNeeded(LayoutLog log,
+    private synchronized static boolean loadNativeLibrariesIfNeeded(ILayoutLog log,
             String nativeLibDir) {
         if (!sJniLibLoadAttempted) {
             try {
                 loadNativeLibraries(nativeLibDir);
             }
             catch (Throwable t) {
-                log.error(LayoutLog.TAG_BROKEN, "Native layoutlib failed to load", t, null, null);
+                log.error(ILayoutLog.TAG_BROKEN, "Native layoutlib failed to load", t, null, null);
             }
         }
         return sJniLibLoaded;

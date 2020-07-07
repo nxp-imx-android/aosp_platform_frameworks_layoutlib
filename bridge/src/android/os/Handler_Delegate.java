@@ -16,7 +16,7 @@
 
 package android.os;
 
-import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.impl.RenderAction;
@@ -126,7 +126,7 @@ public class Handler_Delegate {
         try {
             r.run();
         } catch (Throwable t) {
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Failed executing Handler callback", t,
+            Bridge.getLog().error(ILayoutLog.TAG_BROKEN, "Failed executing Handler callback", t,
                     null, null);
         }
     }

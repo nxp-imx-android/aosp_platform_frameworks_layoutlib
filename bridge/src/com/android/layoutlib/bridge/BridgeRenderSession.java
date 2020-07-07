@@ -16,7 +16,7 @@
 
 package com.android.layoutlib.bridge;
 
-import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.ide.common.rendering.api.RenderParams;
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceReference;
@@ -167,7 +167,7 @@ public class BridgeRenderSession extends RenderSession {
             Choreographer.getInstance().doFrame(nanos, 0);
             return hasMoreCallbacks;
         } catch (Throwable t) {
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Failed executing Choreographer#doFrame "
+            Bridge.getLog().error(ILayoutLog.TAG_BROKEN, "Failed executing Choreographer#doFrame "
                     , t, null, null);
             return false;
         } finally {
