@@ -18,8 +18,8 @@ package com.android.layoutlib.bridge.impl;
 
 import com.android.ide.common.rendering.api.AdapterBinding;
 import com.android.ide.common.rendering.api.HardwareConfig;
+import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.ide.common.rendering.api.ILayoutPullParser;
-import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceReference;
@@ -46,15 +46,14 @@ import com.android.layoutlib.bridge.android.support.FragmentTabHostUtil;
 import com.android.layoutlib.bridge.android.support.SupportPreferencesUtil;
 import com.android.layoutlib.bridge.impl.binding.FakeAdapter;
 import com.android.layoutlib.bridge.impl.binding.FakeExpandableAdapter;
-import com.android.tools.layoutlib.java.System_Delegate;
-import com.android.tools.idea.validator.ValidatorResult;
 import com.android.tools.idea.validator.LayoutValidator;
+import com.android.tools.idea.validator.ValidatorResult;
 import com.android.tools.idea.validator.ValidatorResult.Builder;
+import com.android.tools.layoutlib.java.System_Delegate;
 import com.android.utils.Pair;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.Fragment_Delegate;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap_Delegate;
 import android.graphics.Canvas;
@@ -204,10 +203,10 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         mMeasuredScreenHeight = hardwareConfig.getScreenHeight();
 
         if (renderingMode != RenderingMode.NORMAL) {
-            int widthMeasureSpecMode = renderingMode.isHorizExpand() ?
+            int widthMeasureSpecMode = renderingMode.getHorizAction() == SizeAction.EXPAND ?
                     MeasureSpec.UNSPECIFIED // this lets us know the actual needed size
                     : MeasureSpec.EXACTLY;
-            int heightMeasureSpecMode = renderingMode.isVertExpand() ?
+            int heightMeasureSpecMode = renderingMode.getVertAction() == SizeAction.EXPAND ?
                     MeasureSpec.UNSPECIFIED // this lets us know the actual needed size
                     : MeasureSpec.EXACTLY;
 
@@ -298,14 +297,14 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
             if (Bridge.isLocaleRtl(params.getLocale())) {
                 if (!params.isRtlSupported()) {
-                    Bridge.getLog().warning(LayoutLog.TAG_RTL_NOT_ENABLED,
+                    Bridge.getLog().warning(ILayoutLog.TAG_RTL_NOT_ENABLED,
                             "You are using a right-to-left " +
                                     "(RTL) locale but RTL is not enabled", null, null);
                 } else if (params.getSimulatedPlatformVersion() !=0 &&
                         params.getSimulatedPlatformVersion() < 17) {
                     // This will render ok because we are using the latest layoutlib but at least
                     // warn the user that this might fail in a real device.
-                    Bridge.getLog().warning(LayoutLog.TAG_RTL_NOT_SUPPORTED, "You are using a " +
+                    Bridge.getLog().warning(ILayoutLog.TAG_RTL_NOT_SUPPORTED, "You are using a " +
                             "right-to-left " +
                             "(RTL) locale but RTL is not supported for API level < 17", null, null);
                 }
@@ -500,11 +499,11 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                         newImage = true;
                     }
 
-                    if (params.isBgColorOverridden()) {
+                    if (params.isTransparentBackground()) {
                         // since we override the content, it's the same as if it was a new image.
                         newImage = true;
                         Graphics2D gc = mImage.createGraphics();
-                        gc.setColor(new Color(params.getOverrideBgColor(), true));
+                        gc.setColor(new Color(0, true));
                         gc.setComposite(AlphaComposite.Src);
                         gc.fillRect(0, 0, mMeasuredScreenWidth, mMeasuredScreenHeight);
                         gc.dispose();
