@@ -17,6 +17,7 @@
 package com.android.tools.idea.validator.accessibility;
 
 import com.android.ide.common.rendering.api.RenderSession;
+import com.android.ide.common.rendering.api.SessionParams;
 import com.android.layoutlib.bridge.intensive.RenderTestBase;
 import com.android.layoutlib.bridge.intensive.setup.ConfigGenerator;
 import com.android.layoutlib.bridge.intensive.setup.LayoutLibTestCallback;

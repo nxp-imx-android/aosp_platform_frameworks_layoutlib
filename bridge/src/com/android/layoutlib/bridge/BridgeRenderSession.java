@@ -16,27 +16,29 @@
 
 package com.android.layoutlib.bridge;
 
-import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.ide.common.rendering.api.RenderParams;
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.ViewInfo;
+import com.android.internal.lang.System_Delegate;
 import com.android.internal.util.ArrayUtils_Delegate;
 import com.android.layoutlib.bridge.impl.RenderSessionImpl;
-import com.android.tools.layoutlib.java.System_Delegate;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Handler_Delegate;
-import android.view.Choreographer;
+import android.os.SystemClock_Delegate;
 import android.view.MotionEvent;
 
 import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static com.android.layoutlib.bridge.impl.RenderAction.getCurrentContext;
 
 /**
  * An implementation of {@link RenderSession}.
@@ -133,12 +135,30 @@ public class BridgeRenderSession extends RenderSession {
 
     @Override
     public void setSystemTimeNanos(long nanos) {
-        System_Delegate.setNanosTime(nanos);
+        if (mSession != null) {
+            try {
+                Bridge.prepareThread();
+                mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
+                System_Delegate.setNanosTime(nanos);
+            } finally {
+                mSession.release();
+                Bridge.cleanupThread();
+            }
+        }
     }
 
     @Override
     public void setSystemBootTimeNanos(long nanos) {
-        System_Delegate.setBootTimeNanos(nanos);
+        if (mSession != null) {
+            try {
+                Bridge.prepareThread();
+                mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
+                System_Delegate.setBootTimeNanos(nanos);
+            } finally {
+                mSession.release();
+                Bridge.cleanupThread();
+            }
+        }
     }
 
     @Override
@@ -160,15 +180,15 @@ public class BridgeRenderSession extends RenderSession {
             Bridge.prepareThread();
             mLastResult = mSession.acquire(RenderParams.DEFAULT_TIMEOUT);
             boolean hasMoreCallbacks = Handler_Delegate.executeCallbacks();
-            // Put a no-op callback to make sure Choreographer.mFrameScheduled is true and
-            // therefore frame callbacks will be executed
-            Choreographer.getInstance().postCallbackDelayedInternal(
-                    Choreographer.CALLBACK_ANIMATION, NOOP_RUNNABLE, null, 0);
-            Choreographer.getInstance().doFrame(nanos, 0);
+            long currentTimeMs = SystemClock_Delegate.uptimeMillis();
+            getCurrentContext()
+                    .getSessionInteractiveData()
+                    .getChoreographerCallbacks()
+                    .execute(currentTimeMs, Bridge.getLog());
             return hasMoreCallbacks;
         } catch (Throwable t) {
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Failed executing Choreographer#doFrame "
-                    , t, null, null);
+            Bridge.getLog().error(ILayoutLog.TAG_BROKEN, "Failed executing Choreographer#doFrame ",
+                    t, null, null);
             return false;
         } finally {
             mSession.release();
@@ -228,6 +248,9 @@ public class BridgeRenderSession extends RenderSession {
 
     @Override
     public Object getValidationData() {
-        return mSession != null ? mSession.getValidatorResult() : null;
+        if (mSession != null) {
+            return mSession.getValidatorResult();
+        }
+        return null;
     }
 }

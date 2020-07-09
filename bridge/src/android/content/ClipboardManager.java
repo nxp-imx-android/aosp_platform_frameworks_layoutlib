@@ -18,7 +18,6 @@ package android.content;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.UnsupportedAppUsage;
 import android.os.Handler;
 
 public class ClipboardManager extends android.text.ClipboardManager {
@@ -41,7 +40,6 @@ public class ClipboardManager extends android.text.ClipboardManager {
     }
 
     /** {@hide} */
-    @UnsupportedAppUsage
     public ClipboardManager(Context context, Handler handler) { }
 
     /**
@@ -69,8 +67,7 @@ public class ClipboardManager extends android.text.ClipboardManager {
      *
      * @see #setPrimaryClip(ClipData)
      */
-    @Nullable
-    public ClipData getPrimaryClip() {
+    public @Nullable ClipData getPrimaryClip() {
         return null;
     }
 
@@ -126,6 +123,5 @@ public class ClipboardManager extends android.text.ClipboardManager {
         return false;
     }
 
-    @UnsupportedAppUsage
     void reportPrimaryClipChanged() { }
 }

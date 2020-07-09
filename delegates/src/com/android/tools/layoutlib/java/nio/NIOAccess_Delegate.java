@@ -16,8 +16,6 @@
 
 package com.android.tools.layoutlib.java.nio;
 
-import dalvik.annotation.compat.UnsupportedAppUsage;
-
 import java.nio.Buffer;
 
 /**
@@ -36,7 +34,6 @@ public final class NIOAccess_Delegate {
      * @hide
      */
     // @VisibleForTesting : was default
-    @UnsupportedAppUsage
     public static long getBasePointer(Buffer b) {
         throw new UnsupportedOperationException("implement me");
 //        long address = b.address;
@@ -50,7 +47,6 @@ public final class NIOAccess_Delegate {
      * Returns the underlying Java array containing the data of the
      * given Buffer, or null if the Buffer is not backed by a Java array.
      */
-    @UnsupportedAppUsage
     static Object getBaseArray(Buffer b) {
         return b.hasArray() ? b.array() : null;
     }
@@ -62,7 +58,6 @@ public final class NIOAccess_Delegate {
      * account the Buffer's current position. This method is only
      * meaningful if getBaseArray() returns non-null.
      */
-    @UnsupportedAppUsage
     static int getBaseArrayOffset(Buffer b) {
         throw new UnsupportedOperationException("implement me");
         //return b.hasArray() ? ((b.arrayOffset() + b.position()) << b._elementSizeShift) : 0;

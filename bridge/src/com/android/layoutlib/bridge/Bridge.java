@@ -17,23 +17,30 @@
 package com.android.layoutlib.bridge;
 
 import com.android.ide.common.rendering.api.DrawableParams;
-import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.Result.Status;
 import com.android.ide.common.rendering.api.SessionParams;
+import com.android.ide.common.rendering.api.XmlParserFactory;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
+import com.android.layoutlib.bridge.impl.ParserFactory;
 import com.android.layoutlib.bridge.impl.RenderDrawable;
 import com.android.layoutlib.bridge.impl.RenderSessionImpl;
 import com.android.layoutlib.bridge.util.DynamicIdMap;
+import com.android.layoutlib.common.util.ReflectionUtils;
 import com.android.resources.ResourceType;
+import com.android.tools.layoutlib.annotations.NonNull;
 import com.android.tools.layoutlib.annotations.Nullable;
 import com.android.tools.layoutlib.create.MethodAdapter;
 import com.android.tools.layoutlib.create.NativeConfig;
 import com.android.tools.layoutlib.create.OverrideMethod;
 import com.android.util.Pair;
+
+import org.kxml2.io.KXmlParser;
+import org.xmlpull.v1.XmlPullParser;
 
 import android.content.res.BridgeAssetManager;
 import android.graphics.Bitmap;
@@ -119,19 +126,20 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     /**
      * A default log than prints to stdout/stderr.
      */
-    private final static LayoutLog sDefaultLog = new LayoutLog() {
+    private final static ILayoutLog sDefaultLog = new ILayoutLog() {
         @Override
-        public void error(String tag, String message, Object data) {
+        public void error(String tag, String message, Object viewCookie, Object data) {
             System.err.println(message);
         }
 
         @Override
-        public void error(String tag, String message, Throwable throwable, Object data) {
+        public void error(String tag, String message, Throwable throwable,
+                Object viewCookie, Object data) {
             System.err.println(message);
         }
 
         @Override
-        public void warning(String tag, String message, Object data) {
+        public void warning(String tag, String message, Object viewCookie, Object data) {
             System.out.println(message);
         }
 
@@ -144,16 +152,14 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     /**
      * Current log.
      */
-    private static LayoutLog sCurrentLog = sDefaultLog;
+    private static ILayoutLog sCurrentLog = sDefaultLog;
 
     private static String sIcuDataPath;
 
-    private static final String[] LINUX_NATIVE_LIBRARIES =
-            {"liblog.so", "libandroid_runtime.so"};
-    private static final String[] MAC_NATIVE_LIBRARIES =
-            {"liblog.dylib","libandroid_runtime.dylib"};
+    private static final String[] LINUX_NATIVE_LIBRARIES = {"libandroid_runtime.so"};
+    private static final String[] MAC_NATIVE_LIBRARIES = {"libandroid_runtime.dylib"};
     private static final String[] WINDOWS_NATIVE_LIBRARIES =
-            {"liblog.dll", "libicuuc_stubdata.dll", "libicuuc-host.dll", "libandroid_runtime.dll"};
+            {"libicuuc_stubdata.dll", "libicuuc-host.dll", "libandroid_runtime.dll"};
 
     @Override
     public boolean init(Map<String,String> platformProperties,
@@ -161,7 +167,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             String nativeLibPath,
             String icuDataPath,
             Map<String, Map<String, Integer>> enumValueMap,
-            LayoutLog log) {
+            ILayoutLog log) {
         sPlatformProperties = platformProperties;
         sEnumValueMap = enumValueMap;
         sIcuDataPath = icuDataPath;
@@ -187,7 +193,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
                 @Override
                 public void onInvokeV(String signature, boolean isNative, Object caller) {
                     sDefaultLog.error(null, "Missing Stub: " + signature +
-                            (isNative ? " (native)" : ""), null /*data*/);
+                            (isNative ? " (native)" : ""), null, null /*data*/);
 
                     if (debug.equalsIgnoreCase("throw")) {
                         // Throwing this exception doesn't seem that useful. It breaks
@@ -203,12 +209,37 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         try {
             BridgeAssetManager.initSystem();
 
-            // load the fonts.
+            // Do the static initialization of all the classes for which it was deferred.
+            // In order to initialize Typeface, we first need to specify the location of fonts
+            // and set a parser factory that will be used to parse the fonts.xml file.
             SystemFonts_Delegate.setFontLocation(fontLocation.getAbsolutePath() + File.separator);
             MemoryMappedFile_Delegate.setDataDir(fontLocation.getAbsoluteFile().getParentFile());
+            ParserFactory.setParserFactory(new XmlParserFactory() {
+                @Override
+                @Nullable
+                public XmlPullParser createXmlParserForPsiFile(@NonNull String fileName) {
+                    return null;
+                }
+
+                @Override
+                @Nullable
+                public XmlPullParser createXmlParserForFile(@NonNull String fileName) {
+                    return null;
+                }
+
+                @Override
+                @NonNull
+                public XmlPullParser createXmlParser() {
+                    return new KXmlParser();
+                }
+            });
+            for (String deferredClass : NativeConfig.DEFERRED_STATIC_INITIALIZER_CLASSES) {
+                ReflectionUtils.invokeStatic(deferredClass, "deferredStaticInitializer");
+            }
+            ParserFactory.setParserFactory(null);
         } catch (Throwable t) {
             if (log != null) {
-                log.error(LayoutLog.TAG_BROKEN, "Layoutlib Bridge initialization failed", t,
+                log.error(ILayoutLog.TAG_BROKEN, "Layoutlib Bridge initialization failed", t,
                         null, null);
             }
             return false;
@@ -265,9 +296,9 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             }
         } catch (Exception throwable) {
             if (log != null) {
-                log.error(LayoutLog.TAG_BROKEN,
+                log.error(ILayoutLog.TAG_BROKEN,
                         "Failed to load com.android.internal.R from the layout library jar",
-                        throwable, null);
+                        throwable, null, null);
             }
             return false;
         }
@@ -408,7 +439,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
                     if (lastResult.isSuccess() && !doNotRenderOnCreate) {
                         lastResult = scene.render(true /*freshRender*/);
                     }
-
                 }
             } finally {
                 scene.release();
@@ -541,11 +571,11 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         Looper_Accessor.cleanupThread();
     }
 
-    public static LayoutLog getLog() {
+    public static ILayoutLog getLog() {
         return sCurrentLog;
     }
 
-    public static void setLog(LayoutLog log) {
+    public static void setLog(ILayoutLog log) {
         // check only the thread currently owning the lock can do this.
         if (!sLock.isHeldByCurrentThread()) {
             throw new IllegalStateException("scene must be acquired first. see #acquire(long)");
@@ -561,7 +591,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     /**
      * Returns details of a framework resource from its integer value.
      *
-     * <p>TODO(namespaces): remove this and just do all id resolution through the callback.
+     * <p>TODO(b/156609434): remove this and just do all id resolution through the callback.
      */
     @Nullable
     public static ResourceReference resolveResourceId(int value) {
@@ -657,14 +687,14 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     private static boolean sJniLibLoadAttempted;
     private static boolean sJniLibLoaded;
 
-    private synchronized static boolean loadNativeLibrariesIfNeeded(LayoutLog log,
+    private synchronized static boolean loadNativeLibrariesIfNeeded(ILayoutLog log,
             String nativeLibDir) {
         if (!sJniLibLoadAttempted) {
             try {
                 loadNativeLibraries(nativeLibDir);
             }
             catch (Throwable t) {
-                log.error(LayoutLog.TAG_BROKEN, "Native layoutlib failed to load", t, null, null);
+                log.error(ILayoutLog.TAG_BROKEN, "Native layoutlib failed to load", t, null, null);
             }
         }
         return sJniLibLoaded;
@@ -677,8 +707,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         }
         try {
             // set the system property so LayoutLibLoader.cpp can read it
-            System.setProperty("delegate_natives_to_natives", String.join(",",
-                    NativeConfig.DELEGATE_CLASS_NATIVES_TO_NATIVES).replace('.', '/'));
             System.setProperty("native_classes", String.join(",",
                     NativeConfig.CLASS_NATIVES));
             System.setProperty("icu.dir", Bridge.getIcuDataPath());

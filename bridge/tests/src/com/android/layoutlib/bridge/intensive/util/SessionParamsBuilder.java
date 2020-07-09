@@ -19,7 +19,7 @@ package com.android.layoutlib.bridge.intensive.util;
 import com.android.SdkConstants;
 import com.android.ide.common.rendering.api.AssetRepository;
 import com.android.ide.common.rendering.api.IImageFactory;
-import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
@@ -56,7 +56,7 @@ public class SessionParamsBuilder {
     private LayoutlibCallback mLayoutlibCallback;
     private int mTargetSdk;
     private int mMinSdk = 0;
-    private LayoutLog mLayoutLog;
+    private ILayoutLog mLayoutLog;
     private Map<SessionParams.Key, Object> mFlags = new HashMap<>();
     private AssetRepository mAssetRepository = null;
     private boolean mDecor = true;
@@ -65,6 +65,7 @@ public class SessionParamsBuilder {
     private boolean highQualityShadows = true;
     private boolean enableLayoutValidator = false;
     private boolean enableLayoutValidatorImageCheck = false;
+    private boolean transparentBackground = false;
 
     @NonNull
     public SessionParamsBuilder setParser(@NonNull LayoutPullParser layoutParser) {
@@ -136,7 +137,7 @@ public class SessionParamsBuilder {
     }
 
     @NonNull
-    public SessionParamsBuilder setLayoutLog(@NonNull LayoutLog layoutLog) {
+    public SessionParamsBuilder setLayoutLog(@NonNull ILayoutLog layoutLog) {
         mLayoutLog = layoutLog;
         return this;
     }
@@ -188,6 +189,12 @@ public class SessionParamsBuilder {
         this.enableLayoutValidatorImageCheck = true;
         return this;
     }
+    
+    @NonNull
+    public SessionParamsBuilder setTransparentBackground() {
+        this.transparentBackground = true;
+        return this;
+    }
 
     @NonNull
     public SessionParams build() {
@@ -225,6 +232,10 @@ public class SessionParamsBuilder {
 
         if (!mDecor) {
             params.setForceNoDecor();
+        }
+
+        if (transparentBackground) {
+            params.setTransparentBackground();
         }
 
         return params;

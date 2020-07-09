@@ -19,7 +19,6 @@ package com.android.tools.layoutlib.create;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 import com.android.tools.layoutlib.java.LinkedHashMap_Delegate;
 import com.android.tools.layoutlib.java.NioUtils_Delegate;
-import com.android.tools.layoutlib.java.System_Delegate;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -161,7 +160,6 @@ public final class CreateInfo implements ICreateInfo {
             InjectMethodRunnable.class,
             InjectMethodRunnables.class,
             /* Java package classes */
-            System_Delegate.class,
             LinkedHashMap_Delegate.class,
             NioUtils_Delegate.class,
         };
@@ -177,7 +175,6 @@ public final class CreateInfo implements ICreateInfo {
         "android.content.res.AssetManager#nativeDestroy",
         "android.content.res.AssetManager#nativeThemeCreate",
         "android.content.res.AssetManager#nativeThemeDestroy",
-        "android.content.res.AssetManager#open",
         "android.content.res.Resources#getAnimation",
         "android.content.res.Resources#getAttributeSetSourceResId",
         "android.content.res.Resources#getBoolean",
@@ -216,17 +213,16 @@ public final class CreateInfo implements ICreateInfo {
         "android.content.res.Resources$Theme#resolveAttributes",
         "android.content.res.TypedArray#getValueAt",
         "android.content.res.TypedArray#obtain",
-        "android.graphics.FontFamily#addFontFromAssetManager",
         "android.graphics.ImageDecoder#decodeBitmapImpl",
+        "com.google.android.apps.common.testing.accessibility.framework.uielement" +
+                ".AccessibilityHierarchyAndroid$ViewElementClassNamesAndroid#getClassByName",
         "android.graphics.Typeface#create",
         "android.graphics.Typeface$Builder#createAssetUid",
         "android.graphics.drawable.AdaptiveIconDrawable#<init>",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI#onDraw",
         "android.graphics.drawable.AnimatedVectorDrawable#draw",
         "android.graphics.drawable.DrawableInflater#inflateFromClass",
-        "android.graphics.fonts.Font$Builder#nGetAssetBuffer",
-        "android.graphics.fonts.Font$Builder#nGetNativeAsset",
-        "android.graphics.fonts.Font$Builder#nGetReleaseNativeAssetFunc",
+        "android.graphics.fonts.Font$Builder#createBuffer",
         "android.graphics.fonts.SystemFonts#buildSystemFallback",
         "android.graphics.fonts.SystemFonts#mmap",
         "android.os.Binder#getNativeBBinderHolder",
@@ -282,8 +278,7 @@ public final class CreateInfo implements ICreateInfo {
      */
     public final static String[] DELEGATE_CLASS_NATIVES = NativeConfig.DELEGATE_CLASS_NATIVES;
 
-    public final static String[] DELEGATE_CLASS_NATIVES_TO_NATIVES =
-            NativeConfig.DELEGATE_CLASS_NATIVES_TO_NATIVES;
+    public final static String[] DELEGATE_CLASS_NATIVES_TO_NATIVES = new String[] {};
 
     /**
      * The list of classes on which NOT to delegate any native method.
@@ -312,14 +307,18 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.DiscretePathEffect",
         "android.graphics.DrawFilter",
         "android.graphics.EmbossMaskFilter",
+        "android.graphics.FontFamily",
         "android.graphics.HardwareRenderer",
+        "android.graphics.ImageDecoder",
         "android.graphics.Interpolator",
         "android.graphics.LightingColorFilter",
         "android.graphics.LinearGradient",
         "android.graphics.MaskFilter",
+        "android.graphics.Matrix",
         "android.graphics.NinePatch",
         "android.graphics.Paint",
         "android.graphics.PaintFlagsDrawFilter",
+        "android.graphics.Path",
         "android.graphics.PathDashPathEffect",
         "android.graphics.PathEffect",
         "android.graphics.PathMeasure",
@@ -330,13 +329,20 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.Region",
         "android.graphics.RegionIterator",
         "android.graphics.RenderNode",
+        "android.graphics.RuntimeShader",
         "android.graphics.Shader",
         "android.graphics.SumPathEffect",
         "android.graphics.SweepGradient",
         "android.graphics.TableMaskFilter",
+        "android.graphics.Typeface",
+        "android.graphics.animation.NativeInterpolatorFactory",
+        "android.graphics.animation.RenderNodeAnimator",
         "android.graphics.drawable.AnimatedVectorDrawable",
         "android.graphics.drawable.VectorDrawable",
+        "android.graphics.fonts.Font$Builder",
+        "android.graphics.fonts.FontFamily$Builder",
         "android.graphics.fonts.SystemFonts",
+        "android.graphics.text.LineBreaker",
         "android.graphics.text.MeasuredText",
         "android.graphics.text.MeasuredText$Builder",
         "android.media.ImageReader",
@@ -347,9 +353,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.util.Log",
         "android.util.PathParser",
         "android.view.MotionEvent",
-        "android.view.RenderNodeAnimator",
         "android.view.Surface",
-        "com.android.internal.view.animation.NativeInterpolatorFactoryHelper",
         "com.android.internal.util.VirtualRefBasePtr",
     };
 
@@ -445,7 +449,6 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI",
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimator",
         "android.view.Choreographer$CallbackQueue", // required for tests only
-        "android.view.Choreographer$CallbackRecord",
         "libcore.util.NativeAllocationRegistry$CleanerRunner",
         "libcore.util.NativeAllocationRegistry$CleanerThunk",
     };
@@ -460,9 +463,8 @@ public final class CreateInfo implements ICreateInfo {
         new String[] {
             null };                         // separator, for next class/methods list.
 
-    private final static String[] DEFERRED_STATIC_INITIALIZER_CLASSES = new String[] {
-
-    };
+    private final static String[] DEFERRED_STATIC_INITIALIZER_CLASSES =
+            NativeConfig.DEFERRED_STATIC_INITIALIZER_CLASSES;
 
     private final static Map<String, InjectMethodRunnable> INJECTED_METHODS =
             new HashMap<String, InjectMethodRunnable>(1) {{
@@ -527,7 +529,7 @@ public final class CreateInfo implements ICreateInfo {
         @Override
         public void replace(MethodInformation mi) {
             mi.name = "currentTimeMillis";
-            mi.owner = Type.getInternalName(System_Delegate.class);
+            mi.owner = "com/android/internal/lang/System_Delegate";
         }
     }
 
@@ -540,7 +542,7 @@ public final class CreateInfo implements ICreateInfo {
         @Override
         public void replace(MethodInformation mi) {
             mi.name = "nanoTime";
-            mi.owner = Type.getInternalName(System_Delegate.class);
+            mi.owner = "com/android/internal/lang/System_Delegate";
         }
     }
 
@@ -556,7 +558,7 @@ public final class CreateInfo implements ICreateInfo {
             assert mi.desc.equals("(Ljava/lang/String;Ljava/lang/Throwable;)V")
                     || mi.desc.equals("(Ljava/lang/String;)V");
             mi.name = "log";
-            mi.owner = Type.getInternalName(System_Delegate.class);
+            mi.owner = "com/android/internal/lang/System_Delegate";
         }
     }
 
@@ -572,7 +574,7 @@ public final class CreateInfo implements ICreateInfo {
 
         @Override
         public void replace(MethodInformation mi) {
-            mi.owner = Type.getInternalName(System_Delegate.class);
+            mi.owner = "com/android/internal/lang/System_Delegate";
         }
     }
 
@@ -658,6 +660,26 @@ public final class CreateInfo implements ICreateInfo {
         }
     }
 
+    /**
+     * Replace references to ZipEntry.getDataOffset with a delegate, since it does not exist in the JDK.
+     * @see {@link com.android.tools.layoutlib.java.util.zip.ZipEntry_Delegate#getDataOffset(ZipEntry)}
+     */
+    public static class ZipEntryGetDataOffsetReplacer implements MethodReplacer {
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return Type.getInternalName(ZipEntry.class).equals(owner)
+                    && "getDataOffset".equals(name);
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.opcode = Opcodes.INVOKESTATIC;
+            mi.owner = "com/android/tools/layoutlib/java/util/zip/ZipEntry_Delegate";
+            mi.desc = Type.getMethodDescriptor(
+                    Type.getType(long.class), Type.getType(ZipEntry.class));
+        }
+    }
+
     public static class NioUtilsFreeBufferReplacer implements MethodReplacer {
         @Override
         public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
@@ -682,30 +704,6 @@ public final class CreateInfo implements ICreateInfo {
             mi.owner = "android/graphics/HardwareRenderer_ProcessInitializer_Delegate";
             mi.opcode = Opcodes.INVOKESTATIC;
             mi.desc = "(J)V";
-        }
-    }
-
-    /**
-     * Replace references to ZipEntry.getDataOffset with a delegate, since it does not exist in the JDK.
-     *
-     *
-     *
-     *
-     * @see {@link com.android.tools.layoutlib.java.util.zip.ZipEntry_Delegate#getDataOffset(ZipEntry)}
-     */
-    public static class ZipEntryGetDataOffsetReplacer implements MethodReplacer {
-        @Override
-        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
-            return Type.getInternalName(ZipEntry.class).equals(owner)
-                    && "getDataOffset".equals(name);
-        }
-
-        @Override
-        public void replace(MethodInformation mi) {
-            mi.opcode = Opcodes.INVOKESTATIC;
-            mi.owner = "com/android/tools/layoutlib/java/util/zip/ZipEntry_Delegate";
-            mi.desc = Type.getMethodDescriptor(
-                    Type.getType(long.class), Type.getType(ZipEntry.class));
         }
     }
 }

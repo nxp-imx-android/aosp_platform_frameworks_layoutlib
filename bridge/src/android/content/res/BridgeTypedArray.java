@@ -18,7 +18,7 @@ package android.content.res;
 
 import com.android.ide.common.rendering.api.ArrayResourceValue;
 import com.android.ide.common.rendering.api.AttrResourceValue;
-import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.ide.common.rendering.api.RenderResources;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceNamespace.Resolver;
@@ -265,10 +265,10 @@ public final class BridgeTypedArray extends TypedArray {
         try {
             return convertValueToInt(s, defValue);
         } catch (NumberFormatException e) {
-            Bridge.getLog().warning(LayoutLog.TAG_RESOURCES_FORMAT,
+            Bridge.getLog().warning(ILayoutLog.TAG_RESOURCES_FORMAT,
                     String.format("\"%1$s\" in attribute \"%2$s\" is not a valid integer",
                             s, mNames[index]),
-                    null);
+                    null, null);
         }
         return defValue;
     }
@@ -288,10 +288,10 @@ public final class BridgeTypedArray extends TypedArray {
                     return Float.parseFloat(s);
             }
         } catch (NumberFormatException e) {
-            Bridge.getLog().warning(LayoutLog.TAG_RESOURCES_FORMAT,
+            Bridge.getLog().warning(ILayoutLog.TAG_RESOURCES_FORMAT,
                     String.format("\"%1$s\" in attribute \"%2$s\" cannot be converted to float.",
                             s, mNames[index]),
-                    null);
+                    null, null);
         }
         return defValue;
     }
@@ -447,9 +447,10 @@ public final class BridgeTypedArray extends TypedArray {
 
             if (s != null) {
                 // looks like we were unable to resolve the dimension value
-                Bridge.getLog().warning(LayoutLog.TAG_RESOURCES_FORMAT,
+                Bridge.getLog().warning(ILayoutLog.TAG_RESOURCES_FORMAT,
                         String.format("\"%1$s\" in attribute \"%2$s\" is not a valid format.",
-                                s, mNames[index]), null);
+                                s, mNames[index]),
+                        null, null);
             }
 
             return defValue;
@@ -479,8 +480,9 @@ public final class BridgeTypedArray extends TypedArray {
                 throw new RuntimeException("Layout Dimension '" + name + "' not found.");
             }
 
-            Bridge.getLog().warning(LayoutLog.TAG_RESOURCES_FORMAT,
-                    "You must supply a " + name + " attribute.", null);
+            Bridge.getLog().warning(ILayoutLog.TAG_RESOURCES_FORMAT,
+                    "You must supply a " + name + " attribute.",
+                    null, null);
 
             return 0;
         }
@@ -548,10 +550,11 @@ public final class BridgeTypedArray extends TypedArray {
         }
 
         // looks like we were unable to resolve the fraction value
-        Bridge.getLog().warning(LayoutLog.TAG_RESOURCES_FORMAT,
+        Bridge.getLog().warning(ILayoutLog.TAG_RESOURCES_FORMAT,
                 String.format(
                         "\"%1$s\" in attribute \"%2$s\" cannot be converted to a fraction.",
-                        value, mNames[index]), null);
+                        value, mNames[index]),
+                null, null);
 
         return defValue;
     }

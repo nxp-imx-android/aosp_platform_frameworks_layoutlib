@@ -18,6 +18,7 @@ java_library_host {
     name: "layoutlib",
 
     srcs: ["src/**/*.java"],
+    java_version: "1.8",
     java_resource_dirs: ["resources"],
 
     libs: [
@@ -32,6 +33,35 @@ java_library_host {
         "ninepatch-prebuilt",
         "layoutlib-common",
         "layoutlib-common-delegates",
+        "layoutlib-validator",
+    ],
+
+    dist: {
+        targets: ["layoutlib"],
+    },
+}
+
+java_library_host {
+    name: "layoutlib-no-framework",
+
+    srcs: ["src/**/*.java"],
+    java_version: "1.8",
+    java_resource_dirs: ["resources"],
+
+    libs: [
+        "kxml2-2.3.0",
+        "temp_layoutlib",
+        "guava",
+    ],
+
+    static_libs: [
+        "layoutlib_create",
+        "layoutlib_api-prebuilt",
+        "tools-common-prebuilt",
+        "ninepatch-prebuilt",
+        "layoutlib-common",
+        "layoutlib-common-delegates",
+        "layoutlib-native-delegates",
         "layoutlib-validator",
     ],
 

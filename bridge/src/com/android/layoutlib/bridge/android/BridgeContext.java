@@ -18,8 +18,8 @@ package com.android.layoutlib.bridge.android;
 
 import com.android.SdkConstants;
 import com.android.ide.common.rendering.api.AssetRepository;
+import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.ide.common.rendering.api.ILayoutPullParser;
-import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.RenderResources;
 import com.android.ide.common.rendering.api.ResourceNamespace;
@@ -30,10 +30,12 @@ import com.android.ide.common.rendering.api.ResourceValueImpl;
 import com.android.ide.common.rendering.api.StyleResourceValue;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.BridgeConstants;
+import com.android.layoutlib.bridge.SessionInteractiveData;
 import com.android.layoutlib.bridge.impl.ParserFactory;
 import com.android.layoutlib.bridge.impl.ResourceHelper;
 import com.android.layoutlib.bridge.impl.Stack;
 import com.android.resources.ResourceType;
+import com.android.tools.layoutlib.annotations.NotNull;
 import com.android.util.Pair;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -41,7 +43,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.SystemServiceRegistry_Accessor;
+import android.app.SystemServiceRegistry;
 import android.content.BroadcastReceiver;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -192,6 +194,8 @@ public class BridgeContext extends Context {
     private final ResourceNamespace mAppCompatNamespace;
     private final Map<Key<?>, Object> mUserData = new HashMap<>();
 
+    private final SessionInteractiveData mSessionInteractiveData;
+
     /**
      * Some applications that target both pre API 17 and post API 17, set the newer attrs to
      * reference the older ones. For example, android:paddingStart will resolve to
@@ -251,7 +255,7 @@ public class BridgeContext extends Context {
             mApplicationInfo.flags = mApplicationInfo.flags | ApplicationInfo.FLAG_SUPPORTS_RTL;
         }
 
-        mWindowManager = new WindowManagerImpl(mMetrics);
+        mWindowManager = new WindowManagerImpl(this, mMetrics);
         mDisplayManager = new DisplayManager(this);
         mAutofillManager = new AutofillManager(this, new Default());
         mClipboardManager = new ClipboardManager(this, null);
@@ -268,6 +272,7 @@ public class BridgeContext extends Context {
 
         mShadowsEnabled = shadowsEnabled;
         mHighQualityShadows = highQualityShadows;
+        mSessionInteractiveData = new SessionInteractiveData();
     }
 
     /**
@@ -530,20 +535,20 @@ public class BridgeContext extends Context {
                         popParser();
                     }
                 } else {
-                    Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                            String.format("File %s is missing!", path), null);
+                    Bridge.getLog().error(ILayoutLog.TAG_BROKEN,
+                            String.format("File %s is missing!", path), null, null);
                 }
             } catch (XmlPullParserException e) {
-                Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                        "Failed to parse file " + path, e, null /*data*/);
+                Bridge.getLog().error(ILayoutLog.TAG_BROKEN,
+                        "Failed to parse file " + path, e, null,  null /*data*/);
                 // we'll return null below.
             } finally {
                 mBridgeInflater.setResourceReference(null);
             }
         } else {
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
+            Bridge.getLog().error(ILayoutLog.TAG_BROKEN,
                     String.format("Layout %s%s does not exist.", isPlatformLayout ? "android:" : "",
-                            layout.getName()), null);
+                            layout.getName()), null, null);
         }
 
         return Pair.of(null, Boolean.FALSE);
@@ -638,7 +643,8 @@ public class BridgeContext extends Context {
                 return mWindowManager;
 
             case POWER_SERVICE:
-                return new PowerManager(this, new BridgePowerManager(), new Handler());
+                return new PowerManager(this, new BridgePowerManager(), new BridgeThermalService(),
+                        new Handler());
 
             case DISPLAY_SERVICE:
                 return mDisplayManager;
@@ -668,7 +674,7 @@ public class BridgeContext extends Context {
 
     @Override
     public String getSystemServiceName(Class<?> serviceClass) {
-        return SystemServiceRegistry_Accessor.getSystemServiceName(serviceClass);
+        return SystemServiceRegistry.getSystemServiceName(serviceClass);
     }
 
     /**
@@ -692,8 +698,8 @@ public class BridgeContext extends Context {
             }
 
             if (style == null) {
-                Bridge.getLog().error(LayoutLog.TAG_RESOURCES_RESOLVE,
-                        "Failed to find style with " + resId, null);
+                Bridge.getLog().error(ILayoutLog.TAG_RESOURCES_RESOLVE,
+                        "Failed to find style with " + resId, null, null);
                 return null;
             }
         }
@@ -761,8 +767,8 @@ public class BridgeContext extends Context {
             resolver = Resolver.EMPTY_RESOLVER;
         } else if (set != null) {
             // really this should not be happening since its instantiated in Bridge
-            Bridge.getLog().error(LayoutLog.TAG_BROKEN,
-                    "Parser is not a BridgeXmlBlockParser!", null);
+            Bridge.getLog().error(ILayoutLog.TAG_BROKEN,
+                    "Parser is not a BridgeXmlBlockParser!", null, null);
             return null;
         } else {
             // `set` is null, so there will be no values to resolve.
@@ -800,8 +806,9 @@ public class BridgeContext extends Context {
                 // This should be rare. Happens trying to map R.style.foo to @style/foo fails.
                 // This will happen if the user explicitly used a non existing int value for
                 // defStyleAttr or there's something wrong with the project structure/build.
-                Bridge.getLog().error(LayoutLog.TAG_RESOURCES_RESOLVE,
-                        "Failed to find the style corresponding to the id " + defStyleAttr, null);
+                Bridge.getLog().error(ILayoutLog.TAG_RESOURCES_RESOLVE,
+                        "Failed to find the style corresponding to the id " + defStyleAttr, null,
+                        null);
             } else {
                 // look for the style in the current theme, and its parent:
                 ResourceValue item = mRenderResources.findItemInTheme(defStyleAttribute);
@@ -844,21 +851,21 @@ public class BridgeContext extends Context {
                                     String.format(
                                             "Style with id 0x%x (resolved to '%s') does not exist.",
                                             defStyleRes, value.getName()),
-                                    null);
+                                    null, null);
                         }
                     } else {
                         Bridge.getLog().error(null,
                                 String.format(
                                         "Resource id 0x%x is not of type STYLE (instead %s)",
                                         defStyleRes, value.getResourceType().name()),
-                                null);
+                                null, null);
                     }
                 } else {
                     Bridge.getLog().error(null,
                             String.format(
                                     "Failed to find style with id 0x%x in current theme",
                                     defStyleRes),
-                            null);
+                            null, null);
                 }
             }
         }
@@ -958,9 +965,9 @@ public class BridgeContext extends Context {
                                 if (reference != null) {
                                     val = reference.getResourceUrl().toString();
                                 }
-                                Bridge.getLog().warning(LayoutLog.TAG_RESOURCES_RESOLVE_THEME_ATTR,
+                                Bridge.getLog().warning(ILayoutLog.TAG_RESOURCES_RESOLVE_THEME_ATTR,
                                         String.format("Failed to find '%s' in current theme.", val),
-                                        val);
+                                        null, val);
                             }
                         }
                     }
@@ -1102,7 +1109,7 @@ public class BridgeContext extends Context {
      * Maps a given style to a numeric id.
      *
      * <p>For now Bridge handles numeric ids (both fixed and dynamic) for framework and the callback
-     * for non-framework. TODO(namespaces): teach the IDE about fixed framework ids and handle this
+     * for non-framework. TODO(b/156609434): teach the IDE about fixed framework ids and handle this
      * all in the callback.
      */
     public int getDynamicIdByStyle(StyleResourceValue resValue) {
@@ -1117,7 +1124,7 @@ public class BridgeContext extends Context {
      * Maps a numeric id back to {@link StyleResourceValue}.
      *
      * <p>For now framework numeric ids are handled by Bridge, so try there first and fall back to
-     * the callback, which manages ids for non-framework resources. TODO(namespaces): manage all
+     * the callback, which manages ids for non-framework resources. TODO(b/156609434): manage all
      * ids in the IDE.
      *
      * <p>Once we the resource for the given id, we ask the IDE to get the
@@ -1971,7 +1978,7 @@ public class BridgeContext extends Context {
 
     @Override
     public File getObbDir() {
-        Bridge.getLog().error(LayoutLog.TAG_UNSUPPORTED, "OBB not supported", null);
+        Bridge.getLog().error(ILayoutLog.TAG_UNSUPPORTED, "OBB not supported", null, null);
         return null;
     }
 
@@ -2069,6 +2076,11 @@ public class BridgeContext extends Context {
 
     @Override
     public boolean canLoadUnsafeResources() {
+        return true;
+    }
+
+    @Override
+    public boolean isUiContext() {
         return true;
     }
 
@@ -2224,5 +2236,10 @@ public class BridgeContext extends Context {
             cacheFromResId.put(resId, value);
         }
 
+    }
+
+    @NotNull
+    public SessionInteractiveData getSessionInteractiveData() {
+        return mSessionInteractiveData;
     }
 }

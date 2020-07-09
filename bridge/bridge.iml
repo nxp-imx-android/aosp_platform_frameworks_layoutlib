@@ -10,6 +10,7 @@
       <sourceFolder url="file://$MODULE_DIR$/tests/res/testApp/MyApplication/src/main/myapplication.widgets" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/.settings" />
       <excludeFolder url="file://$MODULE_DIR$/bin" />
+      <excludeFolder url="file://$MODULE_DIR$/out" />
       <excludeFolder url="file://$MODULE_DIR$/tests/res/testApp/MyApplication/.gradle" />
       <excludeFolder url="file://$MODULE_DIR$/tests/res/testApp/MyApplication/.idea" />
       <excludeFolder url="file://$MODULE_DIR$/tests/res/testApp/MyApplication/build/generated" />
@@ -25,8 +26,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="common" />
-    <orderEntry type="module" module-name="delegates" />
+    <orderEntry type="library" name="layoutlib_api-prebuilt" level="project" />
     <orderEntry type="module-library">
       <library name="tools-common-prebuilt">
         <ANNOTATIONS>
@@ -57,7 +57,7 @@
     <orderEntry type="library" scope="TEST" name="junit" level="project" />
     <orderEntry type="library" scope="TEST" name="mockito" level="project" />
     <orderEntry type="library" scope="TEST" name="objenesis" level="project" />
-    <orderEntry type="library" name="layoutlib_api-prebuilt" level="project" />
+    <orderEntry type="module" module-name="common" />
     <orderEntry type="module-library">
       <library name="kxml2-2.3.0">
         <CLASSES>
@@ -70,6 +70,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" scope="TEST" name="hamcrest" level="project" />
+    <orderEntry type="module" module-name="delegates" />
     <orderEntry type="module-library">
       <library name="ninepatch-prebuilt">
         <CLASSES>

@@ -18,8 +18,8 @@ package com.android.layoutlib.bridge.impl;
 
 import com.android.ide.common.rendering.api.AdapterBinding;
 import com.android.ide.common.rendering.api.HardwareConfig;
+import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.ide.common.rendering.api.ILayoutPullParser;
-import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceReference;
@@ -65,11 +65,9 @@ import android.graphics.drawable.AnimatedVectorDrawable_VectorDrawableAnimatorUI
 import android.media.Image;
 import android.media.Image.Plane;
 import android.media.ImageReader;
-import android.os.Handler_Delegate;
 import android.preference.Preference_Delegate;
 import android.view.AttachInfo_Accessor;
 import android.view.BridgeInflater;
-import android.view.Choreographer_Delegate;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -98,6 +96,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.android.apps.common.testing.accessibility.framework.uielement.AccessibilityHierarchyAndroid_ViewElementClassNamesAndroid_Delegate;
+
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_INFLATION;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_NOT_INFLATED;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN;
@@ -123,7 +123,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
     private FrameLayout mContentRoot;
     private int mMeasuredScreenWidth = -1;
     private int mMeasuredScreenHeight = -1;
-    private boolean mIsAlphaChannelImage;
     /** If >= 0, a frame will be executed */
     private long mElapsedFrameTimeNanos = -1;
     /** True if one frame has been already executed to start the animations */
@@ -183,11 +182,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
         SessionParams params = getParams();
         BridgeContext context = getContext();
-
-        // use default of true in case it's not found to use alpha by default
-        mIsAlphaChannelImage =
-                ResourceHelper.getBooleanThemeFrameworkAttrValue(params.getResources(),
-                        "windowIsFloating", true);
 
         mLayoutBuilder = new Layout.Builder(params, context);
 
@@ -323,16 +317,16 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
             if (Bridge.isLocaleRtl(params.getLocale())) {
                 if (!params.isRtlSupported()) {
-                    Bridge.getLog().warning(LayoutLog.TAG_RTL_NOT_ENABLED,
+                    Bridge.getLog().warning(ILayoutLog.TAG_RTL_NOT_ENABLED,
                             "You are using a right-to-left " +
-                                    "(RTL) locale but RTL is not enabled", null);
+                                    "(RTL) locale but RTL is not enabled", null, null);
                 } else if (params.getSimulatedPlatformVersion() !=0 &&
                         params.getSimulatedPlatformVersion() < 17) {
                     // This will render ok because we are using the latest layoutlib but at least
                     // warn the user that this might fail in a real device.
-                    Bridge.getLog().warning(LayoutLog.TAG_RTL_NOT_SUPPORTED, "You are using a " +
+                    Bridge.getLog().warning(ILayoutLog.TAG_RTL_NOT_SUPPORTED, "You are using a " +
                             "right-to-left " +
-                            "(RTL) locale but RTL is not supported for API level < 17", null);
+                            "(RTL) locale but RTL is not supported for API level < 17", null, null);
                 }
             }
 
@@ -590,6 +584,9 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                          params.getFlag(RenderParamsFlags.FLAG_ENABLE_LAYOUT_VALIDATOR_IMAGE_CHECK));
 
                 if (enableLayoutValidation && !getViewInfos().isEmpty()) {
+                    AccessibilityHierarchyAndroid_ViewElementClassNamesAndroid_Delegate.sLayoutlibCallback =
+                            getContext().getLayoutlibCallback();
+
                     BufferedImage imageToPass =
                             enableLayoutValidationImageCheck ? getImage() : null;
                     ValidatorResult validatorResult =
@@ -600,6 +597,8 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                 ValidatorResult.Builder builder = new Builder();
                 builder.mMetric.mErrorMessage = e.getMessage();
                 setValidatorResult(builder.build());
+            } finally {
+                AccessibilityHierarchyAndroid_ViewElementClassNamesAndroid_Delegate.sLayoutlibCallback = null;
             }
 
             // success!
@@ -1133,10 +1132,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         return mImage;
     }
 
-    public boolean isAlphaChannelImage() {
-        return mIsAlphaChannelImage;
-    }
-
     public List<ViewInfo> getViewInfos() {
         return mViewInfoList;
     }
@@ -1211,8 +1206,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             mImage = null;
             // detachFromWindow might create Handler callbacks, thus before Handler_Delegate.dispose
             AttachInfo_Accessor.detachFromWindow(mViewRoot);
-            Handler_Delegate.dispose(getContext());
-            Choreographer_Delegate.dispose(getContext());
+            getContext().getSessionInteractiveData().dispose();
             if (mViewInfoList != null) {
                 mViewInfoList.clear();
             }

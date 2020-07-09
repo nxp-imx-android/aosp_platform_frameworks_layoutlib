@@ -17,7 +17,7 @@
 package android.view;
 
 import com.android.SdkConstants;
-import com.android.ide.common.rendering.api.LayoutLog;
+import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.MergeCookie;
 import com.android.ide.common.rendering.api.ResourceNamespace;
@@ -264,7 +264,8 @@ public final class BridgeInflater extends LayoutInflater {
                                         true /*readAppTheme*/,
                                         true /*wrapContext*/);
                             } catch (IllegalAccessException | InvocationTargetException e) {
-                                assert false : "Call to createView failed";
+                                Bridge.getLog().error(ILayoutLog.TAG_BROKEN, e.getMessage(), e,
+                                        null, null);
                             }
                             return null;
                         };
@@ -294,8 +295,8 @@ public final class BridgeInflater extends LayoutInflater {
             name = attrs.getAttributeValue(null, "class");
 
             if (name == null) {
-                Bridge.getLog().error(LayoutLog.TAG_BROKEN, "Unable to inflate view tag without " +
-                  "class attribute", null);
+                Bridge.getLog().error(ILayoutLog.TAG_BROKEN, "Unable to inflate view tag without " +
+                  "class attribute", null, null);
                 // We weren't able to resolve the view so we just pass a mock View to be able to
                 // continue rendering.
                 view = new MockView(context, attrs);
@@ -322,7 +323,7 @@ public final class BridgeInflater extends LayoutInflater {
                 // There is some unknown inflation exception in inflating a View that was found.
                 view = new MockView(context, attrs);
                 ((MockView) view).setText(name);
-                Bridge.getLog().error(LayoutLog.TAG_BROKEN, e.getMessage(), e, null);
+                Bridge.getLog().error(ILayoutLog.TAG_BROKEN, e.getMessage(), e, null, null);
             } else {
                 final Object lastContext = mConstructorArgs[0];
                 mConstructorArgs[0] = context;
@@ -381,8 +382,8 @@ public final class BridgeInflater extends LayoutInflater {
 
                     return inflate(bridgeParser, root);
                 } catch (Exception e) {
-                    Bridge.getLog().error(LayoutLog.TAG_RESOURCES_READ,
-                            "Failed to parse file " + path, e, null);
+                    Bridge.getLog().error(ILayoutLog.TAG_RESOURCES_READ,
+                            "Failed to parse file " + path, e, null, null);
 
                     return null;
                 }

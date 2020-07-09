@@ -25,6 +25,5 @@ java_binary_host {
         "asm-commons-6.0",
         "guava",
         "layoutlib-common",
-        "guava-prebuilt-host-jar",
     ],
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.android.tools.layoutlib.create;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 class CreateInfoAdapter implements ICreateInfo {
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
