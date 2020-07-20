@@ -37,7 +37,7 @@ import com.android.tools.layoutlib.annotations.Nullable;
 import com.android.tools.layoutlib.create.MethodAdapter;
 import com.android.tools.layoutlib.create.NativeConfig;
 import com.android.tools.layoutlib.create.OverrideMethod;
-import com.android.util.Pair;
+import com.android.utils.Pair;
 
 import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParser;
@@ -259,7 +259,7 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
                     continue;
                 }
                 String resTypeName = inner.getSimpleName();
-                ResourceType resType = ResourceType.getEnum(resTypeName);
+                ResourceType resType = ResourceType.fromClassName(resTypeName);
                 if (resType != null) {
                     Map<String, Integer> fullMap = null;
                     switch (resType) {

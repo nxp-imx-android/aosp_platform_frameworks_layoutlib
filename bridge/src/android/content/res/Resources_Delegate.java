@@ -40,7 +40,7 @@ import com.android.resources.ResourceType;
 import com.android.resources.ResourceUrl;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 import com.android.tools.layoutlib.annotations.VisibleForTesting;
-import com.android.util.Pair;
+import com.android.utils.Pair;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -1073,12 +1073,12 @@ public class Resources_Delegate {
             }
             // We have package but no type
             String pkg = name.substring(0, colonIdx);
-            ResourceType type = ResourceType.getEnum(defType);
+            ResourceType type = ResourceType.fromClassName(defType);
             return type != null ? ResourceUrl.create(pkg, type, name.substring(colonIdx + 1)) :
                     null;
         }
 
-        ResourceType type = ResourceType.getEnum(name.substring(0, slashIdx));
+        ResourceType type = ResourceType.fromClassName(name.substring(0, slashIdx));
         if (type == null) {
             return null;
         }

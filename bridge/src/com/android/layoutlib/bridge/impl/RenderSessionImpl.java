@@ -50,7 +50,7 @@ import com.android.layoutlib.bridge.impl.binding.FakeExpandableAdapter;
 import com.android.tools.idea.validator.LayoutValidator;
 import com.android.tools.idea.validator.ValidatorResult;
 import com.android.tools.idea.validator.ValidatorResult.Builder;
-import com.android.util.Pair;
+import com.android.utils.Pair;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
