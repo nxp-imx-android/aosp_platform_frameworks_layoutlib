@@ -42,7 +42,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Sanity check for a11y checks. For now it lacks checking the following:
+ * Basic check for a11y checks. For now it lacks checking the following:
  * - ClassNameCheck
  * - ClickableSpanCheck
  * - EditableContentDescCheck
