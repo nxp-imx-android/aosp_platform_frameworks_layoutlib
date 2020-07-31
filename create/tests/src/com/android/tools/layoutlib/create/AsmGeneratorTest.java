@@ -223,8 +223,8 @@ public class AsmGeneratorTest {
             @Override
             public String[] getExcludedClasses() {
                 return new String[] {
-                        "mock_android.dummy2.*",
-                        "mock_android.dummy.**",
+                        "mock_android.fake2.*",
+                        "mock_android.fake.**",
                         "mock_android.util.NotNeeded",
                         JAVA_CLASS_NAME
                 };
@@ -244,10 +244,10 @@ public class AsmGeneratorTest {
                 new MethodReplacer[] {});
         agen.setAnalysisResult(aa.analyze());
         Map<String, byte[]> output = agen.generate();
-        // Everything in .dummy.** should be filtered
-        // Only things is .dummy2.* should be filtered
+        // Everything in .fake.** should be filtered
+        // Only things is .fake2.* should be filtered
         assertArrayEquals(new String[] {
-                "mock_android.dummy2.keep.DoNotRemove",
+                "mock_android.fake2.keep.DoNotRemove",
                 "mock_android.util.EmptyArray",
                 "mock_android.view.LibLoader",
                 "mock_android.view.View",
