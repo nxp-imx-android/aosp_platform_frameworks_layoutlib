@@ -295,6 +295,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.BitmapShader",
         "android.graphics.BlendModeColorFilter",
         "android.graphics.BlurMaskFilter",
+        "android.graphics.BlurShader",
         "android.graphics.Canvas",
         "android.graphics.CanvasProperty",
         "android.graphics.Color",
