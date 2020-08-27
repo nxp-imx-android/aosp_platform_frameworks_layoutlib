@@ -74,6 +74,7 @@ import android.graphics.Typeface_Delegate;
 import android.graphics.drawable.Drawable;
 import android.graphics.fonts.SystemFonts_Delegate;
 import android.hardware.display.DisplayManager;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -173,6 +174,7 @@ public class BridgeContext extends Context {
     private final AutofillManager mAutofillManager;
     private final ClipboardManager mClipboardManager;
     private final ActivityManager mActivityManager;
+    private final ConnectivityManager mConnectivityManager;
     private final HashMap<View, Integer> mScrollYPos = new HashMap<>();
     private final HashMap<View, Integer> mScrollXPos = new HashMap<>();
 
@@ -263,6 +265,7 @@ public class BridgeContext extends Context {
         mAutofillManager = new AutofillManager(this, new Default());
         mClipboardManager = new ClipboardManager(this, null);
         mActivityManager = ActivityManager_Accessor.getActivityManagerInstance(this);
+        mConnectivityManager = new ConnectivityManager(this, null);
 
         if (mLayoutlibCallback.isResourceNamespacingRequired()) {
             if (mLayoutlibCallback.hasAndroidXAppCompat()) {
@@ -667,6 +670,9 @@ public class BridgeContext extends Context {
 
             case ACTIVITY_SERVICE:
                 return mActivityManager;
+
+            case CONNECTIVITY_SERVICE:
+                return mConnectivityManager;
 
             case AUDIO_SERVICE:
             case TEXT_CLASSIFICATION_SERVICE:
