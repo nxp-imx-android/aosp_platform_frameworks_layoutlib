@@ -48,6 +48,7 @@ import android.app.ActivityManager_Accessor;
 import android.app.SystemServiceRegistry;
 import android.content.BroadcastReceiver;
 import android.content.ClipboardManager;
+import android.content.ComponentCallbacks;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -1024,6 +1025,12 @@ public class BridgeContext extends Context {
         }
         return mPackageManager;
     }
+
+    @Override
+    public void registerComponentCallbacks(ComponentCallbacks callback) {}
+
+    @Override
+    public void unregisterComponentCallbacks(ComponentCallbacks callback) {}
 
     // ------------- private new methods
 
