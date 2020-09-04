@@ -41,9 +41,12 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityManager;
+import android.app.ActivityManager_Accessor;
 import android.app.SystemServiceRegistry;
 import android.content.BroadcastReceiver;
 import android.content.ClipboardManager;
+import android.content.ComponentCallbacks;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -166,6 +169,7 @@ public class BridgeContext extends Context {
     private final DisplayManager mDisplayManager;
     private final AutofillManager mAutofillManager;
     private final ClipboardManager mClipboardManager;
+    private final ActivityManager mActivityManager;
     private final HashMap<View, Integer> mScrollYPos = new HashMap<>();
     private final HashMap<View, Integer> mScrollXPos = new HashMap<>();
 
@@ -253,6 +257,7 @@ public class BridgeContext extends Context {
         mDisplayManager = new DisplayManager(this);
         mAutofillManager = new AutofillManager(this, new Default());
         mClipboardManager = new ClipboardManager(this, null);
+        mActivityManager = ActivityManager_Accessor.getActivityManagerInstance(this);
 
         if (mLayoutlibCallback.isResourceNamespacingRequired()) {
             if (mLayoutlibCallback.hasAndroidXAppCompat()) {
@@ -648,6 +653,9 @@ public class BridgeContext extends Context {
             case CLIPBOARD_SERVICE:
                 return mClipboardManager;
 
+            case ACTIVITY_SERVICE:
+                return mActivityManager;
+
             case AUDIO_SERVICE:
             case TEXT_CLASSIFICATION_SERVICE:
             case CONTENT_CAPTURE_MANAGER_SERVICE:
@@ -1004,6 +1012,12 @@ public class BridgeContext extends Context {
         }
         return mPackageManager;
     }
+
+    @Override
+    public void registerComponentCallbacks(ComponentCallbacks callback) {}
+
+    @Override
+    public void unregisterComponentCallbacks(ComponentCallbacks callback) {}
 
     // ------------- private new methods
 
