@@ -159,7 +159,7 @@ public class BridgeRenderSession extends RenderSession {
             // therefore frame callbacks will be executed
             Choreographer.getInstance().postCallbackDelayedInternal(
                     Choreographer.CALLBACK_ANIMATION, NOOP_RUNNABLE, null, 0);
-            Choreographer.getInstance().doFrame(nanos, 0);
+            Choreographer.getInstance().doFrame(nanos, 0, 0);
             return hasMoreCallbacks;
         } catch (Throwable t) {
             Bridge.getLog().error(ILayoutLog.TAG_BROKEN, "Failed executing Choreographer#doFrame "
