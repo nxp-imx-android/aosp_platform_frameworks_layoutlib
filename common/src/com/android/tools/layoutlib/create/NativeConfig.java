@@ -32,7 +32,9 @@ public class NativeConfig {
             // Order is important! Fonts and FontFamily have to be initialized before Typeface
             "android.graphics.fonts.Font$Builder",
             "android.graphics.fonts.FontFamily$Builder",
+            "android.graphics.fonts.NativeFontBufferHelper",
             "android.graphics.Typeface",
+            "android.graphics.text.PositionedGlyphs",
             "android.graphics.text.LineBreaker",
     };
 
@@ -84,6 +86,7 @@ public class NativeConfig {
             "android.graphics.fonts.FontFamily",
             "android.graphics.text.LineBreaker",
             "android.graphics.text.MeasuredText",
+            "android.graphics.text.TextShaper",
             "android.media.ImageReader",
             "android.os.SystemProperties",
             "android.os.Trace",
