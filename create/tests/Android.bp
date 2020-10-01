@@ -16,16 +16,14 @@ java_test_host {
     name: "layoutlib-create-tests",
 
     // Only compile source java files in this lib.
-    srcs: ["com/**/*.java"],
+    srcs: ["src/**/*.java"],
 
-    java_resource_dirs: [
-        "data",
-        "mock_data",
-    ],
+    java_resource_dirs: ["res"],
 
     libs: [
         "layoutlib_create",
         "junit",
+        "hamcrest",
     ],
     static_libs: ["asm-6.0"],
 
@@ -41,6 +39,6 @@ java_test_host {
 java_library_host {
     name: "mock_android",
 
-    srcs: ["mock_data/**/*.java"],
-    java_resource_dirs: ["mock_data"],
+    srcs: ["res/mock_data/**/*.java"],
+    java_resource_dirs: ["res/mock_data"],
 }
