@@ -222,6 +222,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.drawable.AnimatedVectorDrawable$VectorDrawableAnimatorUI#onDraw",
         "android.graphics.drawable.AnimatedVectorDrawable#draw",
         "android.graphics.drawable.DrawableInflater#inflateFromClass",
+        "android.graphics.drawable.NinePatchDrawable#getOpacity",
         "android.graphics.fonts.Font$Builder#createBuffer",
         "android.graphics.fonts.SystemFonts#buildSystemFallback",
         "android.graphics.fonts.SystemFonts#mmap",
