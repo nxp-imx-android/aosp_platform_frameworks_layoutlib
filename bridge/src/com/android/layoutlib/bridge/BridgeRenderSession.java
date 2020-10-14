@@ -31,6 +31,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Handler_Delegate;
 import android.view.Choreographer;
+import android.view.DisplayEventReceiver_VsyncEventData_Accessor;
 import android.view.MotionEvent;
 
 import java.awt.image.BufferedImage;
@@ -159,7 +160,8 @@ public class BridgeRenderSession extends RenderSession {
             // therefore frame callbacks will be executed
             Choreographer.getInstance().postCallbackDelayedInternal(
                     Choreographer.CALLBACK_ANIMATION, NOOP_RUNNABLE, null, 0);
-            Choreographer.getInstance().doFrame(nanos, 0, 0);
+            Choreographer.getInstance().doFrame(nanos, 0,
+                    DisplayEventReceiver_VsyncEventData_Accessor.getVsyncEventDataInstance());
             return hasMoreCallbacks;
         } catch (Throwable t) {
             Bridge.getLog().error(ILayoutLog.TAG_BROKEN, "Failed executing Choreographer#doFrame "
