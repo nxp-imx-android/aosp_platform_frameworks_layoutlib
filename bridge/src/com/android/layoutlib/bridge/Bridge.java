@@ -100,7 +100,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
     /**
      * Maps from id to resource type/name. This is for com.android.internal.R
      */
-    @SuppressWarnings("deprecation")
     private final static Map<Integer, Pair<ResourceType, String>> sRMap = new HashMap<>();
 
     /**
@@ -287,7 +286,6 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
                         Class<?> type = f.getType();
                         if (!type.isArray()) {
                             Integer value = (Integer) f.get(null);
-                            //noinspection deprecation
                             sRMap.put(value, Pair.of(resType, f.getName()));
                             fullMap.put(f.getName(), value);
                         }
@@ -389,11 +387,9 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             if (arrayValue != null) {
                 String attrName = name.substring(arrayName.length() + 1);
                 int attrValue = arrayValue[index];
-                //noinspection deprecation
                 sRMap.put(attrValue, Pair.of(ResourceType.ATTR, attrName));
                 revRAttrMap.put(attrName, attrValue);
             }
-            //noinspection deprecation
             sRMap.put(index, Pair.of(ResourceType.STYLEABLE, name));
             revRStyleableMap.put(name, index);
         }

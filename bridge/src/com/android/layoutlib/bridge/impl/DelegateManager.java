@@ -83,7 +83,6 @@ public final class DelegateManager<T> {
     private static final Set<Object> sJavaReferences = new HashSet<>();
     private static final AtomicLong sDelegateCounter = new AtomicLong(1);
 
-    @SuppressWarnings("FieldCanBeLocal")
     private final Class<T> mClass;
 
     public DelegateManager(Class<T> theClass) {
