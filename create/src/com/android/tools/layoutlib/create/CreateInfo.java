@@ -351,7 +351,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.text.LineBreaker",
         "android.graphics.text.MeasuredText",
         "android.graphics.text.MeasuredText$Builder",
-        "android.graphics.text.TextShaper",
+        "android.graphics.text.TextRunShaper",
         "android.media.ImageReader",
         "android.media.ImageReader$SurfaceImage",
         "android.os.SystemProperties",

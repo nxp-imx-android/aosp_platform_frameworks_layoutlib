@@ -86,7 +86,7 @@ public class NativeConfig {
             "android.graphics.fonts.FontFamily",
             "android.graphics.text.LineBreaker",
             "android.graphics.text.MeasuredText",
-            "android.graphics.text.TextShaper",
+            "android.graphics.text.TextRunShaper",
             "android.media.ImageReader",
             "android.os.SystemProperties",
             "android.os.Trace",
