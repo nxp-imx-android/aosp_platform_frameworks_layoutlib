@@ -163,10 +163,16 @@ public final class ResourceHelper {
         }
 
         // try to load the color state list from an int
-        try {
-            int color = getColor(value);
-            return ColorStateList.valueOf(color);
-        } catch (NumberFormatException ignored) {
+        if (value.trim().startsWith("#")) {
+            try {
+                int color = getColor(value);
+                return ColorStateList.valueOf(color);
+            } catch (NumberFormatException e) {
+                Bridge.getLog().warning(ILayoutLog.TAG_RESOURCES_FORMAT,
+                        String.format("\"%1$s\" cannot be interpreted as a color.", value),
+                        null, null);
+                return null;
+            }
         }
 
         try {
@@ -313,12 +319,17 @@ public final class ResourceHelper {
             return null;
         }
 
-        String lowerCaseValue = stringValue.toLowerCase();
         // try the simple case first. Attempt to get a color from the value
-        try {
-            int color = getColor(stringValue);
-            return new ColorDrawable(color);
-        } catch (NumberFormatException ignore) {
+        if (stringValue.trim().startsWith("#")) {
+            try {
+                int color = getColor(stringValue);
+                return new ColorDrawable(color);
+            } catch (NumberFormatException e) {
+                Bridge.getLog().warning(ILayoutLog.TAG_RESOURCES_FORMAT,
+                        String.format("\"%1$s\" cannot be interpreted as a color.", stringValue),
+                        null, null);
+                return null;
+            }
         }
 
         Density density = Density.MEDIUM;
@@ -329,6 +340,7 @@ public final class ResourceHelper {
             }
         }
 
+        String lowerCaseValue = stringValue.toLowerCase();
         if (lowerCaseValue.endsWith(".xml") || value.getResourceType() == ResourceType.AAPT) {
             // create a block parser for the file
             try {
