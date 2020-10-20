@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import android.content.res.BridgeTypedArrayTest;
 import android.content.res.Resources_DelegateTest;
 import android.util.BridgeXmlPullAttributesTest;
 
@@ -41,7 +42,7 @@ import android.util.BridgeXmlPullAttributesTest;
         BridgeXmlBlockParserTest.class, BridgeXmlPullAttributesTest.class,
         TestDelegates.class, BridgeRenderSessionTest.class, ResourceHelperTest.class,
         BridgeContextTest.class, Resources_DelegateTest.class, HighQualityShadowsRenderTests.class,
-        LayoutValidatorTests.class, AccessibilityValidatorTests.class
+        LayoutValidatorTests.class, AccessibilityValidatorTests.class, BridgeTypedArrayTest.class
 })
 public class Main {
 }
