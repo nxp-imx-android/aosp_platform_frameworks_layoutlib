@@ -48,8 +48,14 @@ import com.android.layoutlib.bridge.android.support.SupportPreferencesUtil;
 import com.android.layoutlib.bridge.impl.binding.FakeAdapter;
 import com.android.layoutlib.bridge.impl.binding.FakeExpandableAdapter;
 import com.android.tools.idea.validator.LayoutValidator;
+import com.android.tools.idea.validator.ValidatorData.Issue.IssueBuilder;
+import com.android.tools.idea.validator.ValidatorData.Level;
+import com.android.tools.idea.validator.ValidatorData.Type;
+import com.android.tools.idea.validator.ValidatorHierarchy;
 import com.android.tools.idea.validator.ValidatorResult;
 import com.android.tools.idea.validator.ValidatorResult.Builder;
+import com.android.tools.idea.validator.ValidatorUtil;
+import com.android.tools.layoutlib.annotations.NotNull;
 import com.android.utils.Pair;
 
 import android.annotation.NonNull;
@@ -90,6 +96,8 @@ import android.widget.TabWidget;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -140,6 +148,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
     private long mLastActionDownTimeNanos = -1;
     @Nullable private ValidatorResult mValidatorResult = null;
+    @Nullable private ValidatorHierarchy mValidatorHierarchy = null;
 
     private static final class PostInflateException extends Exception {
         private static final long serialVersionUID = 1L;
@@ -245,7 +254,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             int maxHeight = hardwareConfig.getScreenHeight();
             // first measure the full layout, with EXACTLY to get the size of the
             // content as it is inside the decor/dialog
-            @SuppressWarnings("deprecation")
             Pair<Integer, Integer> exactMeasure = measureView(
                     mViewRoot, measuredView,
                     maxWidth, MeasureSpec.EXACTLY,
@@ -253,7 +261,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
             // now measure the content only using UNSPECIFIED (where applicable, based on
             // the rendering mode). This will give us the size the content needs.
-            @SuppressWarnings("deprecation")
             Pair<Integer, Integer> neededMeasure = measureView(
                     mContentRoot, measuredView,
                     maxWidth, widthMeasureSpecMode,
@@ -578,25 +585,49 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                     visitAllChildren(mViewRoot, 0, 0, params.getExtendedViewInfoMode(),
                     false);
 
-            try {
-                boolean enableLayoutValidation = Boolean.TRUE.equals(params.getFlag(RenderParamsFlags.FLAG_ENABLE_LAYOUT_VALIDATOR));
-                boolean enableLayoutValidationImageCheck = Boolean.TRUE.equals(
-                         params.getFlag(RenderParamsFlags.FLAG_ENABLE_LAYOUT_VALIDATOR_IMAGE_CHECK));
+            boolean enableOptimization = Boolean.TRUE.equals(
+                    params.getFlag(RenderParamsFlags.FLAG_ENABLE_LAYOUT_VALIDATOR_OPTIMIZATION));
+            boolean enableLayoutValidation = Boolean.TRUE.equals(params.getFlag(RenderParamsFlags.FLAG_ENABLE_LAYOUT_VALIDATOR));
+            boolean enableLayoutValidationImageCheck = Boolean.TRUE.equals(
+                    params.getFlag(RenderParamsFlags.FLAG_ENABLE_LAYOUT_VALIDATOR_IMAGE_CHECK));
 
+            try {
                 if (enableLayoutValidation && !getViewInfos().isEmpty()) {
                     AccessibilityHierarchyAndroid_ViewElementClassNamesAndroid_Delegate.sLayoutlibCallback =
                             getContext().getLayoutlibCallback();
 
                     BufferedImage imageToPass =
                             enableLayoutValidationImageCheck ? getImage() : null;
-                    ValidatorResult validatorResult =
-                            LayoutValidator.validate(((View) getViewInfos().get(0).getViewObject()), imageToPass);
-                    setValidatorResult(validatorResult);
+
+                    if (enableOptimization) {
+                        ValidatorHierarchy hierarchy = LayoutValidator.buildHierarchy(
+                                ((View) getViewInfos().get(0).getViewObject()), imageToPass);
+                        setValidatorHierarchy(hierarchy);
+                    } else {
+                        ValidatorResult validatorResult = LayoutValidator.validate(
+                                ((View) getViewInfos().get(0).getViewObject()), imageToPass);
+                        setValidatorResult(validatorResult);
+                    }
                 }
             } catch (Throwable e) {
-                ValidatorResult.Builder builder = new Builder();
-                builder.mMetric.mErrorMessage = e.getMessage();
-                setValidatorResult(builder.build());
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+
+                if (enableOptimization) {
+                    ValidatorHierarchy hierarchy = new ValidatorHierarchy();
+                    hierarchy.mErrorMessage = sw.toString();
+                    setValidatorHierarchy(hierarchy);
+                } else {
+                    ValidatorResult.Builder builder = new Builder();
+                    builder.mIssues.add(new IssueBuilder()
+                            .setCategory("Unknown")
+                            .setType(Type.INTERNAL_ERROR)
+                            .setMsg(sw.toString())
+                            .setLevel(Level.ERROR)
+                            .setSourceClass("RenderSessionImpl").build());
+                    setValidatorResult(builder.build());
+                }
             } finally {
                 AccessibilityHierarchyAndroid_ViewElementClassNamesAndroid_Delegate.sLayoutlibCallback = null;
             }
@@ -629,7 +660,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
      * @param heightMode the MeasureSpec mode to use for the height.
      * @return the measured width/height if measuredView is non-null, null otherwise.
      */
-    @SuppressWarnings("deprecation")  // For the use of Pair
     private static Pair<Integer, Integer> measureView(ViewGroup viewToMeasure, View measuredView,
             int width, int widthMode, int height, int heightMode) {
         int w_spec = MeasureSpec.makeMeasureSpec(width, widthMode);
@@ -653,7 +683,6 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
      * @param layoutlibCallback callback to the project.
      * @param skip the view and it's children are not processed.
      */
-    @SuppressWarnings("deprecation")  // For the use of Pair
     private void postInflateProcess(View view, LayoutlibCallback layoutlibCallback, View skip)
             throws PostInflateException {
         if (view == skip) {
@@ -892,9 +921,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             for (int i = 0 ; i < count ; i++) {
                 View child = content.getChildAt(i);
                 String tabSpec = String.format("tab_spec%d", i+1);
-                @SuppressWarnings("ConstantConditions")  // child cannot be null.
                 int id = child.getId();
-                @SuppressWarnings("deprecation")
                 ResourceReference resource = layoutlibCallback.resolveResourceId(id);
                 String name;
                 if (resource != null) {
@@ -1167,6 +1194,20 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         mValidatorResult = result;
     }
 
+    public boolean isLayoutValidatorOptimizationEnabled() {
+        return Boolean.TRUE.equals(
+                getParams().getFlag(RenderParamsFlags.FLAG_ENABLE_LAYOUT_VALIDATOR_OPTIMIZATION));
+    }
+
+    @Nullable
+    public ValidatorHierarchy getValidatorHierarchy() {
+        return mValidatorHierarchy;
+    }
+
+    public void setValidatorHierarchy(@NotNull ValidatorHierarchy validatorHierarchy) {
+        mValidatorHierarchy = validatorHierarchy;
+    }
+
     public void setScene(RenderSession session) {
         mScene = session;
     }
@@ -1213,6 +1254,8 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             if (mSystemViewInfoList != null) {
                 mSystemViewInfoList.clear();
             }
+            mValidatorResult = null;
+            mValidatorHierarchy = null;
             mViewRoot = null;
             mContentRoot = null;
         } catch (Throwable t) {

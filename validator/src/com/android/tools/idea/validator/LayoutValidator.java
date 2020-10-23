@@ -19,7 +19,6 @@ package com.android.tools.idea.validator;
 import com.android.tools.idea.validator.ValidatorData.Level;
 import com.android.tools.idea.validator.ValidatorData.Policy;
 import com.android.tools.idea.validator.ValidatorData.Type;
-import com.android.tools.idea.validator.accessibility.AccessibilityValidator;
 import com.android.tools.layoutlib.annotations.NotNull;
 import com.android.tools.layoutlib.annotations.Nullable;
 
@@ -48,10 +47,34 @@ public class LayoutValidator {
     @NotNull
     public static ValidatorResult validate(@NotNull View view, @Nullable BufferedImage image) {
         if (view.isAttachedToWindow()) {
-            return AccessibilityValidator.validateAccessibility(view, image, sPolicy);
+            ValidatorHierarchy hierarchy = ValidatorUtil.buildHierarchy(sPolicy, view, image);
+            return ValidatorUtil.generateResults(sPolicy, hierarchy);
         }
         // TODO: Add non-a11y layout validation later.
         return new ValidatorResult.Builder().build();
+    }
+
+    /**
+     * Build the hierarchy necessary for validating the layout.
+     * The operation is quick thus can be used frequently.
+     *
+     * @return The hierarchy to be used for validation.
+     */
+    @NotNull
+    public static ValidatorHierarchy buildHierarchy(
+            @NotNull View view, @Nullable BufferedImage image) {
+        if (view.isAttachedToWindow()) {
+            return ValidatorUtil.buildHierarchy(sPolicy, view, image);
+        }
+        return new ValidatorHierarchy();
+    }
+
+    /**
+     * @return The validator result that matches the hierarchy
+     */
+    @NotNull
+    public static ValidatorResult validate(@NotNull ValidatorHierarchy hierarchy) {
+        return ValidatorUtil.generateResults(sPolicy, hierarchy);
     }
 
     /**
