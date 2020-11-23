@@ -20,15 +20,14 @@ import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import android.annotation.NonNull;
 import android.text.FontConfig;
-import android.util.ArrayMap;
 import android.util.Log;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Delegate implementing the native methods of android.graphics.fonts.SystemFonts
@@ -55,11 +54,10 @@ public class SystemFonts_Delegate {
     /*package*/ static FontConfig.Alias[] buildSystemFallback(@NonNull String xmlPath,
             @NonNull String fontDir,
             @NonNull FontCustomizationParser.Result oemCustomization,
-            @NonNull ArrayMap<String, FontFamily[]> fallbackMap,
-            @NonNull ArrayList<Font> availableFonts) {
+            @NonNull Map<String, FontFamily[]> fallbackMap) {
         sIsTypefaceInitialized = true;
         return SystemFonts.buildSystemFallback_Original(sFontLocation + "native/fonts.xml",
-                sFontLocation, oemCustomization, fallbackMap, availableFonts);
+                sFontLocation, oemCustomization, fallbackMap);
     }
 
     @LayoutlibDelegate
