@@ -33,6 +33,7 @@ java_library_host {
         "layoutlib-common",
         "layoutlib-common-delegates",
         "layoutlib-validator",
+        "sdk-common",
     ],
 
     dist: {
@@ -61,6 +62,7 @@ java_library_host {
         "layoutlib-common-delegates",
         "layoutlib-native-delegates",
         "layoutlib-validator",
+        "sdk-common",
     ],
 
     dist: {
