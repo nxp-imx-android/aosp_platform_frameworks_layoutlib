@@ -52,17 +52,6 @@ import java.nio.file.Paths;
  */
 public final class Typeface_Delegate {
     /**
-     * Initializes Typeface class
-     */
-    public static void init(BridgeContext context) {
-        try {
-            Class.forName("android.graphics.Typeface");
-        } catch (ClassNotFoundException e) {
-            context.error("Could not initialize Typeface", e);
-        }
-    }
-
-    /**
      * Loads a single font or font family from disk
      */
     @Nullable

@@ -293,12 +293,6 @@ public class BridgeContext extends Context {
                 mConfig,
                 mLayoutlibCallback);
         mTheme = mSystemResources.newTheme();
-
-        // If Typeface has not yet been initialized, do it here to ensure that default fonts are
-        // correctly set up and all font information is available for rendering.
-        if (!SystemFonts_Delegate.sIsTypefaceInitialized) {
-            Typeface_Delegate.init(this);
-        }
     }
 
     /**

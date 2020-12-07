@@ -235,6 +235,8 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             for (String deferredClass : NativeConfig.DEFERRED_STATIC_INITIALIZER_CLASSES) {
                 ReflectionUtils.invokeStatic(deferredClass, "deferredStaticInitializer");
             }
+            // Load system fonts now that Typeface has been initialized
+            Typeface.loadPreinstalledSystemFontMap();
             ParserFactory.setParserFactory(null);
         } catch (Throwable t) {
             if (log != null) {
