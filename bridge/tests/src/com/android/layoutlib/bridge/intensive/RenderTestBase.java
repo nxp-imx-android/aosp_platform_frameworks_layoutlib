@@ -24,8 +24,8 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
 import com.android.ide.common.resources.deprecated.FrameworkResources;
 import com.android.ide.common.resources.deprecated.ResourceItem;
 import com.android.ide.common.resources.deprecated.ResourceRepository;
+import com.android.ide.common.resources.deprecated.TestFolderWrapper;
 import com.android.internal.lang.System_Delegate;
-import com.android.io.FolderWrapper;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.layoutlib.bridge.intensive.setup.ConfigGenerator;
@@ -361,12 +361,12 @@ public class RenderTestBase {
     public static void beforeClass() {
         File data_dir = new File(PLATFORM_DIR, "data");
         File res = new File(data_dir, "res");
-        sFrameworkRepo = new FrameworkResources(new FolderWrapper(res));
+        sFrameworkRepo = new FrameworkResources(new TestFolderWrapper(res));
         sFrameworkRepo.loadResources();
         sFrameworkRepo.loadPublicResources(getLogger());
 
         sProjectResources =
-                new ResourceRepository(new FolderWrapper(TEST_RES_DIR + "/" + APP_TEST_RES),
+                new ResourceRepository(new TestFolderWrapper(TEST_RES_DIR + "/" + APP_TEST_RES),
                         false) {
                     @NonNull
                     @Override
