@@ -171,6 +171,7 @@ public final class CreateInfo implements ICreateInfo {
      */
     public final static String[] DELEGATE_METHODS = new String[] {
         "android.app.Fragment#instantiate", //(Landroid/content/Context;Ljava/lang/String;Landroid/os/Bundle;)Landroid/app/Fragment;",
+        "android.content.res.AssetManager#createSystemAssetsInZygoteLocked",
         "android.content.res.AssetManager#getAssignedPackageIdentifiers",
         "android.content.res.AssetManager#nativeCreate",
         "android.content.res.AssetManager#nativeCreateIdmapsForStaticOverlaysTargetingAndroid",
