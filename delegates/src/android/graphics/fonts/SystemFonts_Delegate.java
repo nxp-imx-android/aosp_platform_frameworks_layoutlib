@@ -19,6 +19,7 @@ package android.graphics.fonts;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.text.FontConfig;
 import android.util.Log;
 
@@ -58,6 +59,17 @@ public class SystemFonts_Delegate {
         sIsTypefaceInitialized = true;
         return SystemFonts.buildSystemFallback_Original(sFontLocation + "native/fonts.xml",
                 sFontLocation, oemCustomization, fallbackMap);
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static FontConfig.Alias[] buildSystemFallback(@NonNull String xmlPath,
+            @NonNull String fontDir,
+            @Nullable String updatableFontDir,
+            @NonNull FontCustomizationParser.Result oemCustomization,
+            @NonNull Map<String, FontFamily[]> fallbackMap) {
+        sIsTypefaceInitialized = true;
+        return SystemFonts.buildSystemFallback_Original(sFontLocation + "native/fonts.xml",
+                sFontLocation, updatableFontDir, oemCustomization, fallbackMap);
     }
 
     @LayoutlibDelegate
