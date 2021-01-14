@@ -36,6 +36,8 @@ java_library_host {
         "sdk-common",
     ],
 
+    jarjar_rules: "jarjar-rules.txt",
+
     dist: {
         targets: ["layoutlib"],
     },
@@ -64,6 +66,8 @@ java_library_host {
         "layoutlib-validator",
         "sdk-common",
     ],
+
+    jarjar_rules: "jarjar-rules.txt",
 
     dist: {
         targets: ["layoutlib"],
