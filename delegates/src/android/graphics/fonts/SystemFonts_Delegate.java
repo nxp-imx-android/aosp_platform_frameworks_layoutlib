@@ -23,6 +23,7 @@ import android.annotation.Nullable;
 import android.text.FontConfig;
 import android.util.Log;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -64,12 +65,12 @@ public class SystemFonts_Delegate {
     @LayoutlibDelegate
     /*package*/ static FontConfig.Alias[] buildSystemFallback(@NonNull String xmlPath,
             @NonNull String fontDir,
-            @Nullable String updatableFontDir,
+            @Nullable Map<String, File> updatableFontMap,
             @NonNull FontCustomizationParser.Result oemCustomization,
             @NonNull Map<String, FontFamily[]> fallbackMap) {
         sIsTypefaceInitialized = true;
         return SystemFonts.buildSystemFallback_Original(sFontLocation + "native/fonts.xml",
-                sFontLocation, updatableFontDir, oemCustomization, fallbackMap);
+                sFontLocation, updatableFontMap, oemCustomization, fallbackMap);
     }
 
     @LayoutlibDelegate
