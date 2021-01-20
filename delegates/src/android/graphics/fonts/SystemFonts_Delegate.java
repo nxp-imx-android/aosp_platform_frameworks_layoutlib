@@ -53,24 +53,15 @@ public class SystemFonts_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static FontConfig.Alias[] buildSystemFallback(@NonNull String xmlPath,
-            @NonNull String fontDir,
-            @NonNull FontCustomizationParser.Result oemCustomization,
-            @NonNull Map<String, FontFamily[]> fallbackMap) {
+    /*package*/ static FontConfig getSystemFontConfigInternal(
+            String fontsXml,
+            String systemFontDir,
+            String oemXml,
+            String productFontDir,
+            Map<String, File> updatableFontMap) {
         sIsTypefaceInitialized = true;
-        return SystemFonts.buildSystemFallback_Original(sFontLocation + "native/fonts.xml",
-                sFontLocation, oemCustomization, fallbackMap);
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static FontConfig.Alias[] buildSystemFallback(@NonNull String xmlPath,
-            @NonNull String fontDir,
-            @Nullable Map<String, File> updatableFontMap,
-            @NonNull FontCustomizationParser.Result oemCustomization,
-            @NonNull Map<String, FontFamily[]> fallbackMap) {
-        sIsTypefaceInitialized = true;
-        return SystemFonts.buildSystemFallback_Original(sFontLocation + "native/fonts.xml",
-                sFontLocation, updatableFontMap, oemCustomization, fallbackMap);
+        return SystemFonts.getSystemFontConfigInternal_Original(
+            sFontLocation + "native/fonts.xml", sFontLocation, null, null, updatableFontMap);
     }
 
     @LayoutlibDelegate
