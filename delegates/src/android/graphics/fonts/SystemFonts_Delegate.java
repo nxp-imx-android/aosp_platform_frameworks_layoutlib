@@ -58,10 +58,13 @@ public class SystemFonts_Delegate {
             String systemFontDir,
             String oemXml,
             String productFontDir,
-            Map<String, File> updatableFontMap) {
+            Map<String, File> updatableFontMap,
+            long lastModifiedDate,
+            int configVersion) {
         sIsTypefaceInitialized = true;
         return SystemFonts.getSystemFontConfigInternal_Original(
-            sFontLocation + "native/fonts.xml", sFontLocation, null, null, updatableFontMap);
+            sFontLocation + "native/fonts.xml", sFontLocation, null, null, updatableFontMap,
+            lastModifiedDate, configVersion);
     }
 
     @LayoutlibDelegate
