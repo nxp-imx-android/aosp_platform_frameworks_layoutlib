@@ -18,13 +18,11 @@ package com.android.layoutlib.bridge.android.support;
 
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.RenderResources;
-import com.android.ide.common.rendering.api.ResourceNamespace;
-import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.StyleResourceValue;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
-import com.android.layoutlib.bridge.util.ReflectionUtils.ReflectionException;
+import com.android.layoutlib.common.util.ReflectionUtils.ReflectionException;
 import com.android.resources.ResourceType;
 import com.android.tools.layoutlib.annotations.NotNull;
 
@@ -45,10 +43,10 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-import static com.android.layoutlib.bridge.util.ReflectionUtils.getAccessibleMethod;
-import static com.android.layoutlib.bridge.util.ReflectionUtils.getClassInstance;
-import static com.android.layoutlib.bridge.util.ReflectionUtils.getMethod;
-import static com.android.layoutlib.bridge.util.ReflectionUtils.invoke;
+import static com.android.layoutlib.common.util.ReflectionUtils.getAccessibleMethod;
+import static com.android.layoutlib.common.util.ReflectionUtils.getClassInstance;
+import static com.android.layoutlib.common.util.ReflectionUtils.getMethod;
+import static com.android.layoutlib.common.util.ReflectionUtils.invoke;
 
 /**
  * Class with utility methods to instantiate Preferences provided by the support library.

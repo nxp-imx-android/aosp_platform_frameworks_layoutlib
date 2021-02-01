@@ -75,4 +75,8 @@ public class AssetManager_Delegate {
         // AssetManager requires this not to be null
         return new String[0];
     }
+
+    @LayoutlibDelegate
+    /*package*/ static void createSystemAssetsInZygoteLocked(boolean reinitialize,
+            String frameworkPath) { }
 }
