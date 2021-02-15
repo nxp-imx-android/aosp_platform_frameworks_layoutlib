@@ -18,9 +18,9 @@ package com.android.layoutlib.bridge.util;
 
 import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.tools.layoutlib.annotations.NotNull;
-import com.android.utils.Pair;
 
 import android.os.SystemClock_Delegate;
+import android.util.Pair;
 import android.util.TimeUtils;
 import android.view.Choreographer.FrameCallback;
 
@@ -46,24 +46,24 @@ public class ChoreographerCallbacks {
         final long now = SystemClock_Delegate.uptimeMillis();
         final long dueTime = now + delayMillis;
         while (idx < mCallbacks.size()) {
-            if (mCallbacks.get(idx).getSecond() > dueTime) {
+            if (mCallbacks.get(idx).second > dueTime) {
                 break;
             } else {
                 ++idx;
             }
         }
-        mCallbacks.add(idx, Pair.of(action, dueTime));
+        mCallbacks.add(idx, Pair.create(action, dueTime));
     }
 
     public void remove(Object action) {
-        mCallbacks.removeIf(el -> el.getFirst() == action);
+        mCallbacks.removeIf(el -> el.first == action);
     }
 
     public void execute(long currentTimeMs, @NotNull ILayoutLog logger) {
         int idx = 0;
         final long currentTimeNanos = currentTimeMs * TimeUtils.NANOS_PER_MS;
         while (idx < mCallbacks.size()) {
-            if (mCallbacks.get(idx).getSecond() > currentTimeMs) {
+            if (mCallbacks.get(idx).second > currentTimeMs) {
                 break;
             } else {
                 ++idx;
@@ -71,7 +71,7 @@ public class ChoreographerCallbacks {
         }
         List<Pair<Object, Long>> toExecute = new ArrayList<>(mCallbacks.subList(0, idx));
         mCallbacks.removeFrontElements(idx);
-        toExecute.forEach(p -> executeSafely(p.getFirst(), currentTimeNanos, logger));
+        toExecute.forEach(p -> executeSafely(p.first, currentTimeNanos, logger));
     }
 
     public void clear() {
