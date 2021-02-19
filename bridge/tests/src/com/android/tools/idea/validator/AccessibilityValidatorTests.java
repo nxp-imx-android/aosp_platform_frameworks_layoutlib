@@ -17,26 +17,22 @@
 package com.android.tools.idea.validator;
 
 import com.android.ide.common.rendering.api.RenderSession;
-import com.android.ide.common.rendering.api.SessionParams;
 import com.android.layoutlib.bridge.intensive.RenderTestBase;
 import com.android.layoutlib.bridge.intensive.setup.ConfigGenerator;
 import com.android.layoutlib.bridge.intensive.setup.LayoutLibTestCallback;
 import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser;
 import com.android.layoutlib.bridge.intensive.util.SessionParamsBuilder;
-import com.android.tools.idea.validator.LayoutValidator;
-import com.android.tools.idea.validator.ValidatorData;
 import com.android.tools.idea.validator.ValidatorData.Issue;
 import com.android.tools.idea.validator.ValidatorData.Level;
 import com.android.tools.idea.validator.ValidatorData.Policy;
 import com.android.tools.idea.validator.ValidatorData.Type;
-import com.android.tools.idea.validator.ValidatorResult;
 
 import org.junit.Test;
 
 import java.util.EnumSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static com.android.tools.idea.validator.ValidatorUtil.filter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -57,15 +53,23 @@ import static org.junit.Assert.assertTrue;
 public class AccessibilityValidatorTests extends RenderTestBase {
 
     @Test
-    public void testScrollingView() throws Exception {
-        render("a11y_scrolling_view_test.xml", session -> {
-            ValidatorResult result = getRenderResult(session);
-            List<Issue> internalError = filter(result.getIssues(), "ValidatorHierarchy");
+    public void testPaused() throws Exception {
+        try {
+            LayoutValidator.setPaused(true);
+            render("a11y_test_dup_clickable_bounds.xml", session -> {
+                ValidatorResult result = getRenderResult(session);
+                List<Issue> dupBounds = filter(result.getIssues(), "DuplicateClickableBoundsCheck");
 
-            ExpectedLevels expectedLevels = new ExpectedLevels();
-            expectedLevels.expectedErrors = 1;
-            expectedLevels.check(internalError);
-        });
+                /**
+                 * Expects no errors since disabled. When enabled it should print
+                 * the same result as {@link #testDuplicateClickableBoundsCheck}
+                 */
+                ExpectedLevels expectedLevels = new ExpectedLevels();
+                expectedLevels.check(dupBounds);
+            });
+        } finally {
+            LayoutValidator.setPaused(false);
+        }
     }
 
     @Test
@@ -253,17 +257,6 @@ public class AccessibilityValidatorTests extends RenderTestBase {
         for (int i = 0; i < list1.size(); i++) {
             assertEquals(list1.get(i), list2.get(i));
         }
-    }
-
-    private List<Issue> filter(List<ValidatorData.Issue> results, EnumSet<Level> errors) {
-        return results.stream().filter(
-                issue -> errors.contains(issue.mLevel)).collect(Collectors.toList());
-    }
-
-    private List<Issue> filter(
-            List<ValidatorData.Issue> results, String sourceClass) {
-        return results.stream().filter(
-                issue -> sourceClass.equals(issue.mSourceClass)).collect(Collectors.toList());
     }
 
     private ValidatorResult getRenderResult(RenderSession session) {

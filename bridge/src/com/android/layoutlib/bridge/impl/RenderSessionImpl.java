@@ -55,8 +55,8 @@ import com.android.tools.idea.validator.ValidatorHierarchy;
 import com.android.tools.idea.validator.ValidatorResult;
 import com.android.tools.idea.validator.ValidatorResult.Builder;
 import com.android.tools.idea.validator.ValidatorUtil;
+import com.android.tools.idea.validator.hierarchy.CustomHierarchyHelper;
 import com.android.tools.layoutlib.annotations.NotNull;
-import com.android.utils.Pair;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -72,6 +72,7 @@ import android.media.Image;
 import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.preference.Preference_Delegate;
+import android.util.Pair;
 import android.view.AttachInfo_Accessor;
 import android.view.BridgeInflater;
 import android.view.MotionEvent;
@@ -103,8 +104,6 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.android.apps.common.testing.accessibility.framework.uielement.AccessibilityHierarchyAndroid_ViewElementClassNamesAndroid_Delegate;
 
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_INFLATION;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_NOT_INFLATED;
@@ -270,10 +269,10 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             assert (exactMeasure != null && neededMeasure != null);
 
             // now look at the difference and add what is needed.
-            mMeasuredScreenWidth = calcSize(mMeasuredScreenWidth, neededMeasure.getFirst(),
-                    exactMeasure.getFirst(), renderingMode.getHorizAction());
-            mMeasuredScreenHeight = calcSize(mMeasuredScreenHeight, neededMeasure.getSecond(),
-                    exactMeasure.getSecond(), renderingMode.getVertAction());
+            mMeasuredScreenWidth = calcSize(mMeasuredScreenWidth, neededMeasure.first,
+                    exactMeasure.first, renderingMode.getHorizAction());
+            mMeasuredScreenHeight = calcSize(mMeasuredScreenHeight, neededMeasure.second,
+                    exactMeasure.second, renderingMode.getVertAction());
         }
         mNewRenderSize =
                 mMeasuredScreenWidth != previousWidth || mMeasuredScreenHeight != previousHeight;
@@ -593,7 +592,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
 
             try {
                 if (enableLayoutValidation && !getViewInfos().isEmpty()) {
-                    AccessibilityHierarchyAndroid_ViewElementClassNamesAndroid_Delegate.sLayoutlibCallback =
+                    CustomHierarchyHelper.sLayoutlibCallback =
                             getContext().getLayoutlibCallback();
 
                     BufferedImage imageToPass =
@@ -629,7 +628,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                     setValidatorResult(builder.build());
                 }
             } finally {
-                AccessibilityHierarchyAndroid_ViewElementClassNamesAndroid_Delegate.sLayoutlibCallback = null;
+                CustomHierarchyHelper.sLayoutlibCallback = null;
             }
 
             // success!
@@ -667,7 +666,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         viewToMeasure.measure(w_spec, h_spec);
 
         if (measuredView != null) {
-            return Pair.of(measuredView.getMeasuredWidth(), measuredView.getMeasuredHeight());
+            return Pair.create(measuredView.getMeasuredWidth(), measuredView.getMeasuredHeight());
         }
 
         return null;
@@ -726,11 +725,11 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                                 Pair<View, Boolean> pair = context.inflateView(
                                         binding.getHeaderAt(i),
                                         list, false, skipCallbackParser);
-                                if (pair.getFirst() != null) {
-                                    list.addHeaderView(pair.getFirst());
+                                if (pair.first != null) {
+                                    list.addHeaderView(pair.first);
                                 }
 
-                                skipCallbackParser |= pair.getSecond();
+                                skipCallbackParser |= pair.second;
                             }
 
                             count = binding.getFooterCount();
@@ -738,11 +737,11 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
                                 Pair<View, Boolean> pair = context.inflateView(
                                         binding.getFooterAt(i),
                                         list, false, skipCallbackParser);
-                                if (pair.getFirst() != null) {
-                                    list.addFooterView(pair.getFirst());
+                                if (pair.first != null) {
+                                    list.addFooterView(pair.first);
                                 }
 
-                                skipCallbackParser |= pair.getSecond();
+                                skipCallbackParser |= pair.second;
                             }
                         }
 

@@ -17,10 +17,13 @@
 package com.android.tools.idea.validator;
 
 import com.android.tools.idea.validator.ValidatorData.Fix;
+import com.android.tools.idea.validator.ValidatorData.Issue;
 import com.android.tools.idea.validator.ValidatorData.Issue.IssueBuilder;
 import com.android.tools.idea.validator.ValidatorData.Level;
 import com.android.tools.idea.validator.ValidatorData.Type;
 import com.android.tools.idea.validator.ValidatorResult.Builder;
+import com.android.tools.idea.validator.hierarchy.CustomAccessibilityHierarchyAndroid;
+import com.android.tools.idea.validator.hierarchy.CustomAccessibilityHierarchyAndroid.CustomBuilderAndroid;
 import com.android.tools.layoutlib.annotations.NotNull;
 import com.android.tools.layoutlib.annotations.Nullable;
 
@@ -32,9 +35,11 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheck;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckPreset;
@@ -82,8 +87,8 @@ public class ValidatorUtil {
         @Nullable Parameters parameters = null;
         builder.mMetric.startTimer();
 
-        hierarchy.mView = AccessibilityHierarchyAndroid
-                .newBuilder(view)
+        hierarchy.mView = new CustomAccessibilityHierarchyAndroid
+                .CustomBuilderAndroid(view)
                 .setViewOriginMap(builder.mSrcMap)
                 .build();
         if (image != null) {
@@ -179,6 +184,32 @@ public class ValidatorUtil {
         }
         builder.mMetric.endTimer();
         return builder.build();
+    }
+
+    /**
+     * @return the list filtered by the level. Useful for testing and debugging.
+     */
+    public static List<Issue> filter(List<ValidatorData.Issue> results, EnumSet<Level> errors) {
+        return results.stream().filter(
+                issue -> errors.contains(issue.mLevel)).collect(Collectors.toList());
+    }
+
+    /**
+     * @return the list filtered by the source class name. Useful for testing and debugging.
+     */
+    public static List<Issue> filter(
+            List<ValidatorData.Issue> results, String sourceClass) {
+        return results.stream().filter(
+                issue -> sourceClass.equals(issue.mSourceClass)).collect(Collectors.toList());
+    }
+
+    /**
+     * @return the list filtered by the source class name. Useful for testing and debugging.
+     */
+    public static List<Issue> filterByTypes(
+            List<ValidatorData.Issue> results, EnumSet<Type> types) {
+        return results.stream().filter(
+                issue -> types.contains(issue.mType)).collect(Collectors.toList());
     }
 
     /**
