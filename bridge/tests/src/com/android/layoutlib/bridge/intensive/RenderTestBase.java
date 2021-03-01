@@ -101,13 +101,13 @@ public class RenderTestBase {
 
     private static final String NATIVE_LIB_PATH_PROPERTY = "native.lib.path";
     private static final String FONT_DIR_PROPERTY = "font.dir";
-    private static final String ICU_DIR_PROPERTY = "icu.dir";
+    private static final String ICU_DATA_PATH_PROPERTY = "icu.data.path";
     private static final String PLATFORM_DIR_PROPERTY = "platform.dir";
     private static final String RESOURCE_DIR_PROPERTY = "test_res.dir";
 
     private static final String NATIVE_LIB_DIR_PATH;
     private static final String FONT_DIR;
-    private static final String ICU_DIR;
+    private static final String ICU_DATA_PATH;
     protected static final String PLATFORM_DIR;
     private static final String TEST_RES_DIR;
     /** Location of the app to test inside {@link #TEST_RES_DIR} */
@@ -136,7 +136,7 @@ public class RenderTestBase {
 
         NATIVE_LIB_DIR_PATH = getNativeLibDirPath();
         FONT_DIR = getFontDir();
-        ICU_DIR = getIcuDir();
+        ICU_DATA_PATH = getIcuDataPath();
 
         TEST_RES_DIR = getTestResDir();
         if (TEST_RES_DIR == null) {
@@ -199,12 +199,12 @@ public class RenderTestBase {
         return fontDir;
     }
 
-    private static String getIcuDir() {
-        String icuDir = System.getProperty(ICU_DIR_PROPERTY);
-        if (icuDir == null) {
-            icuDir = PLATFORM_DIR + "/../../../../../com.android.i18n/etc/icu";
+    private static String getIcuDataPath() {
+        String icuDataPath = System.getProperty(ICU_DATA_PATH_PROPERTY);
+        if (icuDataPath == null) {
+            icuDataPath = PLATFORM_DIR + "/../../../../../com.android.i18n/etc/icu/icudt66l.dat";
         }
-        return icuDir;
+        return icuDataPath;
     }
 
     private static String getPlatformDir() {
@@ -381,7 +381,7 @@ public class RenderTestBase {
         File attrs = new File(res, "values" + File.separator + "attrs.xml");
         sBridge = new Bridge();
         sBridge.init(ConfigGenerator.loadProperties(buildProp), fontLocation, NATIVE_LIB_DIR_PATH,
-                ICU_DIR, ConfigGenerator.getEnumMap(attrs), getLayoutLog());
+                ICU_DATA_PATH, ConfigGenerator.getEnumMap(attrs), getLayoutLog());
         Bridge.getLock().lock();
         try {
             Bridge.setLog(getLayoutLog());
