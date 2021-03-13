@@ -54,7 +54,6 @@ import com.android.tools.idea.validator.ValidatorData.Type;
 import com.android.tools.idea.validator.ValidatorHierarchy;
 import com.android.tools.idea.validator.ValidatorResult;
 import com.android.tools.idea.validator.ValidatorResult.Builder;
-import com.android.tools.idea.validator.ValidatorUtil;
 import com.android.tools.idea.validator.hierarchy.CustomHierarchyHelper;
 import com.android.tools.layoutlib.annotations.NotNull;
 
@@ -73,6 +72,7 @@ import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.preference.Preference_Delegate;
 import android.util.Pair;
+import android.util.TimeUtils;
 import android.view.AttachInfo_Accessor;
 import android.view.BridgeInflater;
 import android.view.MotionEvent;
@@ -1227,8 +1227,11 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
             return;
         }
 
-        MotionEvent event = MotionEvent.obtain(mLastActionDownTimeNanos, currentTimeNanos,
+        MotionEvent event = MotionEvent.obtain(
+                mLastActionDownTimeNanos / TimeUtils.NANOS_PER_MS,
+                currentTimeNanos / TimeUtils.NANOS_PER_MS,
                 motionEventType, x, y, 0);
+
         mViewRoot.dispatchTouchEvent(event);
     }
 
