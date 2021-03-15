@@ -237,6 +237,11 @@ public class BridgePowerManager implements IPowerManager {
     }
 
     @Override
+    public boolean isAmbientDisplaySuppressedForTokenByApp(String token, int appUid) {
+        return false;
+    }
+
+    @Override
     public boolean isAmbientDisplaySuppressed() {
         return false;
     }
