@@ -28,7 +28,6 @@ import com.android.tools.idea.validator.ValidatorData.SetViewAttributeFix;
 
 import com.android.tools.idea.validator.ValidatorData.Type;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import android.view.View;
@@ -63,7 +62,6 @@ public class LayoutValidatorTests extends RenderTestBase {
         renderAndVerify(params, "a11y_test1.png");
     }
 
-    @Ignore("b/181711213")
     @Test
     public void testValidation() throws Exception {
         render(sBridge, generateParams(), -1, session -> {
@@ -84,10 +82,7 @@ public class LayoutValidatorTests extends RenderTestBase {
             assertEquals("https://support.google.com/accessibility/android/answer/7158690",
                          first.mHelpfulUrl);
             assertEquals("SpeakableTextPresentCheck", first.mSourceClass);
-            assertTrue(first.mFix instanceof SetViewAttributeFix);
-            assertEquals("Set the view attribute android:contentDescription to a " +
-                    "meaningful non-empty string or resource reference.",
-                    first.mFix.getDescription());
+            assertEquals(first.mFix, null);
 
             Issue second = errorIssues.get(1);
             CompoundFix compoundFix = (CompoundFix) second.mFix;
@@ -99,10 +94,10 @@ public class LayoutValidatorTests extends RenderTestBase {
             assertEquals("TouchTargetSizeCheck", second.mSourceClass);
             assertTrue(compoundFix.mFixes.size() == 2);
             assertEquals(
-                    "Set the view attribute android:layout_width to 48dp.",
+                    "Set this item's android:layout_width to 48dp.",
                     compoundFix.mFixes.get(0).getDescription());
             assertEquals(
-                    "Set the view attribute android:layout_height to 48dp.",
+                    "Set this item's android:layout_height to 48dp.",
                     compoundFix.mFixes.get(1).getDescription());
 
             Issue third = errorIssues.get(2);
@@ -114,7 +109,7 @@ public class LayoutValidatorTests extends RenderTestBase {
                          third.mHelpfulUrl);
             assertEquals("TextContrastCheck", third.mSourceClass);
             assertTrue(third.mFix instanceof SetViewAttributeFix);
-            assertEquals("Set the view attribute android:textColor to #FFFFFF.",
+            assertEquals("Set this item's android:textColor to #757575.",
                     third.mFix.getDescription());
         });
     }
