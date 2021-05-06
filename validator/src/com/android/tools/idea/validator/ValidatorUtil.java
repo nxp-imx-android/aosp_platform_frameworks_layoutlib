@@ -28,8 +28,6 @@ import com.android.tools.idea.validator.hierarchy.CustomHierarchyHelper;
 import com.android.tools.layoutlib.annotations.NotNull;
 import com.android.tools.layoutlib.annotations.Nullable;
 
-import org.jsoup.Jsoup;
-
 import android.view.View;
 
 import java.awt.image.BufferedImage;
@@ -46,13 +44,11 @@ import java.util.stream.Collectors;
 
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheck;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckPreset;
-import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult.AccessibilityCheckResultType;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityHierarchyCheck;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityHierarchyCheckResult;
 import com.google.android.apps.common.testing.accessibility.framework.Parameters;
 import com.google.android.apps.common.testing.accessibility.framework.checks.EditableContentDescCheck;
-import com.google.android.apps.common.testing.accessibility.framework.checks.RedundantDescriptionCheck;
 import com.google.android.apps.common.testing.accessibility.framework.checks.TextContrastCheck;
 import com.google.android.apps.common.testing.accessibility.framework.checks.TouchTargetSizeCheck;
 import com.google.android.apps.common.testing.accessibility.framework.strings.StringManager;
@@ -98,19 +94,22 @@ public class ValidatorUtil {
      */
     private final static ImmutableSet<Class<? extends AccessibilityHierarchyCheck>>
             sAllowedCheckResultClassSet4Fix = ImmutableSet.of(TextContrastCheck.class,
-            TouchTargetSizeCheck.class, RedundantDescriptionCheck.class,
-            EditableContentDescCheck.class);
+            TouchTargetSizeCheck.class,  EditableContentDescCheck.class);
 
     /**s
      * @param policy policy to apply for the hierarchy
      * @param view root view to build hierarchy from
      * @param image screenshot image that matches the view
+     * @param scaleX scaling done via layoutlib in x coord
+     * @param scaleY scaling done via layoutlib in y coord
      * @return The hierarchical data required for running the ATF checks.
      */
     public static ValidatorHierarchy buildHierarchy(
             @NotNull ValidatorData.Policy policy,
             @NotNull View view,
-            @Nullable BufferedImage image) {
+            @Nullable BufferedImage image,
+            float scaleX,
+            float scaleY) {
         ValidatorHierarchy hierarchy = new ValidatorHierarchy();
         if (!policy.mTypes.contains(Type.ACCESSIBILITY)) {
             return hierarchy;
@@ -123,6 +122,7 @@ public class ValidatorUtil {
         hierarchy.mView = AccessibilityHierarchyAndroid
                 .newBuilder(view)
                 .setViewOriginMap(builder.mSrcMap)
+                .setObtainCharacterLocations(LayoutValidator.obtainCharacterLocations())
                 .setCustomViewBuilder(new CustomViewBuilderAndroid() {
                     @Override
                     public Class<?> getClassByName(
@@ -146,7 +146,7 @@ public class ValidatorUtil {
         if (image != null) {
             parameters = new Parameters();
             parameters.putScreenCapture(
-                    new AtfBufferedImage(image, builder.mMetric));
+                    new AtfBufferedImage(image, builder.mMetric, scaleX, scaleY));
         }
         builder.mMetric.recordHierarchyCreationTime();
 
@@ -197,6 +197,9 @@ public class ValidatorUtil {
         }
 
         for (AccessibilityHierarchyCheckResult result : a11yResults) {
+            // TODO: b/183726816 replace this with
+            // AccessibilityCheckPreset.getHierarchyCheckForClassName(checkClassName)
+            // .getTitleMessage(Locale.ENGLISH)
             String category = ValidatorUtil.getCheckClassCategory(result.getSourceCheckClass());
 
             ValidatorData.Level level = ValidatorUtil.convertLevel(result.getType());
@@ -236,6 +239,13 @@ public class ValidatorUtil {
         }
         builder.mMetric.endTimer();
         return builder.build();
+    }
+
+    /**
+     * @return the list of internal errors in results. Useful for testing and debugging.
+     */
+    public static List<Issue> filterInternalErrors(List<ValidatorData.Issue> results) {
+        return filterByTypes(results, EnumSet.of(Type.INTERNAL_ERROR));
     }
 
     /**
