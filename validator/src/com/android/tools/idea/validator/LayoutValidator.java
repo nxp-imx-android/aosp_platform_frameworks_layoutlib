@@ -38,6 +38,24 @@ public class LayoutValidator {
 
     private static ValidatorData.Policy sPolicy = DEFAULT_POLICY;
 
+    private static boolean sPaused = false;
+
+    /**
+     * @return true if validator is paused. False otherwise.
+     */
+    public static boolean isPaused() {
+        return sPaused;
+    }
+
+    /**
+     * Pause or resume validator. {@link RenderParamsFlags#FLAG_ENABLE_LAYOUT_VALIDATOR} must be
+     * enabled.
+     * @param paused true if validator should be paused. False to resume.
+     */
+    public static void setPaused(boolean paused) {
+        sPaused = paused;
+    }
+
     /**
      * Validate the layout using the default policy.
      * Precondition: View must be attached to the window.
@@ -46,12 +64,35 @@ public class LayoutValidator {
      */
     @NotNull
     public static ValidatorResult validate(@NotNull View view, @Nullable BufferedImage image) {
-        if (view.isAttachedToWindow()) {
+        if (!sPaused && view.isAttachedToWindow()) {
             ValidatorHierarchy hierarchy = ValidatorUtil.buildHierarchy(sPolicy, view, image);
             return ValidatorUtil.generateResults(sPolicy, hierarchy);
         }
         // TODO: Add non-a11y layout validation later.
         return new ValidatorResult.Builder().build();
+    }
+
+    /**
+     * Build the hierarchy necessary for validating the layout.
+     * The operation is quick thus can be used frequently.
+     *
+     * @return The hierarchy to be used for validation.
+     */
+    @NotNull
+    public static ValidatorHierarchy buildHierarchy(
+            @NotNull View view, @Nullable BufferedImage image) {
+        if (!sPaused && view.isAttachedToWindow()) {
+            return ValidatorUtil.buildHierarchy(sPolicy, view, image);
+        }
+        return new ValidatorHierarchy();
+    }
+
+    /**
+     * @return The validator result that matches the hierarchy
+     */
+    @NotNull
+    public static ValidatorResult validate(@NotNull ValidatorHierarchy hierarchy) {
+        return ValidatorUtil.generateResults(sPolicy, hierarchy);
     }
 
     /**
