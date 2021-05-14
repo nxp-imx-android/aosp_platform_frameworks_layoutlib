@@ -53,10 +53,8 @@ import com.android.tools.idea.validator.ValidatorData.Type;
 import com.android.tools.idea.validator.ValidatorHierarchy;
 import com.android.tools.idea.validator.ValidatorResult;
 import com.android.tools.idea.validator.ValidatorResult.Builder;
-import com.android.tools.idea.validator.ValidatorUtil;
 import com.android.tools.idea.validator.hierarchy.CustomHierarchyHelper;
 import com.android.tools.layoutlib.annotations.NotNull;
-import com.android.utils.Pair;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -75,7 +73,6 @@ import android.util.Pair;
 import android.util.TimeUtils;
 import android.view.AttachInfo_Accessor;
 import android.view.BridgeInflater;
-import android.view.Choreographer_Delegate;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -108,8 +105,6 @@ import java.util.Map;
 
 import com.android.internal.R;
 import android.content.res.TypedArray;
-
-import com.google.android.apps.common.testing.accessibility.framework.uielement.AccessibilityHierarchyAndroid_ViewElementClassNamesAndroid_Delegate;
 
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_INFLATION;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_NOT_INFLATED;
