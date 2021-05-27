@@ -17,10 +17,6 @@
 package com.android.tools.layoutlib.java.nio;
 
 import java.nio.Buffer;
-import java.nio.CharBuffer;
-import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-import java.nio.ShortBuffer;
 
 /**
  * A fork of libcore's java.nio.NIOAccess which does not exist in the JVM
@@ -63,18 +59,9 @@ public final class NIOAccess_Delegate {
      * meaningful if getBaseArray() returns non-null.
      */
     static int getBaseArrayOffset(Buffer b) {
-        return b.hasArray() ? ((b.arrayOffset() + b.position()) << getElementSizeShift(b)) : 0;
+        throw new UnsupportedOperationException("implement me");
+        //return b.hasArray() ? ((b.arrayOffset() + b.position()) << b._elementSizeShift) : 0;
     }
 
-    static int getElementSizeShift(Buffer b) {
-        if (b instanceof ShortBuffer || b instanceof CharBuffer) {
-            return 1;
-        } else if (b instanceof IntBuffer) {
-            return 2;
-        } else if (b instanceof LongBuffer) {
-            return 3;
-        } else {
-            return 0;
-        }
-    }
+
 }

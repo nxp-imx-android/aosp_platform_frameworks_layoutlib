@@ -52,17 +52,6 @@ import java.nio.file.Paths;
  */
 public final class Typeface_Delegate {
     /**
-     * Initializes Typeface class
-     */
-    public static void init(BridgeContext context) {
-        try {
-            Class.forName("android.graphics.Typeface");
-        } catch (ClassNotFoundException e) {
-            context.error("Could not initialize Typeface", e);
-        }
-    }
-
-    /**
      * Loads a single font or font family from disk
      */
     @Nullable
@@ -96,15 +85,15 @@ public final class Typeface_Delegate {
                             FontResourcesParser.parse(blockParser, context.getResources());
                     typeface = Typeface.createFromResources(entry, context.getAssets(), path);
                 } catch (XmlPullParserException | IOException e) {
-                    Bridge.getLog().error(null, "Failed to parse file " + path, e, null, null /*data
-                    */);
+                    Bridge.getLog().error(null, "Failed to parse file " + path, e, null,
+                            null /*data*/);
                 } finally {
                     blockParser.ensurePopped();
                 }
             } else {
                 Bridge.getLog().error(ILayoutLog.TAG_BROKEN,
-                        String.format("File %s does not exist (or is not a file)", path), null,
-                        null /*data*/);
+                        String.format("File %s does not exist (or is not a file)", path),
+                        null, null /*data*/);
             }
         } else {
             typeface = new Typeface.Builder(context.getAssets(), path, false, 0).build();

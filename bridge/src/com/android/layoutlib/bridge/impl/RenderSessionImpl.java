@@ -30,7 +30,6 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SizeAction;
 import com.android.ide.common.rendering.api.ViewInfo;
 import com.android.ide.common.rendering.api.ViewType;
-import com.android.internal.R;
 import com.android.internal.view.menu.ActionMenuItemView;
 import com.android.internal.view.menu.BridgeMenuItemImpl;
 import com.android.internal.view.menu.IconMenuItemView;
@@ -59,7 +58,6 @@ import com.android.tools.layoutlib.annotations.NotNull;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.HardwareRenderer;
@@ -104,6 +102,9 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.android.internal.R;
+import android.content.res.TypedArray;
 
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_INFLATION;
 import static com.android.ide.common.rendering.api.Result.Status.ERROR_NOT_INFLATED;
@@ -916,7 +917,7 @@ public class RenderSessionImpl extends RenderAction<SessionParams> {
         }
 
         if (count == 0) {
-            // Create a dummy child to get a single tab
+            // Create a placeholder child to get a single tab
             TabSpec spec = tabHost.newTabSpec("tag")
                     .setIndicator("Tab Label", tabHost.getResources()
                             .getDrawable(android.R.drawable.ic_menu_info_details, null))

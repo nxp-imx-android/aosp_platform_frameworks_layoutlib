@@ -31,6 +31,8 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Handler_Delegate;
 import android.os.SystemClock_Delegate;
+import android.view.Choreographer;
+import android.view.DisplayEventReceiver_VsyncEventData_Accessor;
 import android.view.MotionEvent;
 
 import java.awt.image.BufferedImage;
@@ -164,8 +166,8 @@ public class BridgeRenderSession extends RenderSession {
                     .execute(currentTimeMs, Bridge.getLog());
             return hasMoreCallbacks;
         } catch (Throwable t) {
-            Bridge.getLog().error(ILayoutLog.TAG_BROKEN, "Failed executing Choreographer#doFrame ",
-                    t, null, null);
+            Bridge.getLog().error(ILayoutLog.TAG_BROKEN, "Failed executing Choreographer#doFrame "
+                    , t, null, null);
             return false;
         } finally {
             mSession.release();

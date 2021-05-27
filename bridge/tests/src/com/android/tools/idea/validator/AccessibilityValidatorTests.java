@@ -41,7 +41,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Sanity check for a11y checks. For now it lacks checking the following:
+ * Basic check for a11y checks. For now it lacks checking the following:
  * - ClassNameCheck
  * - ClickableSpanCheck
  * - EditableContentDescCheck
@@ -153,7 +153,7 @@ public class AccessibilityValidatorTests extends RenderTestBase {
             ExpectedLevels expectedLevels = new ExpectedLevels();
             expectedLevels.expectedVerboses = 1;
             expectedLevels.expectedErrors = 1;
-            expectedLevels.expectedFixes = 0;
+            expectedLevels.expectedFixes = 1;
             expectedLevels.check(speakableCheck);
 
             // Make sure no other errors in the system.

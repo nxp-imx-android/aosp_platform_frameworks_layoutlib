@@ -74,6 +74,7 @@ import android.graphics.Typeface_Delegate;
 import android.graphics.drawable.Drawable;
 import android.graphics.fonts.SystemFonts_Delegate;
 import android.hardware.display.DisplayManager;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -175,6 +176,7 @@ public class BridgeContext extends Context {
     private final ClipboardManager mClipboardManager;
     private final ActivityManager mActivityManager;
     private final ConnectivityManager mConnectivityManager;
+    private final AudioManager mAudioManager;
     private final HashMap<View, Integer> mScrollYPos = new HashMap<>();
     private final HashMap<View, Integer> mScrollXPos = new HashMap<>();
 
@@ -266,6 +268,7 @@ public class BridgeContext extends Context {
         mClipboardManager = new ClipboardManager(this, null);
         mActivityManager = ActivityManager_Accessor.getActivityManagerInstance(this);
         mConnectivityManager = new ConnectivityManager(this, null);
+        mAudioManager = new AudioManager(this);
 
         if (mLayoutlibCallback.isResourceNamespacingRequired()) {
             if (mLayoutlibCallback.hasAndroidXAppCompat()) {
@@ -288,8 +291,10 @@ public class BridgeContext extends Context {
      *
      * @see #disposeResources()
      */
-    public void initResources() {
+    public void initResources(@NonNull AssetRepository assetRepository) {
         AssetManager assetManager = AssetManager.getSystem();
+
+        mAssets.setAssetRepository(assetRepository);
 
         mSystemResources = Resources_Delegate.initSystem(
                 this,
@@ -298,12 +303,6 @@ public class BridgeContext extends Context {
                 mConfig,
                 mLayoutlibCallback);
         mTheme = mSystemResources.newTheme();
-
-        // If Typeface has not yet been initialized, do it here to ensure that default fonts are
-        // correctly set up and all font information is available for rendering.
-        if (!SystemFonts_Delegate.sIsTypefaceInitialized) {
-            Typeface_Delegate.init(this);
-        }
     }
 
     /**
@@ -548,7 +547,7 @@ public class BridgeContext extends Context {
                 }
             } catch (XmlPullParserException e) {
                 Bridge.getLog().error(ILayoutLog.TAG_BROKEN,
-                        "Failed to parse file " + path, e, null,  null /*data*/);
+                        "Failed to parse file " + path, e, null, null /*data*/);
                 // we'll return null below.
             } finally {
                 mBridgeInflater.setResourceReference(null);
@@ -676,6 +675,8 @@ public class BridgeContext extends Context {
                 return mConnectivityManager;
 
             case AUDIO_SERVICE:
+                return mAudioManager;
+
             case TEXT_CLASSIFICATION_SERVICE:
             case CONTENT_CAPTURE_MANAGER_SERVICE:
                 return null;
@@ -1219,7 +1220,7 @@ public class BridgeContext extends Context {
 
     public IBinder getBinder() {
         if (mBinder == null) {
-            // create a dummy binder. We only need it be not null.
+            // create a no-op binder. We only need it be not null.
             mBinder = new IBinder() {
                 @Override
                 public String getInterfaceDescriptor() throws RemoteException {

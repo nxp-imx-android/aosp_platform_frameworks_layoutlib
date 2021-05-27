@@ -91,7 +91,7 @@ public class StatusBar extends CustomBar {
 
         if (icons.size() != 2 || clockView == null) {
             Bridge.getLog().error(ILayoutLog.TAG_BROKEN, "Unable to initialize statusbar", null,
-                    null);
+                    null, null);
             return;
         }
 

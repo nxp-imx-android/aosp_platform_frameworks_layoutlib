@@ -62,6 +62,7 @@ import android.graphics.drawable.NinePatchDrawable;
 import android.util.TypedValue;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;

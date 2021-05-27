@@ -51,13 +51,16 @@ import android.os.Looper;
 import android.os.Looper_Accessor;
 import android.os.SystemProperties;
 import android.util.Pair;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
 import java.io.File;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -132,8 +135,8 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         }
 
         @Override
-        public void error(String tag, String message, Throwable throwable,
-                Object viewCookie, Object data) {
+        public void error(String tag, String message, Throwable throwable, Object viewCookie,
+                Object data) {
             System.err.println(message);
         }
 
@@ -235,6 +238,8 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
             for (String deferredClass : NativeConfig.DEFERRED_STATIC_INITIALIZER_CLASSES) {
                 ReflectionUtils.invokeStatic(deferredClass, "deferredStaticInitializer");
             }
+            // Load system fonts now that Typeface has been initialized
+            Typeface.loadPreinstalledSystemFontMap();
             ParserFactory.setParserFactory(null);
         } catch (Throwable t) {
             if (log != null) {
@@ -703,8 +708,10 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
         }
         try {
             // set the system property so LayoutLibLoader.cpp can read it
-            System.setProperty("native_classes", String.join(",",
-                    NativeConfig.CLASS_NATIVES));
+            System.setProperty("core_native_classes", String.join(",",
+                    NativeConfig.CORE_CLASS_NATIVES));
+            System.setProperty("graphics_native_classes", String.join(",",
+                    NativeConfig.GRAPHICS_CLASS_NATIVES));
             System.setProperty("icu.data.path", Bridge.getIcuDataPath());
             System.setProperty("use_bridge_for_logging", "true");
             System.setProperty("register_properties_during_load", "true");
@@ -738,5 +745,16 @@ public final class Bridge extends com.android.ide.common.rendering.api.Bridge {
                             0, null, RESOLVE_BY_FONT_TABLE, RESOLVE_BY_FONT_TABLE, DEFAULT_FAMILY);
             Typeface.sDynamicTypefaceCache.remove(key);
         }
+    }
+
+    @Override
+    public Object createMockView(String label, Class<?>[] signature, Object[] args)
+            throws NoSuchMethodException, InstantiationException, IllegalAccessException,
+            InvocationTargetException {
+        Constructor<MockView> constructor = MockView.class.getConstructor(signature);
+        MockView mockView = constructor.newInstance(args);
+        mockView.setText(label);
+        mockView.setGravity(Gravity.CENTER);
+        return mockView;
     }
 }

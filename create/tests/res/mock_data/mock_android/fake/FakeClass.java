@@ -14,14 +14,8 @@
  * limitations under the License.
  */
 
-package mock_android.dummy.subpackage;
+package mock_android.fake;
 
-public class SubpackageClassC {
-    public static class StaticInnerClass {
+public class FakeClass {
 
-    }
-
-    public class InnerClass {
-
-    }
 }

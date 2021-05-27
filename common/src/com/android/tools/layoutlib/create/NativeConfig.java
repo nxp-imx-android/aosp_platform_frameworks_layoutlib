@@ -30,9 +30,10 @@ public class NativeConfig {
             "android.graphics.Matrix",
             "android.graphics.Path",
             // Order is important! Fonts and FontFamily have to be initialized before Typeface
-            "android.graphics.fonts.Font$Builder",
+            "android.graphics.fonts.Font",
             "android.graphics.fonts.FontFamily$Builder",
             "android.graphics.Typeface",
+            "android.graphics.text.PositionedGlyphs",
             "android.graphics.text.LineBreaker",
     };
 
@@ -43,15 +44,30 @@ public class NativeConfig {
     };
 
     /**
-     * The list of classes to register with JNI
+     * The list of core classes to register with JNI
      */
-    public final static String[] CLASS_NATIVES = new String[] {
+    public final static String[] CORE_CLASS_NATIVES = new String[] {
             "android.animation.PropertyValuesHolder",
             "android.content.res.StringBlock",
             "android.content.res.XmlBlock",
+            "android.media.ImageReader",
+            "android.os.SystemProperties",
+            "android.os.Trace",
+            "android.text.AndroidCharacter",
+            "android.util.Log",
+            "android.view.MotionEvent",
+            "android.view.Surface",
+            "com.android.internal.util.VirtualRefBasePtr",
+    };
+
+    /**
+     * The list of graphics classes to register with JNI
+     */
+    public final static String[] GRAPHICS_CLASS_NATIVES = new String[] {
             "android.graphics.Bitmap",
             "android.graphics.BitmapFactory",
             "android.graphics.ByteBufferStreamAdaptor",
+            "android.graphics.Camera",
             "android.graphics.Canvas",
             "android.graphics.CanvasProperty",
             "android.graphics.ColorFilter",
@@ -76,6 +92,7 @@ public class NativeConfig {
             "android.graphics.RenderNode",
             "android.graphics.Shader",
             "android.graphics.Typeface",
+            "android.graphics.YuvImage",
             "android.graphics.animation.NativeInterpolatorFactory",
             "android.graphics.animation.RenderNodeAnimator",
             "android.graphics.drawable.AnimatedVectorDrawable",
@@ -84,14 +101,7 @@ public class NativeConfig {
             "android.graphics.fonts.FontFamily",
             "android.graphics.text.LineBreaker",
             "android.graphics.text.MeasuredText",
-            "android.media.ImageReader",
-            "android.os.SystemProperties",
-            "android.os.Trace",
-            "android.text.AndroidCharacter",
-            "android.util.Log",
+            "android.graphics.text.TextRunShaper",
             "android.util.PathParser",
-            "android.view.MotionEvent",
-            "android.view.Surface",
-            "com.android.internal.util.VirtualRefBasePtr",
     };
 }

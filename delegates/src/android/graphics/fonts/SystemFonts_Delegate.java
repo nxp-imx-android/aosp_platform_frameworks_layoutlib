@@ -19,16 +19,17 @@ package android.graphics.fonts;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.text.FontConfig;
-import android.util.ArrayMap;
 import android.util.Log;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Delegate implementing the native methods of android.graphics.fonts.SystemFonts
@@ -52,14 +53,18 @@ public class SystemFonts_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static FontConfig.Alias[] buildSystemFallback(@NonNull String xmlPath,
-            @NonNull String fontDir,
-            @NonNull FontCustomizationParser.Result oemCustomization,
-            @NonNull ArrayMap<String, FontFamily[]> fallbackMap,
-            @NonNull ArrayList<Font> availableFonts) {
+    /*package*/ static FontConfig getSystemFontConfigInternal(
+            String fontsXml,
+            String systemFontDir,
+            String oemXml,
+            String productFontDir,
+            Map<String, File> updatableFontMap,
+            long lastModifiedDate,
+            int configVersion) {
         sIsTypefaceInitialized = true;
-        return SystemFonts.buildSystemFallback_Original(sFontLocation + "native/fonts.xml",
-                sFontLocation, oemCustomization, fallbackMap, availableFonts);
+        return SystemFonts.getSystemFontConfigInternal_Original(
+            sFontLocation + "fonts.xml", sFontLocation, null, null, updatableFontMap,
+            lastModifiedDate, configVersion);
     }
 
     @LayoutlibDelegate

@@ -43,8 +43,8 @@ import android.util.BridgeXmlPullAttributesTest;
         BridgeXmlBlockParserTest.class, BridgeXmlPullAttributesTest.class,
         TestDelegates.class, BridgeRenderSessionTest.class, ResourceHelperTest.class,
         BridgeContextTest.class, Resources_DelegateTest.class, HighQualityShadowsRenderTests.class,
-        LayoutValidatorTests.class, AccessibilityValidatorTests.class, ValidatorResultTests.class,
-        BridgeTypedArrayTest.class
+        LayoutValidatorTests.class, AccessibilityValidatorTests.class, BridgeTypedArrayTest.class,
+        ValidatorResultTests.class
 })
 public class Main {
 }
