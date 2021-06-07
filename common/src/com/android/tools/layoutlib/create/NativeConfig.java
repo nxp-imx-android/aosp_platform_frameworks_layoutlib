@@ -58,6 +58,7 @@ public class NativeConfig {
             "android.view.MotionEvent",
             "android.view.Surface",
             "com.android.internal.util.VirtualRefBasePtr",
+            "libcore.util.NativeAllocationRegistry_Delegate",
     };
 
     /**
@@ -89,6 +90,7 @@ public class NativeConfig {
             "android.graphics.Picture",
             "android.graphics.RecordingCanvas",
             "android.graphics.Region",
+            "android.graphics.RenderEffect",
             "android.graphics.RenderNode",
             "android.graphics.Shader",
             "android.graphics.Typeface",

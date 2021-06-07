@@ -145,6 +145,7 @@ public final class CreateInfo implements ICreateInfo {
         new ImageReaderNativeInitReplacer(),
         new NioUtilsFreeBufferReplacer(),
         new ProcessInitializerInitSchedReplacer(),
+        new ValidateNinePatchChunkReplacer(),
     };
 
     /**
@@ -252,6 +253,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.view.PointerIcon#loadResource",
         "android.view.PointerIcon#registerDisplayListener",
         "android.view.SurfaceControl#nativeCreateTransaction",
+        "android.view.SurfaceControl#nativeGetNativeTransactionFinalizer",
         "android.view.TextureView#getTextureLayer",
         "android.view.View#draw",
         "android.view.View#dispatchDetachedFromWindow",
@@ -329,6 +331,7 @@ public final class CreateInfo implements ICreateInfo {
         "android.graphics.RecordingCanvas",
         "android.graphics.Region",
         "android.graphics.RegionIterator",
+        "android.graphics.RenderEffect",
         "android.graphics.RenderNode",
         "android.graphics.RuntimeShader",
         "android.graphics.Shader",
@@ -441,6 +444,7 @@ public final class CreateInfo implements ICreateInfo {
     private final static String[] PROMOTED_METHODS = new String[] {
         "android.animation.AnimationHandler#doAnimationFrame",
         "android.graphics.Bitmap#setNinePatchChunk",
+        "android.graphics.NinePatch#validateNinePatchChunk",
         "android.media.ImageReader#nativeClassInit",
         "android.view.Choreographer#doFrame",
         "android.view.Choreographer#postCallbackDelayedInternal",
@@ -709,6 +713,20 @@ public final class CreateInfo implements ICreateInfo {
             mi.owner = "android/graphics/HardwareRenderer_ProcessInitializer_Delegate";
             mi.opcode = Opcodes.INVOKESTATIC;
             mi.desc = "(J)V";
+        }
+    }
+
+    public static class ValidateNinePatchChunkReplacer implements MethodReplacer {
+        @Override
+        public boolean isNeeded(String owner, String name, String desc, String sourceClass) {
+            return "android/graphics/NinePatch".equals(owner) &&
+                    name.equals("validateNinePatchChunk");
+        }
+
+        @Override
+        public void replace(MethodInformation mi) {
+            mi.owner = "android/graphics/NinePatch_Delegate";
+            mi.opcode = Opcodes.INVOKESTATIC;
         }
     }
 }
