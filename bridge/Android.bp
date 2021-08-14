@@ -36,7 +36,10 @@ java_library_host {
         "ninepatch-prebuilt",
         "layoutlib-common",
         "layoutlib-validator",
+        "sdk-common",
     ],
+
+    jarjar_rules: "jarjar-rules.txt",
 
     dist: {
         targets: ["layoutlib"],
@@ -62,7 +65,10 @@ java_library_host {
         "ninepatch-prebuilt",
         "layoutlib-common",
         "layoutlib-validator",
+        "sdk-common",
     ],
+
+    jarjar_rules: "jarjar-rules.txt",
 
     dist: {
         targets: ["layoutlib"],
