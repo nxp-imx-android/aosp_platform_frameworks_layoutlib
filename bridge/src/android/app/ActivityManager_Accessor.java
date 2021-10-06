@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.tools.idea.editors.theme.widgets;
+package android.app;
 
+import android.annotation.NonNull;
 import android.content.Context;
-import android.util.AttributeSet;
-import android.widget.Button;
 
-@SuppressWarnings("unused")
-public class PressedButton extends Button {
-    public PressedButton(Context context, AttributeSet attrs) {
-        super(context, attrs);
-
-        setPressed(true);
-        jumpDrawablesToCurrentState();
+public class ActivityManager_Accessor {
+    @NonNull
+    public static ActivityManager getActivityManagerInstance(@NonNull Context context) {
+        return new ActivityManager(context, null);
     }
 }
