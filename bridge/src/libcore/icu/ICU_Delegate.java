@@ -18,9 +18,6 @@ package libcore.icu;
 
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 
-import android.icu.text.DateTimePatternGenerator;
-import android.icu.util.ULocale;
-
 import java.util.Locale;
 
 /**
@@ -34,19 +31,8 @@ public class ICU_Delegate {
     // --- Native methods accessing ICU's database.
 
     @LayoutlibDelegate
-    /*package*/ static String getBestDateTimePatternNative(String skeleton, String localeName) {
-        return DateTimePatternGenerator.getInstance(new ULocale(localeName))
-                .getBestPattern(skeleton);
-    }
-
-    @LayoutlibDelegate
     /*package*/ static String[] getAvailableLocalesNative() {
         return new String[0];
-    }
-
-    @LayoutlibDelegate
-    /*package*/ static String getCurrencyCode(String locale) {
-        return "";
     }
 
     @LayoutlibDelegate
@@ -75,12 +61,22 @@ public class ICU_Delegate {
     }
 
     @LayoutlibDelegate
-    /*package*/ static void setDefaultLocale(String locale) {
-        ICU.setDefaultLocale(locale);
+    /*package*/ static String getDefaultLocale() {
+        return Locale.getDefault().toString();
     }
 
     @LayoutlibDelegate
-    /*package*/ static String getDefaultLocale() {
-        return ICU.getDefaultLocale();
+    /*package*/ static String getCldrVersion() {
+        return "";
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static String getIcuVersion() {
+        return "";
+    }
+
+    @LayoutlibDelegate
+    /*package*/ static String getUnicodeVersion() {
+        return "";
     }
 }
